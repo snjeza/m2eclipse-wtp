@@ -22,28 +22,27 @@ import org.maven.ide.eclipse.project.configurator.AbstractClasspathConfigurator;
 
 
 /**
- * See http://wiki.eclipse.org/ClasspathEntriesPublishExportSupport 
- * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=128851
- * 
+ * @see http://wiki.eclipse.org/ClasspathEntriesPublishExportSupport
+ * @see https://bugs.eclipse.org/bugs/show_bug.cgi?id=128851
  * @author Igor Fedorenko
  */
+@SuppressWarnings("unchecked")
 class WTPClasspathConfigurator extends AbstractClasspathConfigurator {
 
-  WTPClasspathConfigurator() {
-  }
+  static final IClasspathAttribute NONDEPENDENCY_ATTRIBUTE = JavaCore.newClasspathAttribute(
+      IClasspathDependencyConstants.CLASSPATH_COMPONENT_NON_DEPENDENCY, "");
 
-  static final IClasspathAttribute NONDEPENDENCY_ATTRIBUTE = JavaCore.newClasspathAttribute(IClasspathDependencyConstants.CLASSPATH_COMPONENT_NON_DEPENDENCY, "");
-  static final IClasspathAttribute DEPENDENCY_ATTRIBUTE = JavaCore.newClasspathAttribute(IClasspathDependencyConstants.CLASSPATH_COMPONENT_DEPENDENCY, "/WEB-INF/lib");
+  static final IClasspathAttribute DEPENDENCY_ATTRIBUTE = JavaCore.newClasspathAttribute(
+      IClasspathDependencyConstants.CLASSPATH_COMPONENT_DEPENDENCY, "/WEB-INF/lib");
+
   static final Set<IClasspathAttribute> NONDEPENDENCY_ATTRIBUTES = Collections.singleton(NONDEPENDENCY_ATTRIBUTE);
-  
+
   @Override
   public Set getAttributes(Artifact artifact, int kind) {
     String scope = artifact.getScope();
     // Check the scope & set WTP non-dependency as appropriate
-    if(Artifact.SCOPE_PROVIDED.equals(scope) 
-        || Artifact.SCOPE_TEST.equals(scope)
-        || Artifact.SCOPE_SYSTEM.equals(scope)) 
-    {
+    if(Artifact.SCOPE_PROVIDED.equals(scope) || Artifact.SCOPE_TEST.equals(scope)
+        || Artifact.SCOPE_SYSTEM.equals(scope)) {
       return NONDEPENDENCY_ATTRIBUTES;
     }
     return null;
@@ -51,7 +50,7 @@ class WTPClasspathConfigurator extends AbstractClasspathConfigurator {
 
   @Override
   public void configureClasspath(Map entries) {
-    // WTP 2.0 does not support workspace dependencies in thirdparty classpath containers
+    // WTP 2.0 does not support workspace dependencies in third party classpath containers
     for(Iterator<IClasspathEntry> it = entries.values().iterator(); it.hasNext();) {
       IClasspathEntry entry = it.next();
       if(IClasspathEntry.CPE_PROJECT == entry.getEntryKind()) {

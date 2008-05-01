@@ -53,21 +53,35 @@ import org.maven.ide.eclipse.project.configurator.ProjectConfigurationRequest;
  * @author Igor Fedorenko
  */
 public class WTPProjectConfigurator extends AbstractProjectConfigurator {
-  
+
+  // WTP 2.0 does not seem to have any public API to access Utility JAR facet
+  private static final IProjectFacet UTILITY_FACET = ProjectFacetsManager.getProjectFacet("jst.utility");
+
   private final MavenProjectManager projectManager;
-  
+
   public WTPProjectConfigurator() {
-    MavenPlugin plugin = MavenPlugin.getDefault();
-    this.projectManager = plugin.getMavenProjectManager();
+    this.projectManager = MavenPlugin.getDefault().getMavenProjectManager();
   }
 
   @Override
-  public void configure(MavenEmbedder embedder, ProjectConfigurationRequest request, IProgressMonitor monitor) throws CoreException {
+  public void configure(MavenEmbedder embedder, ProjectConfigurationRequest request, IProgressMonitor monitor)
+      throws CoreException {
     MavenProject mavenProject = request.getMavenProject();
     if(WarPluginConfiguration.isWarProject(mavenProject)) {
       IProject project = request.getProject();
       configureWtpWar(project, monitor);
       setModuleDependencies(project, mavenProject, monitor);
+    }
+  }
+  
+  @Override
+  protected void mavenProjectChanged(MavenProjectChangedEvent event, IProgressMonitor monitor) throws CoreException {
+    MavenProjectFacade facade = event.getMavenProject();
+    if(facade != null) {
+      IProject project = facade.getProject();
+      if(isWTPProject(project)) {
+        setModuleDependencies(project, facade.getMavenProject(), monitor);
+      }
     }
   }
 
@@ -77,10 +91,8 @@ public class WTPProjectConfigurator extends AbstractProjectConfigurator {
     Set<Artifact> artifacts = mavenProject.getArtifacts();
     for(Artifact artifact : artifacts) {
       MavenProjectFacade dependency = projectManager.getMavenProject(artifact);
-      if (dependency != null 
-          && !dependency.getProject().equals(project)
-          && dependency.getFullPath(artifact.getFile()) != null)
-      {
+      if(dependency != null && !dependency.getProject().equals(project)
+          && dependency.getFullPath(artifact.getFile()) != null) {
         dependencies.add(dependency);
       }
     }
@@ -93,7 +105,7 @@ public class WTPProjectConfigurator extends AbstractProjectConfigurator {
     if(!facetedProject.hasProjectFacet(javaFv)) {
       facetedProject.installProjectFacet(javaFv, null, monitor);
     }
-    
+
     IProjectFacetVersion utilFv = UTILITY_FACET.getVersion("1.0");
     if(!facetedProject.hasProjectFacet(utilFv)) {
       facetedProject.installProjectFacet(utilFv, null, monitor);
@@ -117,14 +129,14 @@ public class WTPProjectConfigurator extends AbstractProjectConfigurator {
     addContainerAttribute(project, WTPClasspathConfigurator.DEPENDENCY_ATTRIBUTE, monitor);
   }
 
-  // this is quite ugly, consider adding getContainerAttributes to ClasspathConfigurator
-  private void addContainerAttribute(IProject project, IClasspathAttribute attribute, IProgressMonitor monitor) throws JavaModelException {
+  // XXX consider adding getContainerAttributes to ClasspathConfigurator
+  private void addContainerAttribute(IProject project, IClasspathAttribute attribute, IProgressMonitor monitor)
+      throws JavaModelException {
     IJavaProject javaProject = JavaCore.create(project);
     IClasspathEntry[] cp = javaProject.getRawClasspath();
     for(int i = 0; i < cp.length; i++ ) {
       if(IClasspathEntry.CPE_CONTAINER == cp[i].getEntryKind()
-          && BuildPathManager.isMaven2ClasspathContainer(cp[i].getPath())) 
-      {
+          && BuildPathManager.isMaven2ClasspathContainer(cp[i].getPath())) {
         LinkedHashMap<String, IClasspathAttribute> attrs = new LinkedHashMap<String, IClasspathAttribute>();
         for(IClasspathAttribute attr : cp[i].getExtraAttributes()) {
           attrs.put(attr.getName(), attr);
@@ -138,22 +150,12 @@ public class WTPProjectConfigurator extends AbstractProjectConfigurator {
     javaProject.setRawClasspath(cp, monitor);
   }
 
-  @Override
-  protected void mavenProjectChanged(MavenProjectChangedEvent event, IProgressMonitor monitor) throws CoreException {
-    MavenProjectFacade facade = event.getMavenProject();
-    if (facade != null) {
-      IProject project = facade.getProject();
-      if (isWTPProject(project)) {
-        setModuleDependencies(project, facade.getMavenProject(), monitor);
-      }
-    }
-  }
-
-  private void setModuleDependencies(IProject project, MavenProject mavenProject, IProgressMonitor monitor) throws CoreException {
+  private void setModuleDependencies(IProject project, MavenProject mavenProject, IProgressMonitor monitor)
+      throws CoreException {
     IVirtualComponent component = ComponentCore.createComponent(project);
 
     Set<IVirtualReference> references = new LinkedHashSet<IVirtualReference>();
-    for (MavenProjectFacade dependency : getWorkspaceDependencies(project, mavenProject)) {
+    for(MavenProjectFacade dependency : getWorkspaceDependencies(project, mavenProject)) {
       configureWtpUtil(dependency.getProject(), monitor);
       IVirtualComponent depComponent = ComponentCore.createComponent(dependency.getProject());
       IVirtualReference reference = ComponentCore.createReference(component, depComponent);
@@ -171,9 +173,6 @@ public class WTPProjectConfigurator extends AbstractProjectConfigurator {
 //    // no public API to remove references?
 //    ((VirtualComponent) component).removeReference(reference);
 //  }
-
-  // WTP 2.0 does not seem to have any public API to access Utility JAR facet
-  private static final IProjectFacet UTILITY_FACET = ProjectFacetsManager.getProjectFacet("jst.utility");
 
   static boolean isWTPProject(IProject project) {
     return ModuleCoreNature.getModuleCoreNature(project) != null;

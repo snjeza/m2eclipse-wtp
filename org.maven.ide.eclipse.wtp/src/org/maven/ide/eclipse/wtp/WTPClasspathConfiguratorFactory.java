@@ -18,10 +18,6 @@ import org.maven.ide.eclipse.project.configurator.AbstractClasspathConfiguratorF
  */
 public class WTPClasspathConfiguratorFactory extends AbstractClasspathConfiguratorFactory {
 
-  public WTPClasspathConfiguratorFactory() {
-    // TODO Auto-generated constructor stub
-  }
-
   @Override
   public AbstractClasspathConfigurator createConfigurator(MavenProjectFacade facade) {
     if(WarPluginConfiguration.isWarProject(facade.getMavenProject())) {

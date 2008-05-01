@@ -27,6 +27,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jst.common.project.facet.JavaFacetUtils;
+import org.eclipse.jst.j2ee.project.facet.IJ2EEModuleFacetInstallDataModelProperties;
 import org.eclipse.jst.j2ee.web.project.facet.WebFacetInstallDataModelProvider;
 import org.eclipse.jst.j2ee.web.project.facet.WebFacetUtils;
 import org.eclipse.wst.common.componentcore.ComponentCore;
@@ -109,6 +110,7 @@ public class WTPProjectConfigurator extends AbstractProjectConfigurator {
     IProjectFacetVersion webFv = WebFacetUtils.WEB_FACET.getVersion("2.4");
     if(!facetedProject.hasProjectFacet(webFv)) {
       IDataModel webModelCfg = DataModelFactory.createDataModel(new WebFacetInstallDataModelProvider());
+      webModelCfg.setProperty(IJ2EEModuleFacetInstallDataModelProperties.CONFIG_FOLDER, "/src/main/webapp");
       facetedProject.installProjectFacet(webFv, webModelCfg, monitor);
     }
 
@@ -139,9 +141,11 @@ public class WTPProjectConfigurator extends AbstractProjectConfigurator {
   @Override
   protected void mavenProjectChanged(MavenProjectChangedEvent event, IProgressMonitor monitor) throws CoreException {
     MavenProjectFacade facade = event.getMavenProject();
-    IProject project = facade.getProject();
-    if (isWTPProject(project)) {
-      setModuleDependencies(project, facade.getMavenProject(), monitor);
+    if (facade != null) {
+      IProject project = facade.getProject();
+      if (isWTPProject(project)) {
+        setModuleDependencies(project, facade.getMavenProject(), monitor);
+      }
     }
   }
 

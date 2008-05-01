@@ -9,8 +9,6 @@
 package org.maven.ide.eclipse.wtp;
 
 import org.apache.maven.project.MavenProject;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.wst.common.componentcore.ModuleCoreNature;
 
 
 /**
@@ -26,7 +24,4 @@ class WarPluginConfiguration {
     return WAR_PACKAGING.equals(mavenProject.getPackaging());
   }
 
-  static boolean isWTPProject(IProject project) {
-    return ModuleCoreNature.getModuleCoreNature(project) != null;
-  }
 }

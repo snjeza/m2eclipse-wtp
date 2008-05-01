@@ -8,7 +8,7 @@
 
 package org.maven.ide.eclipse.wtp;
 
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -22,31 +22,31 @@ import org.maven.ide.eclipse.project.configurator.AbstractClasspathConfigurator;
 
 
 /**
- * See http://wiki.eclipse.org/ClasspathEntriesPublishExportSupport See
- * https://bugs.eclipse.org/bugs/show_bug.cgi?id=128851
+ * See http://wiki.eclipse.org/ClasspathEntriesPublishExportSupport 
+ * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=128851
  * 
  * @author Igor Fedorenko
  */
 class WTPClasspathConfigurator extends AbstractClasspathConfigurator {
 
-  public static final String PACKAGING_WAR = "war";
-
   WTPClasspathConfigurator() {
   }
 
+  static final IClasspathAttribute NONDEPENDENCY_ATTRIBUTE = JavaCore.newClasspathAttribute(IClasspathDependencyConstants.CLASSPATH_COMPONENT_NON_DEPENDENCY, "");
+  static final IClasspathAttribute DEPENDENCY_ATTRIBUTE = JavaCore.newClasspathAttribute(IClasspathDependencyConstants.CLASSPATH_COMPONENT_DEPENDENCY, "/WEB-INF/lib");
+  static final Set<IClasspathAttribute> NONDEPENDENCY_ATTRIBUTES = Collections.singleton(NONDEPENDENCY_ATTRIBUTE);
+  
   @Override
   public Set getAttributes(Artifact artifact, int kind) {
-    Set<IClasspathAttribute> attributes = new HashSet<IClasspathAttribute>();
-
     String scope = artifact.getScope();
     // Check the scope & set WTP non-dependency as appropriate
-    if(Artifact.SCOPE_PROVIDED.equals(scope) || Artifact.SCOPE_TEST.equals(scope)
-        || Artifact.SCOPE_SYSTEM.equals(scope)) {
-      attributes.add(JavaCore.newClasspathAttribute(IClasspathDependencyConstants.CLASSPATH_COMPONENT_NON_DEPENDENCY,
-          ""));
+    if(Artifact.SCOPE_PROVIDED.equals(scope) 
+        || Artifact.SCOPE_TEST.equals(scope)
+        || Artifact.SCOPE_SYSTEM.equals(scope)) 
+    {
+      return NONDEPENDENCY_ATTRIBUTES;
     }
-
-    return attributes;
+    return null;
   }
 
   @Override

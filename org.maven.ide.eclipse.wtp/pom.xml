@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (c) 2008 Sonatype, Inc.
+  All rights reserved. This program and the accompanying materials
+  are made available under the terms of the Eclipse Public License v1.0
+  which accompanies this distribution, and is available at
+  http://www.eclipse.org/legal/epl-v10.html
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.maven.ide.eclipse</groupId>
+    <artifactId>parent</artifactId>
+    <version>0.9.4-SNAPSHOT</version>
+    <relativePath>../org.maven.ide.eclipse.parent</relativePath>
+  </parent>
+
+  <artifactId>org.maven.ide.eclipse.wtp</artifactId>
+  <version>${m2eclipse.version}</version>
+  <packaging>osgi-bundle</packaging>
+
+  <name>Maven Integration for Eclipse WTP</name>
+
+  <build>
+    <sourceDirectory>src</sourceDirectory>
+
+    <resources>
+	  <resource>
+	    <directory>${basedir}/src</directory>
+	    <includes>
+	      <include>**/*.properties</include>
+	    </includes>
+	  </resource>
+	</resources>
+
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.tycho</groupId>
+        <artifactId>maven-osgi-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.eclipse</groupId>
+      <artifactId>org.eclipse.core.runtime</artifactId>
+      <version>3.3.100.v20070530</version>
+    </dependency>
+    <dependency>
+      <groupId>org.maven.ide.eclipse</groupId>
+      <artifactId>org.maven.ide.eclipse</artifactId>
+      <version>${m2eclipse.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.maven.ide.components</groupId>
+      <artifactId>org.maven.ide.components.maven_embedder</artifactId>
+      <version>${maven_embedder.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse</groupId>
+      <artifactId>org.eclipse.wst.common.project.facet.core</artifactId>
+      <version>1.2.2.v200802200327</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse</groupId>
+      <artifactId>org.eclipse.core.resources</artifactId>
+      <version>3.3.1.R33x_v20080205</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse</groupId>
+      <artifactId>org.eclipse.core.resources.compatibility</artifactId>
+      <version>3.2.100.v20070502</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse</groupId>
+      <artifactId>org.eclipse.core.resources.win32</artifactId>
+      <version>3.3.0.v20070226</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse</groupId>
+      <artifactId>org.eclipse.jst.j2ee.web</artifactId>
+      <version>1.1.105.v200802192030</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse</groupId>
+      <artifactId>org.eclipse.jst.common.project.facet.core</artifactId>
+      <version>1.1.1.v200706120315</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse</groupId>
+      <artifactId>org.eclipse.jst.common.frameworks</artifactId>
+      <version>1.1.102.v200709122200</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse</groupId>
+      <artifactId>org.eclipse.wst.common.frameworks</artifactId>
+      <version>1.1.103.v200802192030</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse</groupId>
+      <artifactId>org.eclipse.jdt.core</artifactId>
+      <version>3.3.3.v_793_R33x</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse</groupId>
+      <artifactId>org.eclipse.jdt.compiler.apt</artifactId>
+      <version>1.0.1.R33x_v20071002-2100</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse</groupId>
+      <artifactId>org.eclipse.jdt.compiler.tool</artifactId>
+      <version>1.0.1.v_793_R33x</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse</groupId>
+      <artifactId>org.eclipse.wst.common.modulecore</artifactId>
+      <version>1.1.104.v200802192030</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse</groupId>
+      <artifactId>org.eclipse.jst.j2ee</artifactId>
+      <version>1.1.106.v200802192030</version>
+    </dependency>
+  </dependencies>
+
+</project>

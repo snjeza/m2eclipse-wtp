@@ -32,6 +32,7 @@ import org.eclipse.jst.j2ee.web.project.facet.WebFacetInstallDataModelProvider;
 import org.eclipse.jst.j2ee.web.project.facet.WebFacetUtils;
 import org.eclipse.wst.common.componentcore.ComponentCore;
 import org.eclipse.wst.common.componentcore.ModuleCoreNature;
+import org.eclipse.wst.common.componentcore.internal.util.IModuleConstants;
 import org.eclipse.wst.common.componentcore.resources.IVirtualComponent;
 import org.eclipse.wst.common.componentcore.resources.IVirtualReference;
 import org.eclipse.wst.common.frameworks.datamodel.DataModelFactory;
@@ -101,26 +102,26 @@ public class WTPProjectConfigurator extends AbstractProjectConfigurator {
 
   private void configureWtpUtil(IProject project, IProgressMonitor monitor) throws CoreException {
     IFacetedProject facetedProject = ProjectFacetsManager.create(project, true, monitor);
-    IProjectFacetVersion javaFv = JavaFacetUtils.compilerLevelToFacet(JavaFacetUtils.getCompilerLevel(project));
-    if(!facetedProject.hasProjectFacet(javaFv)) {
+    if(!facetedProject.hasProjectFacet(JavaFacetUtils.JAVA_FACET)) {
+      IProjectFacetVersion javaFv = JavaFacetUtils.compilerLevelToFacet(JavaFacetUtils.getCompilerLevel(project));
       facetedProject.installProjectFacet(javaFv, null, monitor);
     }
 
-    IProjectFacetVersion utilFv = UTILITY_FACET.getVersion("1.0");
-    if(!facetedProject.hasProjectFacet(utilFv)) {
+    if(!facetedProject.hasProjectFacet(UTILITY_FACET)) {
+      IProjectFacetVersion utilFv = UTILITY_FACET.getVersion("1.0");
       facetedProject.installProjectFacet(utilFv, null, monitor);
     }
   }
 
   private void configureWtpWar(IProject project, IProgressMonitor monitor) throws CoreException {
     IFacetedProject facetedProject = ProjectFacetsManager.create(project, true, monitor);
-    IProjectFacetVersion javaFv = JavaFacetUtils.compilerLevelToFacet(JavaFacetUtils.getCompilerLevel(project));
-    if(!facetedProject.hasProjectFacet(javaFv)) {
+    if(!facetedProject.hasProjectFacet(JavaFacetUtils.JAVA_FACET)) {
+      IProjectFacetVersion javaFv = JavaFacetUtils.compilerLevelToFacet(JavaFacetUtils.getCompilerLevel(project));
       facetedProject.installProjectFacet(javaFv, null, monitor);
     }
 
-    IProjectFacetVersion webFv = WebFacetUtils.WEB_FACET.getVersion("2.4");
-    if(!facetedProject.hasProjectFacet(webFv)) {
+    if(!facetedProject.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
+      IProjectFacetVersion webFv = WebFacetUtils.WEB_FACET.getVersion("2.4");
       IDataModel webModelCfg = DataModelFactory.createDataModel(new WebFacetInstallDataModelProvider());
       webModelCfg.setProperty(IJ2EEModuleFacetInstallDataModelProperties.CONFIG_FOLDER, "/src/main/webapp");
       facetedProject.installProjectFacet(webFv, webModelCfg, monitor);

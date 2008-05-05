@@ -8,6 +8,8 @@
 
 package org.maven.ide.eclipse.wtp;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -17,6 +19,7 @@ import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.embedder.MavenEmbedder;
 import org.apache.maven.project.MavenProject;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -27,9 +30,11 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jst.common.project.facet.JavaFacetUtils;
+import org.eclipse.jst.j2ee.internal.J2EEVersionConstants;
 import org.eclipse.jst.j2ee.project.facet.IJ2EEModuleFacetInstallDataModelProperties;
 import org.eclipse.jst.j2ee.web.project.facet.WebFacetInstallDataModelProvider;
 import org.eclipse.jst.j2ee.web.project.facet.WebFacetUtils;
+import org.eclipse.jst.jee.util.internal.JavaEEQuickPeek;
 import org.eclipse.wst.common.componentcore.ComponentCore;
 import org.eclipse.wst.common.componentcore.ModuleCoreNature;
 import org.eclipse.wst.common.componentcore.resources.IVirtualComponent;
@@ -54,6 +59,10 @@ import org.maven.ide.eclipse.project.configurator.ProjectConfigurationRequest;
  * @author Igor Fedorenko
  */
 public class WTPProjectConfigurator extends AbstractProjectConfigurator {
+
+  // XXX move to WarPluginConfoguration
+  private static final String WAR_SOURCE_FOLDER = "/src/main/webapp";
+  private static final String WEB_XML = "WEB-INF/web.xml";
 
   // WTP 2.0 does not seem to have any public API to access Utility JAR facet
   private static final IProjectFacet UTILITY_FACET = ProjectFacetsManager.getProjectFacet("jst.utility");
@@ -121,12 +130,14 @@ public class WTPProjectConfigurator extends AbstractProjectConfigurator {
 
     IProjectFacetVersion webFv = getWebFacetVersion(project);
     IDataModel webModelCfg = DataModelFactory.createDataModel(new WebFacetInstallDataModelProvider());
-    webModelCfg.setProperty(IJ2EEModuleFacetInstallDataModelProperties.CONFIG_FOLDER, "/src/main/webapp");
+    webModelCfg.setProperty(IJ2EEModuleFacetInstallDataModelProperties.CONFIG_FOLDER, WAR_SOURCE_FOLDER);
     if(!facetedProject.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
       actions.add(new IFacetedProject.Action(IFacetedProject.Action.Type.INSTALL, webFv, webModelCfg));
-    } else if (!facetedProject.hasProjectFacet(webFv)) {
-      actions.add(new IFacetedProject.Action(IFacetedProject.Action.Type.VERSION_CHANGE, webFv, webModelCfg));
     }
+    // WTP 2.0.2/3.0M6 does not allow to change WEB_FACET version
+    //else if (!facetedProject.hasProjectFacet(webFv)) {
+    //  actions.add(new IFacetedProject.Action(IFacetedProject.Action.Type.VERSION_CHANGE, webFv, webModelCfg));
+    //}
 
     facetedProject.modify(actions, monitor);
 
@@ -134,7 +145,28 @@ public class WTPProjectConfigurator extends AbstractProjectConfigurator {
   }
 
   private IProjectFacetVersion getWebFacetVersion(IProject project) {
-    return WebFacetUtils.WEB_24;
+      IFile webXml = project.getFolder(WAR_SOURCE_FOLDER).getFile(WEB_XML);
+      if (webXml.isAccessible()) {
+        try {
+          InputStream is = webXml.getContents();
+          try {
+            JavaEEQuickPeek jqp = new JavaEEQuickPeek(is);
+            switch (jqp.getVersion()) {
+              case J2EEVersionConstants.WEB_2_2_ID: return WebFacetUtils.WEB_22;
+              case J2EEVersionConstants.WEB_2_3_ID: return WebFacetUtils.WEB_23;
+              case J2EEVersionConstants.WEB_2_4_ID: return WebFacetUtils.WEB_24;
+              case J2EEVersionConstants.WEB_2_5_ID: return WebFacetUtils.WEB_FACET.getVersion("2.5");
+            }
+          } finally {
+            is.close();
+          }
+        } catch (IOException ex) {
+          // expected
+        } catch(CoreException ex) {
+          // expected
+        }
+    }
+    return WebFacetUtils.WEB_23;
   }
 
   private void installJavaFacet(Set<Action> actions, IProject project, IFacetedProject facetedProject) {

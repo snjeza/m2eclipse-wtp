@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Tests Plug-in
+Bundle-SymbolicName: org.maven.ide.eclipse.wtp.tests
+Bundle-Version: 1.0.0
+Bundle-RequiredExecutionEnvironment: J2SE-1.5,
+ JavaSE-1.6
+Require-Bundle: org.maven.ide.eclipse.wtp;bundle-version="0.9.4",
+ org.maven.ide.eclipse.tests;bundle-version="1.0.0",
+ org.junit,
+ org.eclipse.core.resources;bundle-version="3.3.1",
+ org.eclipse.core.runtime;bundle-version="3.3.100",
+ org.maven.ide.eclipse;bundle-version="0.9.4",
+ org.eclipse.wst.common.project.facet.core;bundle-version="1.2.2",
+ org.eclipse.jst.j2ee.web;bundle-version="1.1.105",
+ org.eclipse.jst.common.frameworks;bundle-version="1.1.102"

@@ -11,6 +11,7 @@ package org.maven.ide.eclipse.wtp;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -96,13 +97,17 @@ public class WTPProjectConfigurator extends AbstractProjectConfigurator {
   }
 
   private List<MavenProjectFacade> getWorkspaceDependencies(IProject project, MavenProject mavenProject) {
+    Set<IProject> projects = new HashSet<IProject>();
     List<MavenProjectFacade> dependencies = new ArrayList<MavenProjectFacade>();
     @SuppressWarnings("unchecked")
     Set<Artifact> artifacts = mavenProject.getArtifacts();
     for(Artifact artifact : artifacts) {
       MavenProjectFacade dependency = projectManager.getMavenProject(artifact);
-      if(dependency != null && !dependency.getProject().equals(project)
-          && dependency.getFullPath(artifact.getFile()) != null) {
+      if(Artifact.SCOPE_COMPILE.equals(artifact.getScope())
+          && dependency != null && !dependency.getProject().equals(project)
+          && dependency.getFullPath(artifact.getFile()) != null
+          && projects.add(dependency.getProject())) 
+      {
         dependencies.add(dependency);
       }
     }

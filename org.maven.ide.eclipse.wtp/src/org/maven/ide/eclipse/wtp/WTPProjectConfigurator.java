@@ -11,6 +11,7 @@ package org.maven.ide.eclipse.wtp;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -23,6 +24,7 @@ import org.apache.maven.project.MavenProject;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathAttribute;
@@ -39,6 +41,7 @@ import org.eclipse.jst.jee.util.internal.JavaEEQuickPeek;
 import org.eclipse.wst.common.componentcore.ComponentCore;
 import org.eclipse.wst.common.componentcore.ModuleCoreNature;
 import org.eclipse.wst.common.componentcore.resources.IVirtualComponent;
+import org.eclipse.wst.common.componentcore.resources.IVirtualFolder;
 import org.eclipse.wst.common.componentcore.resources.IVirtualReference;
 import org.eclipse.wst.common.frameworks.datamodel.DataModelFactory;
 import org.eclipse.wst.common.frameworks.datamodel.IDataModel;
@@ -52,6 +55,7 @@ import org.maven.ide.eclipse.project.BuildPathManager;
 import org.maven.ide.eclipse.project.MavenProjectChangedEvent;
 import org.maven.ide.eclipse.project.MavenProjectFacade;
 import org.maven.ide.eclipse.project.MavenProjectManager;
+import org.maven.ide.eclipse.project.MavenProjectUtils;
 import org.maven.ide.eclipse.project.configurator.AbstractProjectConfigurator;
 import org.maven.ide.eclipse.project.configurator.ProjectConfigurationRequest;
 
@@ -80,7 +84,7 @@ public class WTPProjectConfigurator extends AbstractProjectConfigurator {
     MavenProject mavenProject = request.getMavenProject();
     if(WarPluginConfiguration.isWarProject(mavenProject)) {
       IProject project = request.getProject();
-      configureWtpWar(project, monitor);
+      configureWtpWar(project, mavenProject, monitor);
       setModuleDependencies(project, mavenProject, monitor);
     }
   }
@@ -128,7 +132,7 @@ public class WTPProjectConfigurator extends AbstractProjectConfigurator {
     facetedProject.modify(actions, monitor);
   }
 
-  private void configureWtpWar(IProject project, IProgressMonitor monitor) throws CoreException {
+  private void configureWtpWar(IProject project, MavenProject mavenProject, IProgressMonitor monitor) throws CoreException {
     IFacetedProject facetedProject = ProjectFacetsManager.create(project, true, monitor);
     Set<Action> actions = new LinkedHashSet<Action>();
     installJavaFacet(actions, project, facetedProject);
@@ -146,7 +150,21 @@ public class WTPProjectConfigurator extends AbstractProjectConfigurator {
 
     facetedProject.modify(actions, monitor);
 
+    // MNGECLIPSE-632 remove test sources/resources from WEB-INF/classes
+    IVirtualComponent component = ComponentCore.createComponent(project);
+    IVirtualFolder jsrc = component.getRootFolder().getFolder("/WEB-INF/classes");
+    for (IPath location : getTestRoots(project, mavenProject)) {
+      jsrc.removeLink(location, 0, monitor);
+    }
+
     addContainerAttribute(project, WTPClasspathConfigurator.DEPENDENCY_ATTRIBUTE, monitor);
+  }
+
+  private Set<IPath> getTestRoots(IProject project, MavenProject mavenProject) {
+    Set<IPath> testRoots = new HashSet<IPath>();
+    testRoots.addAll(Arrays.asList(MavenProjectUtils.getSourceLocations(project, mavenProject.getTestCompileSourceRoots())));
+    testRoots.addAll(Arrays.asList(MavenProjectUtils.getResourceLocations(project, mavenProject.getTestResources())));
+    return testRoots;
   }
 
   private IProjectFacetVersion getWebFacetVersion(IProject project) {

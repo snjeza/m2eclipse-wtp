@@ -9,6 +9,7 @@
 package org.maven.ide.eclipse.wtp;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
@@ -17,6 +18,7 @@ import org.eclipse.jst.common.project.facet.JavaFacetUtils;
 import org.eclipse.jst.j2ee.web.project.facet.WebFacetUtils;
 import org.eclipse.wst.common.componentcore.ComponentCore;
 import org.eclipse.wst.common.componentcore.resources.IVirtualComponent;
+import org.eclipse.wst.common.componentcore.resources.IVirtualFolder;
 import org.eclipse.wst.common.componentcore.resources.IVirtualReference;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject;
 import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
@@ -78,5 +80,17 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     IClasspathEntry[] cp = container.getClasspathEntries();
     assertEquals(1, cp.length);
     assertEquals(projects[0].getFullPath(), cp[0].getPath());
+  }
+
+  public void testSimple05_sourceFolders() throws Exception {
+    IProject project = importProject("projects/simple/p05/pom.xml", new ResolverConfiguration());
+    
+    IVirtualComponent component = ComponentCore.createComponent(project);
+    IVirtualFolder root = component.getRootFolder();
+    IVirtualFolder folder = root.getFolder("/WEB-INF/classes");
+    IResource[] underlyingResources = folder.getUnderlyingResources();
+    assertEquals(2, underlyingResources.length);
+    assertEquals(project.getFolder("/src/main/java"), underlyingResources[0]);
+    assertEquals(project.getFolder("/src/main/resources"), underlyingResources[1]);
   }
 }

@@ -10,7 +10,6 @@ package org.maven.ide.eclipse.wtp;
 
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
@@ -27,7 +26,6 @@ import org.maven.ide.eclipse.project.configurator.AbstractClasspathConfigurator;
  * @see https://bugs.eclipse.org/bugs/show_bug.cgi?id=128851
  * @author Igor Fedorenko
  */
-@SuppressWarnings("unchecked")
 class WTPClasspathConfigurator extends AbstractClasspathConfigurator {
 
   static final IClasspathAttribute NONDEPENDENCY_ATTRIBUTE = JavaCore.newClasspathAttribute(
@@ -39,7 +37,7 @@ class WTPClasspathConfigurator extends AbstractClasspathConfigurator {
   static final Set<IClasspathAttribute> NONDEPENDENCY_ATTRIBUTES = Collections.singleton(NONDEPENDENCY_ATTRIBUTE);
 
   @Override
-  public Set getAttributes(Artifact artifact, int kind) {
+  public Set<IClasspathAttribute> getAttributes(Artifact artifact, int kind) {
     String scope = artifact.getScope();
     // Check the scope & set WTP non-dependency as appropriate
     if(Artifact.SCOPE_PROVIDED.equals(scope) || Artifact.SCOPE_TEST.equals(scope)
@@ -50,9 +48,9 @@ class WTPClasspathConfigurator extends AbstractClasspathConfigurator {
   }
 
   @Override
-  public void configureClasspath(Map entries) {
+  public void configureClasspath(Set<IClasspathEntry> entries) {
     // WTP 2.0 does not support workspace dependencies in third party classpath containers
-    for(Iterator<IClasspathEntry> it = entries.values().iterator(); it.hasNext();) {
+    for(Iterator<IClasspathEntry> it = entries.iterator(); it.hasNext();) {
       IClasspathEntry entry = it.next();
       String scope = getAttributeValue(entry, MavenPlugin.SCOPE_ATTRIBUTE);
       if(IClasspathEntry.CPE_PROJECT == entry.getEntryKind() && Artifact.SCOPE_COMPILE.equals(scope)) {

@@ -8,7 +8,11 @@
 
 package org.maven.ide.eclipse.wtp;
 
+import java.util.List;
+
+import org.apache.maven.model.Plugin;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 
 /**
@@ -18,10 +22,42 @@ import org.apache.maven.project.MavenProject;
  */
 class WarPluginConfiguration {
 
+  private static final String WAR_SOURCE_FOLDER = "/src/main/webapp";
   private static final String WAR_PACKAGING = "war";
+
+  final Plugin plugin;
+
+  public WarPluginConfiguration(MavenProject mavenProject) {
+    Plugin war = null;
+    for (Plugin plugin : (List<Plugin>) mavenProject.getBuildPlugins()) {
+      if ("org.apache.maven.plugins".equals(plugin.getGroupId()) && "maven-war-plugin".equals(plugin.getArtifactId())) {
+        war = plugin;
+        break;
+      }
+    }
+    this.plugin = war;
+  }
 
   static boolean isWarProject(MavenProject mavenProject) {
     return WAR_PACKAGING.equals(mavenProject.getPackaging());
   }
 
+  public String getWarSourceDirectory() {
+    if (plugin == null) {
+      return WAR_SOURCE_FOLDER;
+    }
+
+    Xpp3Dom dom = (Xpp3Dom) plugin.getConfiguration();
+    if (dom == null) {
+      return WAR_SOURCE_FOLDER;
+    }
+    
+    Xpp3Dom[] warSourceDirectory = dom.getChildren("warSourceDirectory");
+    if (warSourceDirectory != null && warSourceDirectory.length > 0) {
+      // first one wins
+      return warSourceDirectory[0].getValue();
+    }
+
+    return WAR_SOURCE_FOLDER;
+  }
 }

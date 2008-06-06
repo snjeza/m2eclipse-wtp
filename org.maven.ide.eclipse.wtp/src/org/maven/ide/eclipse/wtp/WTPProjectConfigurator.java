@@ -66,7 +66,6 @@ import org.maven.ide.eclipse.project.configurator.ProjectConfigurationRequest;
 public class WTPProjectConfigurator extends AbstractProjectConfigurator {
 
   // XXX move to WarPluginConfoguration
-  private static final String WAR_SOURCE_FOLDER = "/src/main/webapp";
   private static final String WEB_XML = "WEB-INF/web.xml";
 
   // WTP 2.0 does not seem to have any public API to access Utility JAR facet
@@ -133,13 +132,16 @@ public class WTPProjectConfigurator extends AbstractProjectConfigurator {
   }
 
   private void configureWtpWar(IProject project, MavenProject mavenProject, IProgressMonitor monitor) throws CoreException {
+    WarPluginConfiguration config = new WarPluginConfiguration(mavenProject);
+    
     IFacetedProject facetedProject = ProjectFacetsManager.create(project, true, monitor);
     Set<Action> actions = new LinkedHashSet<Action>();
     installJavaFacet(actions, project, facetedProject);
 
-    IProjectFacetVersion webFv = getWebFacetVersion(project);
+    String warSourceDirectory = config.getWarSourceDirectory();
+    IProjectFacetVersion webFv = getWebFacetVersion(project, warSourceDirectory);
     IDataModel webModelCfg = DataModelFactory.createDataModel(new WebFacetInstallDataModelProvider());
-    webModelCfg.setProperty(IJ2EEModuleFacetInstallDataModelProperties.CONFIG_FOLDER, WAR_SOURCE_FOLDER);
+    webModelCfg.setProperty(IJ2EEModuleFacetInstallDataModelProperties.CONFIG_FOLDER, warSourceDirectory);
     if(!facetedProject.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
       actions.add(new IFacetedProject.Action(IFacetedProject.Action.Type.INSTALL, webFv, webModelCfg));
     }
@@ -167,8 +169,8 @@ public class WTPProjectConfigurator extends AbstractProjectConfigurator {
     return testRoots;
   }
 
-  private IProjectFacetVersion getWebFacetVersion(IProject project) {
-      IFile webXml = project.getFolder(WAR_SOURCE_FOLDER).getFile(WEB_XML);
+  private IProjectFacetVersion getWebFacetVersion(IProject project, String warSourceFolder) {
+      IFile webXml = project.getFolder(warSourceFolder).getFile(WEB_XML);
       if (webXml.isAccessible()) {
         try {
           InputStream is = webXml.getContents();

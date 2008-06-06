@@ -41,6 +41,12 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     assertNotNull(facetedProject);
     assertEquals(WebFacetUtils.WEB_23, facetedProject.getInstalledVersion(WebFacetUtils.WEB_FACET));
     assertTrue(facetedProject.hasProjectFacet(JavaFacetUtils.JAVA_FACET));
+
+    IVirtualComponent component = ComponentCore.createComponent(project);
+    IVirtualFolder root = component.getRootFolder();
+    IResource[] underlyingResources = root.getUnderlyingResources();
+    assertEquals(1, underlyingResources.length);
+    assertEquals(project.getFolder("/src/main/webapp"), underlyingResources[0]);
   }
 
   public void testSimple02_import() throws Exception {
@@ -92,5 +98,15 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     assertEquals(2, underlyingResources.length);
     assertEquals(project.getFolder("/src/main/java"), underlyingResources[0]);
     assertEquals(project.getFolder("/src/main/resources"), underlyingResources[1]);
+  }
+
+  public void testNonDefaultWarSourceDirectory() throws Exception {
+    IProject project = importProject("projects/MNGECLIPSE-627/TestWar/pom.xml", new ResolverConfiguration());
+    
+    IVirtualComponent component = ComponentCore.createComponent(project);
+    IVirtualFolder root = component.getRootFolder();
+    IResource[] underlyingResources = root.getUnderlyingResources();
+    assertEquals(1, underlyingResources.length);
+    assertEquals(project.getFolder("/webapp"), underlyingResources[0]);
   }
 }

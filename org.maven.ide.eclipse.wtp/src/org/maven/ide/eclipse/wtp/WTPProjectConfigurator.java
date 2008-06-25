@@ -63,6 +63,7 @@ import org.maven.ide.eclipse.project.configurator.ProjectConfigurationRequest;
 /**
  * @author Igor Fedorenko
  */
+@SuppressWarnings("restriction")
 public class WTPProjectConfigurator extends AbstractProjectConfigurator {
 
   // XXX move to WarPluginConfoguration

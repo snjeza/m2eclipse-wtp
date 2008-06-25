@@ -14,7 +14,8 @@
          point="org.maven.ide.eclipse.classpathConfiguratorFactories">
       <classpathConfiguratorFactory
             class="org.maven.ide.eclipse.wtp.WTPClasspathConfiguratorFactory"
-            id="org.maven.ide.eclipse.configuration.wtp.classpathConfiguratorFactory">
+            id="org.maven.ide.eclipse.configuration.wtp.classpathConfiguratorFactory"
+            priority="100">
       </classpathConfiguratorFactory>
    </extension>
 

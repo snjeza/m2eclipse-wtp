@@ -163,6 +163,7 @@ public class WTPProjectConfigurator extends AbstractProjectConfigurator {
     addContainerAttribute(project, WTPClasspathConfigurator.DEPENDENCY_ATTRIBUTE, monitor);
   }
 
+  @SuppressWarnings("unchecked")
   private Set<IPath> getTestRoots(IProject project, MavenProject mavenProject) {
     Set<IPath> testRoots = new HashSet<IPath>();
     testRoots.addAll(Arrays.asList(MavenProjectUtils.getSourceLocations(project, mavenProject.getTestCompileSourceRoots())));

@@ -27,6 +27,7 @@ class WarPluginConfiguration {
 
   final Plugin plugin;
 
+  @SuppressWarnings("unchecked")
   public WarPluginConfiguration(MavenProject mavenProject) {
     Plugin war = null;
     for (Plugin plugin : (List<Plugin>) mavenProject.getBuildPlugins()) {

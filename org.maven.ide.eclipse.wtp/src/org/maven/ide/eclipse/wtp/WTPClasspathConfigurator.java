@@ -17,7 +17,7 @@ import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jst.j2ee.classpathdep.IClasspathDependencyConstants;
-import org.maven.ide.eclipse.MavenPlugin;
+import org.maven.ide.eclipse.core.IMavenConstants;
 import org.maven.ide.eclipse.project.configurator.AbstractClasspathConfigurator;
 
 
@@ -52,7 +52,7 @@ class WTPClasspathConfigurator extends AbstractClasspathConfigurator {
     // WTP 2.0 does not support workspace dependencies in third party classpath containers
     for(Iterator<IClasspathEntry> it = entries.iterator(); it.hasNext();) {
       IClasspathEntry entry = it.next();
-      String scope = getAttributeValue(entry, MavenPlugin.SCOPE_ATTRIBUTE);
+      String scope = getAttributeValue(entry, IMavenConstants.SCOPE_ATTRIBUTE);
       if(IClasspathEntry.CPE_PROJECT == entry.getEntryKind() && Artifact.SCOPE_COMPILE.equals(scope)) {
         it.remove();
       }

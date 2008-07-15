@@ -109,4 +109,16 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     assertEquals(1, underlyingResources.length);
     assertEquals(project.getFolder("/webapp"), underlyingResources[0]);
   }
+
+  public void testSameArtifactId() throws Exception {
+    IProject project = importProject("projects/MNGECLIPSE-679/pom.xml", new ResolverConfiguration());
+    
+    IJavaProject javaProject = JavaCore.create(project);
+    IClasspathContainer container = BuildPathManager.getMaven2ClasspathContainer(javaProject);
+    IClasspathEntry[] cp = container.getClasspathEntries();
+
+    assertEquals(2, cp.length);
+    assertEquals("junit-junit-3.8.1.jar", cp[0].getPath().lastSegment());
+    assertEquals("test-junit-3.8.1.jar", cp[1].getPath().lastSegment());
+  }
 }

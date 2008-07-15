@@ -8,16 +8,23 @@
 
 package org.maven.ide.eclipse.wtp;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
+import org.codehaus.plexus.util.FileUtils;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jst.j2ee.classpathdep.IClasspathDependencyConstants;
 import org.maven.ide.eclipse.core.IMavenConstants;
+import org.maven.ide.eclipse.core.MavenLogger;
 import org.maven.ide.eclipse.project.configurator.AbstractClasspathConfigurator;
 
 
@@ -36,6 +43,12 @@ class WTPClasspathConfigurator extends AbstractClasspathConfigurator {
 
   static final Set<IClasspathAttribute> NONDEPENDENCY_ATTRIBUTES = Collections.singleton(NONDEPENDENCY_ATTRIBUTE);
 
+  private final File target;
+
+  public WTPClasspathConfigurator(IPath path) {
+    this.target = new File(path.toOSString());
+  }
+
   @Override
   public Set<IClasspathAttribute> getAttributes(Artifact artifact, int kind) {
     String scope = artifact.getScope();
@@ -48,15 +61,60 @@ class WTPClasspathConfigurator extends AbstractClasspathConfigurator {
   }
 
   @Override
-  public void configureClasspath(Set<IClasspathEntry> entries) {
-    // WTP 2.0 does not support workspace dependencies in third party classpath containers
-    for(Iterator<IClasspathEntry> it = entries.iterator(); it.hasNext();) {
-      IClasspathEntry entry = it.next();
+  public Set<IClasspathEntry> configureClasspath(Set<IClasspathEntry> cp0) {
+    Set<IClasspathEntry> cp1 = new LinkedHashSet<IClasspathEntry>();
+
+    Set<String> dups = new LinkedHashSet<String>();
+    Set<String> names = new HashSet<String>();
+    for(IClasspathEntry entry : cp0) {
+      // WTP 2.0 does not support workspace dependencies in third party classpath containers
       String scope = getAttributeValue(entry, IMavenConstants.SCOPE_ATTRIBUTE);
       if(IClasspathEntry.CPE_PROJECT == entry.getEntryKind() && Artifact.SCOPE_COMPILE.equals(scope)) {
-        it.remove();
+        continue;
       }
+
+      if (!names.add(entry.getPath().lastSegment())) {
+        dups.add(entry.getPath().lastSegment());
+      }
+
+      cp1.add(entry);
     }
+
+    // WTP does not let remapping of individual container entries
+    Set<IClasspathEntry> cp2 = new LinkedHashSet<IClasspathEntry>();
+    for(IClasspathEntry entry : cp1) {
+      IClasspathEntry newEntry = entry;
+      if (dups.contains(entry.getPath().lastSegment())) {
+        File src = new File(entry.getPath().toOSString());
+        String groupId = getAttributeValue(entry, IMavenConstants.GROUP_ID_ATTRIBUTE);
+        File dst = new File(target, groupId + "-" + entry.getPath().lastSegment());
+        if (src.canRead() && isDifferent(src, dst)) {
+          try {
+            FileUtils.copyFile(src, dst);
+            newEntry = JavaCore.newLibraryEntry(Path.fromOSString(dst.getCanonicalPath()),
+                entry.getSourceAttachmentPath(),
+                entry.getSourceAttachmentRootPath(),
+                entry.getAccessRules(),
+                entry.getExtraAttributes(),
+                entry.isExported());
+          } catch(IOException ex) {
+            MavenLogger.log("File copy failed", ex);
+          }
+        }
+      }
+      cp2.add(newEntry);
+    }
+
+    return cp2;
+  }
+
+  private boolean isDifferent(File src, File dst) {
+    if (!dst.exists()) {
+      return true;
+    }
+
+    return src.length() != dst.length() 
+        || src.lastModified() != dst.lastModified();
   }
 
   private String getAttributeValue(IClasspathEntry entry, String name) {

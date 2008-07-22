@@ -52,8 +52,8 @@ import org.eclipse.wst.common.project.facet.core.ProjectFacetsManager;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject.Action;
 import org.maven.ide.eclipse.MavenPlugin;
 import org.maven.ide.eclipse.project.BuildPathManager;
+import org.maven.ide.eclipse.project.IMavenProjectFacade;
 import org.maven.ide.eclipse.project.MavenProjectChangedEvent;
-import org.maven.ide.eclipse.project.MavenProjectFacade;
 import org.maven.ide.eclipse.project.MavenProjectManager;
 import org.maven.ide.eclipse.project.MavenProjectUtils;
 import org.maven.ide.eclipse.project.configurator.AbstractProjectConfigurator;
@@ -91,22 +91,22 @@ public class WTPProjectConfigurator extends AbstractProjectConfigurator {
   
   @Override
   protected void mavenProjectChanged(MavenProjectChangedEvent event, IProgressMonitor monitor) throws CoreException {
-    MavenProjectFacade facade = event.getMavenProject();
+    IMavenProjectFacade facade = event.getMavenProject();
     if(facade != null) {
       IProject project = facade.getProject();
       if(isWTPProject(project)) {
-        setModuleDependencies(project, facade.getMavenProject(), monitor);
+        setModuleDependencies(project, facade.getMavenProject(monitor), monitor);
       }
     }
   }
 
-  private List<MavenProjectFacade> getWorkspaceDependencies(IProject project, MavenProject mavenProject) {
+  private List<IMavenProjectFacade> getWorkspaceDependencies(IProject project, MavenProject mavenProject) {
     Set<IProject> projects = new HashSet<IProject>();
-    List<MavenProjectFacade> dependencies = new ArrayList<MavenProjectFacade>();
+    List<IMavenProjectFacade> dependencies = new ArrayList<IMavenProjectFacade>();
     @SuppressWarnings("unchecked")
     Set<Artifact> artifacts = mavenProject.getArtifacts();
     for(Artifact artifact : artifacts) {
-      MavenProjectFacade dependency = projectManager.getMavenProject(artifact);
+      IMavenProjectFacade dependency = projectManager.getMavenProject(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion());
       if(Artifact.SCOPE_COMPILE.equals(artifact.getScope())
           && dependency != null && !dependency.getProject().equals(project)
           && dependency.getFullPath(artifact.getFile()) != null
@@ -231,7 +231,7 @@ public class WTPProjectConfigurator extends AbstractProjectConfigurator {
     IVirtualComponent component = ComponentCore.createComponent(project);
 
     Set<IVirtualReference> references = new LinkedHashSet<IVirtualReference>();
-    for(MavenProjectFacade dependency : getWorkspaceDependencies(project, mavenProject)) {
+    for(IMavenProjectFacade dependency : getWorkspaceDependencies(project, mavenProject)) {
       configureWtpUtil(dependency.getProject(), monitor);
       IVirtualComponent depComponent = ComponentCore.createComponent(dependency.getProject());
       IVirtualReference reference = ComponentCore.createReference(component, depComponent);

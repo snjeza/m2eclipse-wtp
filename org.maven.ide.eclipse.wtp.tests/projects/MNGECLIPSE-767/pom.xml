@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?><project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>test.project</groupId>
+  <artifactId>MNGECLIPSE-767</artifactId>
+  <packaging>war</packaging>
+  <version>0.0.1-SNAPSHOT</version>
+  <build>
+    <directory>C:/TEMP/Build/${pom.artifactId}</directory>
+  </build>
+</project>

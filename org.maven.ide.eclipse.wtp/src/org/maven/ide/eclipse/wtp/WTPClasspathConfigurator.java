@@ -17,7 +17,6 @@ import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.codehaus.plexus.util.FileUtils;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathEntry;
@@ -45,8 +44,8 @@ class WTPClasspathConfigurator extends AbstractClasspathConfigurator {
 
   private final File target;
 
-  public WTPClasspathConfigurator(IPath path) {
-    this.target = new File(path.toOSString());
+  public WTPClasspathConfigurator(File target) {
+    this.target = target;
   }
 
   @Override

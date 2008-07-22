@@ -121,4 +121,8 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     assertEquals("junit-junit-3.8.1.jar", cp[0].getPath().lastSegment());
     assertEquals("test-junit-3.8.1.jar", cp[1].getPath().lastSegment());
   }
+
+  public void testLooseBuildDirectory() throws Exception {
+    IProject project = importProject("projects/MNGECLIPSE-767/pom.xml", new ResolverConfiguration());
+  }
 }

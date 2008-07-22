@@ -42,10 +42,10 @@ class WTPClasspathConfigurator extends AbstractClasspathConfigurator {
 
   static final Set<IClasspathAttribute> NONDEPENDENCY_ATTRIBUTES = Collections.singleton(NONDEPENDENCY_ATTRIBUTE);
 
-  private final File target;
+  private final String targetDir;
 
-  public WTPClasspathConfigurator(File target) {
-    this.target = target;
+  public WTPClasspathConfigurator(String targetDir) {
+    this.targetDir = targetDir;
   }
 
   @Override
@@ -86,7 +86,7 @@ class WTPClasspathConfigurator extends AbstractClasspathConfigurator {
       if (dups.contains(entry.getPath().lastSegment())) {
         File src = new File(entry.getPath().toOSString());
         String groupId = getAttributeValue(entry, IMavenConstants.GROUP_ID_ATTRIBUTE);
-        File dst = new File(target, groupId + "-" + entry.getPath().lastSegment());
+        File dst = new File(targetDir, groupId + "-" + entry.getPath().lastSegment());
         if (src.canRead() && isDifferent(src, dst)) {
           try {
             FileUtils.copyFile(src, dst);

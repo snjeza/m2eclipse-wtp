@@ -8,12 +8,8 @@
 
 package org.maven.ide.eclipse.wtp;
 
-import java.io.File;
-
 import org.apache.maven.project.MavenProject;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.maven.ide.eclipse.project.IMavenProjectFacade;
 import org.maven.ide.eclipse.project.configurator.AbstractClasspathConfigurator;
@@ -29,8 +25,7 @@ public class WTPClasspathConfiguratorFactory extends AbstractClasspathConfigurat
   public AbstractClasspathConfigurator createConfigurator(IMavenProjectFacade facade, IProgressMonitor monitor) throws CoreException {
     MavenProject mavenProject = facade.getMavenProject(monitor);
     if(WarPluginConfiguration.isWarProject(mavenProject)) {
-      File target = new File(mavenProject.getBuild().getDirectory());
-      return new WTPClasspathConfigurator(target);
+      return new WTPClasspathConfigurator(mavenProject.getBuild().getDirectory());
     }
     return null;
   }

@@ -23,7 +23,7 @@ import org.eclipse.wst.common.componentcore.resources.IVirtualReference;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject;
 import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
 import org.eclipse.wst.common.project.facet.core.ProjectFacetsManager;
-import org.maven.ide.eclipse.project.BuildPathManager;
+import org.maven.ide.eclipse.jdt.BuildPathManager;
 import org.maven.ide.eclipse.project.ResolverConfiguration;
 import org.maven.ide.eclipse.tests.AsbtractMavenProjectTestCase;
 

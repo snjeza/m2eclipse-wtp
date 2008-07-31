@@ -17,5 +17,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jdt.core,
  org.eclipse.wst.common.modulecore,
  org.eclipse.jst.j2ee,
- org.eclipse.jst.j2ee.core
+ org.eclipse.jst.j2ee.core,
+ org.maven.ide.eclipse.jdt
 Bundle-Vendor: Sonatype, Inc.

@@ -15,4 +15,5 @@ Require-Bundle: org.maven.ide.eclipse.wtp,
  org.eclipse.jst.j2ee.web,
  org.eclipse.jst.common.frameworks,
  org.eclipse.wst.common.modulecore,
- org.eclipse.jdt.core
+ org.eclipse.jdt.core,
+ org.maven.ide.eclipse.jdt

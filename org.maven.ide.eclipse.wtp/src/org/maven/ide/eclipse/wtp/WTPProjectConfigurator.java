@@ -51,7 +51,7 @@ import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
 import org.eclipse.wst.common.project.facet.core.ProjectFacetsManager;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject.Action;
 import org.maven.ide.eclipse.MavenPlugin;
-import org.maven.ide.eclipse.project.BuildPathManager;
+import org.maven.ide.eclipse.jdt.BuildPathManager;
 import org.maven.ide.eclipse.project.IMavenProjectFacade;
 import org.maven.ide.eclipse.project.MavenProjectChangedEvent;
 import org.maven.ide.eclipse.project.MavenProjectManager;

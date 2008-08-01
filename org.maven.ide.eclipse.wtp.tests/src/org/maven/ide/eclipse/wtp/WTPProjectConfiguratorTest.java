@@ -23,7 +23,9 @@ import org.eclipse.wst.common.componentcore.resources.IVirtualReference;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject;
 import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
 import org.eclipse.wst.common.project.facet.core.ProjectFacetsManager;
+import org.maven.ide.eclipse.MavenPlugin;
 import org.maven.ide.eclipse.jdt.BuildPathManager;
+import org.maven.ide.eclipse.project.IProjectConfigurationManager;
 import org.maven.ide.eclipse.project.ResolverConfiguration;
 import org.maven.ide.eclipse.tests.AsbtractMavenProjectTestCase;
 
@@ -123,6 +125,22 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
   }
 
   public void testLooseBuildDirectory() throws Exception {
-    IProject project = importProject("projects/MNGECLIPSE-767/pom.xml", new ResolverConfiguration());
+    // import should not fail for projects with output folders located outside of project's basedir
+    importProject("projects/MNGECLIPSE-767/pom.xml", new ResolverConfiguration());
+  }
+
+  public void testEnableMavenNature() throws Exception {
+    IProject project = createExisting("test.project.MNGECLIPSE-629", "projects/MNGECLIPSE-629");
+
+    IFacetedProject facetedProject;
+
+    facetedProject = ProjectFacetsManager.create(project);
+    assertNull(facetedProject);
+
+    IProjectConfigurationManager configurationManager = MavenPlugin.getDefault().getProjectConfigurationManager();
+    configurationManager.enableMavenNature(project, new ResolverConfiguration(), monitor);
+
+    facetedProject = ProjectFacetsManager.create(project);
+    assertNotNull(facetedProject);
   }
 }

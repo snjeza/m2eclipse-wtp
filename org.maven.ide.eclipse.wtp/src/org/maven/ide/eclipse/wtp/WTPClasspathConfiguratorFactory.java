@@ -11,9 +11,9 @@ package org.maven.ide.eclipse.wtp;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.maven.ide.eclipse.jdt.AbstractClasspathConfigurator;
+import org.maven.ide.eclipse.jdt.AbstractClasspathConfiguratorFactory;
 import org.maven.ide.eclipse.project.IMavenProjectFacade;
-import org.maven.ide.eclipse.project.configurator.AbstractClasspathConfigurator;
-import org.maven.ide.eclipse.project.configurator.AbstractClasspathConfiguratorFactory;
 
 
 /**

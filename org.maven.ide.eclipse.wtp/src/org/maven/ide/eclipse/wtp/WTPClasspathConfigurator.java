@@ -24,7 +24,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jst.j2ee.classpathdep.IClasspathDependencyConstants;
 import org.maven.ide.eclipse.core.IMavenConstants;
 import org.maven.ide.eclipse.core.MavenLogger;
-import org.maven.ide.eclipse.project.configurator.AbstractClasspathConfigurator;
+import org.maven.ide.eclipse.jdt.AbstractClasspathConfigurator;
 
 
 /**

@@ -94,7 +94,7 @@ public class WTPProjectConfigurator extends AbstractProjectConfigurator {
     IMavenProjectFacade facade = event.getMavenProject();
     if(facade != null) {
       IProject project = facade.getProject();
-      if(isWTPProject(project)) {
+      if(isWTPWARProject(project)) {
         setModuleDependencies(project, facade.getMavenProject(monitor), monitor);
       }
     }
@@ -252,6 +252,11 @@ public class WTPProjectConfigurator extends AbstractProjectConfigurator {
 
   static boolean isWTPProject(IProject project) {
     return ModuleCoreNature.getModuleCoreNature(project) != null;
+  }
+
+  static boolean isWTPWARProject(IProject project) throws CoreException {
+    IFacetedProject facetedProject = ProjectFacetsManager.create(project);
+    return facetedProject != null && facetedProject.hasProjectFacet(WebFacetUtils.WEB_FACET);
   }
 
 }

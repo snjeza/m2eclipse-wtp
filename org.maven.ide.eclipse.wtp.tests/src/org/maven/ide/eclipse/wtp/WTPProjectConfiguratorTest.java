@@ -143,4 +143,12 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     facetedProject = ProjectFacetsManager.create(project);
     assertNotNull(facetedProject);
   }
+  
+  public void testMNGECLIPSE793() throws Exception {
+    IProject[] projects = importProjects("projects/MNGECLIPSE-793", new String[] {"common/pom.xml", "core/pom.xml", "project1/pom.xml"}, new ResolverConfiguration());
+
+    IVirtualComponent core = ComponentCore.createComponent(projects[1]); //core
+    IVirtualReference[] references = core.getReferences();
+    assertTrue(references == null || references.length == 0);
+  }
 }

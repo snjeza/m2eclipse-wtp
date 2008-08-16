@@ -87,18 +87,21 @@ class WTPClasspathConfigurator extends AbstractClasspathConfigurator {
         File src = new File(entry.getPath().toOSString());
         String groupId = getAttributeValue(entry, IMavenConstants.GROUP_ID_ATTRIBUTE);
         File dst = new File(targetDir, groupId + "-" + entry.getPath().lastSegment());
-        if (src.canRead() && isDifferent(src, dst)) {
-          try {
-            FileUtils.copyFile(src, dst);
+        try {
+          if (src.canRead()) {
+            if (isDifferent(src, dst)) { // uses lastModified
+              FileUtils.copyFile(src, dst);
+              dst.setLastModified(src.lastModified());
+            }
             newEntry = JavaCore.newLibraryEntry(Path.fromOSString(dst.getCanonicalPath()),
                 entry.getSourceAttachmentPath(),
                 entry.getSourceAttachmentRootPath(),
                 entry.getAccessRules(),
                 entry.getExtraAttributes(),
                 entry.isExported());
-          } catch(IOException ex) {
-            MavenLogger.log("File copy failed", ex);
           }
+        } catch(IOException ex) {
+          MavenLogger.log("File copy failed", ex);
         }
       }
       cp2.add(newEntry);

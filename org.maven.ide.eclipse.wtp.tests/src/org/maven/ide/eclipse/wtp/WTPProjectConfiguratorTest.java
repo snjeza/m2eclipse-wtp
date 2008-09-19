@@ -8,19 +8,27 @@
 
 package org.maven.ide.eclipse.wtp;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jst.common.project.facet.JavaFacetUtils;
+import org.eclipse.jst.j2ee.classpathdep.IClasspathDependencyConstants;
+import org.eclipse.jst.j2ee.project.facet.IJ2EEFacetConstants;
 import org.eclipse.jst.j2ee.web.project.facet.WebFacetUtils;
 import org.eclipse.wst.common.componentcore.ComponentCore;
 import org.eclipse.wst.common.componentcore.resources.IVirtualComponent;
 import org.eclipse.wst.common.componentcore.resources.IVirtualFolder;
 import org.eclipse.wst.common.componentcore.resources.IVirtualReference;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject;
+import org.eclipse.wst.common.project.facet.core.IProjectFacet;
 import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
 import org.eclipse.wst.common.project.facet.core.ProjectFacetsManager;
 import org.maven.ide.eclipse.MavenPlugin;
@@ -36,6 +44,11 @@ import org.maven.ide.eclipse.tests.AsbtractMavenProjectTestCase;
  */
 public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
   private static final IProjectFacetVersion DEFAULT_WEB_VERSION = WebFacetUtils.WEB_23;
+  public static final IProjectFacet EJB_FACET = ProjectFacetsManager.getProjectFacet(IJ2EEFacetConstants.EJB); 
+  public static final IProjectFacet UTILITY_FACET = ProjectFacetsManager.getProjectFacet(IJ2EEFacetConstants.UTILITY);
+  public static final IProjectFacetVersion UTILITY_10 = UTILITY_FACET.getVersion("1.0");
+  public static final IProjectFacet EAR_FACET = ProjectFacetsManager.getProjectFacet(IJ2EEFacetConstants.ENTERPRISE_APPLICATION);
+  private static final IProjectFacetVersion DEFAULT_EAR_FACET = IJ2EEFacetConstants.ENTERPRISE_APPLICATION_13;
 
   public void testSimple01_import() throws Exception {
     IProject project = importProject("projects/simple/p01/pom.xml", new ResolverConfiguration());
@@ -44,9 +57,7 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     assertEquals(WebFacetUtils.WEB_23, facetedProject.getInstalledVersion(WebFacetUtils.WEB_FACET));
     assertTrue(facetedProject.hasProjectFacet(JavaFacetUtils.JAVA_FACET));
 
-    IVirtualComponent component = ComponentCore.createComponent(project);
-    IVirtualFolder root = component.getRootFolder();
-    IResource[] underlyingResources = root.getUnderlyingResources();
+    IResource[] underlyingResources = getUnderlyingResources(project);
     assertEquals(1, underlyingResources.length);
     assertEquals(project.getFolder("/src/main/webapp"), underlyingResources[0]);
   }
@@ -68,7 +79,8 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
   }
 
   public void testMNGECLIPSE631() throws Exception {
-    IProject[] projects = importProjects("projects/MNGECLIPSE-631", new String[] {"common/pom.xml", "core/pom.xml", "project1/pom.xml"}, new ResolverConfiguration());
+    IProject[] projects = importProjects("projects/MNGECLIPSE-631", //
+        new String[] {"common/pom.xml", "core/pom.xml", "project1/pom.xml"}, new ResolverConfiguration());
 
     IVirtualComponent component = ComponentCore.createComponent(projects[2]);
     IVirtualReference[] references = component.getReferences();
@@ -78,7 +90,8 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
   }
 
   public void testSimple04_testScopeDependency() throws Exception {
-    IProject[] projects = importProjects("projects/simple", new String[] {"t01/pom.xml", "p04/pom.xml"}, new ResolverConfiguration());
+    IProject[] projects = importProjects("projects/simple", //
+        new String[] {"t01/pom.xml", "p04/pom.xml"}, new ResolverConfiguration());
 
     IVirtualComponent component = ComponentCore.createComponent(projects[1]);
     assertEquals(0, component.getReferences().length);
@@ -145,10 +158,162 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
   }
   
   public void testMNGECLIPSE793() throws Exception {
-    IProject[] projects = importProjects("projects/MNGECLIPSE-793", new String[] {"common/pom.xml", "core/pom.xml", "project1/pom.xml"}, new ResolverConfiguration());
+    IProject[] projects = importProjects("projects/MNGECLIPSE-793", //
+        new String[] {"common/pom.xml", "core/pom.xml", "project1/pom.xml"}, new ResolverConfiguration());
 
     IVirtualComponent core = ComponentCore.createComponent(projects[1]); //core
     IVirtualReference[] references = core.getReferences();
     assertTrue(references == null || references.length == 0);
   }
+  
+  
+  public void testMNGECLIPSE688_defaultEjb() throws Exception {
+    IProject project = importProject("projects/MNGECLIPSE-688/ejb1/pom.xml", new ResolverConfiguration());
+
+    IFacetedProject facetedProject = ProjectFacetsManager.create(project);
+    assertNotNull(facetedProject);
+    assertTrue(facetedProject.hasProjectFacet(JavaFacetUtils.JAVA_FACET));
+    //Defaut ejb project should have 2.1 project facet
+    assertEquals(IJ2EEFacetConstants.EJB_21, facetedProject.getInstalledVersion(EJB_FACET));
+    
+    IFile ejbJar = project.getFile("src/main/resources/META-INF/ejb-jar.xml");
+    assertTrue(ejbJar.exists());
+    //TODO check DTD
+  }
+
+  public void testMNGECLIPSE688_Ejb_30() throws Exception {
+    IProject project = importProject("projects/MNGECLIPSE-688/ejb2/pom.xml", new ResolverConfiguration());
+
+    IFacetedProject facetedProject = ProjectFacetsManager.create(project);
+    assertNotNull(facetedProject);
+    assertTrue(facetedProject.hasProjectFacet(JavaFacetUtils.JAVA_FACET));
+    assertEquals(JavaFacetUtils.JAVA_50, facetedProject.getInstalledVersion(JavaFacetUtils.JAVA_FACET));
+    assertEquals(IJ2EEFacetConstants.EJB_30, facetedProject.getInstalledVersion(EJB_FACET));
+
+    IFolder ejbModuleFolder = project.getFolder("ejbModule"); 
+    assertTrue(ejbModuleFolder.exists());
+
+    //ejb-jar file should not have been created in the custom resources directory, as it's not mandatory according to the Java EE 5 specs
+    IFile ejbJar = project.getFile("ejbModule/META-INF/ejb-jar.xml"); 
+    assertFalse(ejbJar.exists());
+    //TODO check DTD
+  }
+
+  public void testMNGECLIPSE688_NonDeployedDependencies () throws Exception {
+    IProject project = importProject("projects/MNGECLIPSE-688/war-optional/pom.xml", new ResolverConfiguration());
+
+    IJavaProject javaProject = JavaCore.create(project);
+    IClasspathEntry[] classpathEntries = BuildPathManager.getMaven2ClasspathContainer(javaProject)
+        .getClasspathEntries();
+
+    IClasspathEntry junit = classpathEntries[0];
+    assertEquals("junit-3.8.1.jar", junit.getPath().lastSegment());
+    assertTrue(hasExtraAttribute(junit, IClasspathDependencyConstants.CLASSPATH_COMPONENT_NON_DEPENDENCY));
+    assertFalse(hasExtraAttribute(junit, IClasspathDependencyConstants.CLASSPATH_COMPONENT_DEPENDENCY));
+  }
+
+  public void testMNGECLIPSE688_CustomEarContent () throws Exception {
+    IProject ear = importProject("projects/MNGECLIPSE-688/ear21-1/pom.xml", new ResolverConfiguration());
+
+    IFacetedProject fpEar = ProjectFacetsManager.create(ear);
+    assertNotNull(fpEar);
+    assertFalse(fpEar.hasProjectFacet(JavaFacetUtils.JAVA_FACET)); //Ears don't have java facet
+    assertEquals(DEFAULT_EAR_FACET, fpEar.getInstalledVersion(EAR_FACET));
+
+    IResource[] underlyingResources = getUnderlyingResources(ear);
+    assertEquals(1, underlyingResources.length);
+    assertEquals(ear.getFolder("/CustomEarSourceDirectory"), underlyingResources[0]);
+
+    IFile applicationXml = ear.getFile("CustomEarSourceDirectory/META-INF/application.xml"); 
+    assertTrue(applicationXml.exists());
+  }
+
+  public void testMNGECLIPSE688_Ear50 () throws Exception {
+    IProject ear = importProject("projects/MNGECLIPSE-688/ear50-1/pom.xml", new ResolverConfiguration());
+
+    IFacetedProject fpEar = ProjectFacetsManager.create(ear);
+    assertNotNull(fpEar);
+    assertFalse(fpEar.hasProjectFacet(JavaFacetUtils.JAVA_FACET)); //Ears don't have java facet
+    assertEquals(IJ2EEFacetConstants.ENTERPRISE_APPLICATION_50, fpEar.getInstalledVersion(EAR_FACET));
+
+    IResource[] underlyingResources = getUnderlyingResources(ear);
+    assertEquals(1, underlyingResources.length);
+    assertEquals(ear.getFolder("/src/main/application"), underlyingResources[0]);
+
+    IFile applicationXml = ear.getFile("src/main/application/META-INF/application.xml"); 
+    assertFalse(applicationXml.exists()); // application.xml is not mandatory for Java EE 5.0, hence not created
+    
+    IVirtualComponent comp = ComponentCore.createComponent(ear);
+    IVirtualReference[] references = comp.getReferences();
+    assertEquals(1, references.length);
+    IVirtualReference junit = references[0];
+    assertEquals("junit-3.8.1.jar", junit.getArchiveName());
+    assertEquals("lib/", junit.getRuntimePath().toPortableString());
+  
+  }
+
+  
+  public void testMNGECLIPSE688_Jee1() throws Exception {
+    IProject[] projects = importProjects(
+        "projects/MNGECLIPSE-688/", //
+        new String[] {"jee1/pom.xml", "jee1/core/pom.xml", "jee1/ejb/pom.xml", "jee1/war/pom.xml", "jee1/ear/pom.xml"},
+        new ResolverConfiguration());
+
+    waitForJobsToComplete();
+    
+    assertEquals(5, projects.length);
+    IProject core = projects[1];
+    IProject ejb = projects[2];
+    IProject war = projects[3];
+    IProject ear = projects[4];
+    
+    assertMarkers(core, 0);
+    assertMarkers(ejb, 0);
+    assertMarkers(war, 0);
+    assertMarkers(ear, 0);
+    
+    IFacetedProject fpCore = ProjectFacetsManager.create(core, false, monitor);
+    // XXX Fails miserably. It seems the import is messed up 
+    assertNotNull(ProjectFacetsManager.getFacetedProjects().toString(), fpCore);  
+    assertTrue(fpCore.hasProjectFacet(JavaFacetUtils.JAVA_FACET));
+    assertEquals(UTILITY_10, fpCore.getInstalledVersion(UTILITY_FACET));
+
+    IFacetedProject fpEjb = ProjectFacetsManager.create(ejb);
+    assertNotNull(fpEjb);
+    assertTrue(fpEjb.hasProjectFacet(JavaFacetUtils.JAVA_FACET));
+    assertEquals(IJ2EEFacetConstants.EJB_21, fpEjb.getInstalledVersion(EJB_FACET));
+
+    IFacetedProject fpWar = ProjectFacetsManager.create(war);
+    assertNotNull(fpWar);
+    assertTrue(fpWar.hasProjectFacet(JavaFacetUtils.JAVA_FACET));
+    assertEquals(WebFacetUtils.WEB_24, fpWar.getInstalledVersion(WebFacetUtils.WEB_FACET));
+
+    IFacetedProject fpEar = ProjectFacetsManager.create(ear);
+    assertNotNull(fpEar);
+    assertFalse(fpEar.hasProjectFacet(JavaFacetUtils.JAVA_FACET)); //Ears don't have java facet
+    assertEquals(DEFAULT_EAR_FACET, fpEar.getInstalledVersion(EAR_FACET));
+ 
+}
+
+  private void assertMarkers(IProject project, int expected) throws CoreException {
+    IMarker[] markers = project.findMarkers(null, true, IResource.DEPTH_INFINITE);
+    assertEquals(toString(markers), expected, markers.length);
+  }
+
+  private static boolean  hasExtraAttribute (IClasspathEntry entry, String expectedAttribute){
+    for (IClasspathAttribute cpa : entry.getExtraAttributes()) {
+      if (expectedAttribute.equals(cpa.getName())){
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static IResource[] getUnderlyingResources(IProject project) {
+    IVirtualComponent component = ComponentCore.createComponent(project);
+    IVirtualFolder root = component.getRootFolder();
+    IResource[] underlyingResources = root.getUnderlyingResources();
+    return underlyingResources;
+  }
+  
 }

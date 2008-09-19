@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?><project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>test.project</groupId>
+  <artifactId>war-optional</artifactId>
+  <packaging>war</packaging>
+  <version>0.0.1-SNAPSHOT</version>
+  <build>
+    <directory>C:/TEMP/Build/${pom.artifactId}</directory>
+  </build>
+  <dependencies>
+  	<dependency>
+  		<groupId>junit</groupId>
+  		<artifactId>junit</artifactId>
+  		<version>3.8.1</version>
+  		<type>jar</type>
+  		<scope>compile</scope>
+  		<optional>true</optional>
+  	</dependency>
+  	<dependency>
+  		<groupId>commons-beanutils</groupId>
+  		<artifactId>commons-beanutils</artifactId>
+  		<version>1.6</version>
+  		<type>jar</type>
+  		<scope>compile</scope>
+  	</dependency>
+  	
+  </dependencies>
+</project>

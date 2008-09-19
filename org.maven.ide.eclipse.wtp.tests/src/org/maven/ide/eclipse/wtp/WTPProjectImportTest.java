@@ -122,8 +122,8 @@ public class WTPProjectImportTest extends AsbtractMavenProjectTestCase {
       assertEquals("/MNGECLIPSE-20-ejb/src/main/resources", rawClasspath[1].getPath().toString());
       assertEquals("org.eclipse.jdt.launching.JRE_CONTAINER", rawClasspath[2].getPath().toString());
       assertEquals("org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER", rawClasspath[3].getPath().toString());
-      assertEquals("org.eclipse.jst.j2ee.internal.module.container", rawClasspath[4].getPath().toString());
-
+      assertEquals("org.eclipse.jst.j2ee.internal.module.container", rawClasspath[4].getPath().toString());//Added w/ MNGECLIPSE-688
+      
       IMarker[] markers = projects[4].findMarkers(null, true, IResource.DEPTH_INFINITE);
       assertEquals(toString(markers), 0, markers.length);
     }

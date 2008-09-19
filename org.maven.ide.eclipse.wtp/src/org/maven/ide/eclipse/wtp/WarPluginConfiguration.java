@@ -8,11 +8,20 @@
 
 package org.maven.ide.eclipse.wtp;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import org.apache.maven.model.Plugin;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jst.j2ee.internal.J2EEVersionConstants;
+import org.eclipse.jst.j2ee.web.project.facet.WebFacetUtils;
+import org.eclipse.jst.jee.util.internal.JavaEEQuickPeek;
+import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
 
 
 /**
@@ -20,10 +29,12 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
  * 
  * @author Igor Fedorenko
  */
+@SuppressWarnings("restriction")
 class WarPluginConfiguration {
 
   private static final String WAR_SOURCE_FOLDER = "/src/main/webapp";
   private static final String WAR_PACKAGING = "war";
+  private static final String WEB_XML = "WEB-INF/web.xml";
 
   final Plugin plugin;
 
@@ -61,4 +72,30 @@ class WarPluginConfiguration {
 
     return WAR_SOURCE_FOLDER;
   }
+  
+  
+  public IProjectFacetVersion getWebFacetVersion(IProject project) {
+    IFile webXml = project.getFolder(getWarSourceDirectory()).getFile(WEB_XML);
+    if (webXml.isAccessible()) {
+      try {
+        InputStream is = webXml.getContents();
+        try {
+          JavaEEQuickPeek jqp = new JavaEEQuickPeek(is);
+          switch (jqp.getVersion()) {
+            case J2EEVersionConstants.WEB_2_2_ID: return WebFacetUtils.WEB_22;
+            case J2EEVersionConstants.WEB_2_3_ID: return WebFacetUtils.WEB_23;
+            case J2EEVersionConstants.WEB_2_4_ID: return WebFacetUtils.WEB_24;
+            case J2EEVersionConstants.WEB_2_5_ID: return WebFacetUtils.WEB_FACET.getVersion("2.5");
+          }
+        } finally {
+          is.close();
+        }
+      } catch (IOException ex) {
+        // expected
+      } catch(CoreException ex) {
+        // expected
+      }
+  }
+  return WebFacetUtils.WEB_23;
+}
 }

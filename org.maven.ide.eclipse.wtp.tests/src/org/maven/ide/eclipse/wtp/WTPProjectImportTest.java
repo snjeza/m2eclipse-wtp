@@ -117,11 +117,12 @@ public class WTPProjectImportTest extends AsbtractMavenProjectTestCase {
       assertEquals("log4j-1.2.13.jar", classpathEntries[2].getPath().lastSegment());
 
       IClasspathEntry[] rawClasspath = javaProject.getRawClasspath();
-      assertEquals(Arrays.asList(rawClasspath).toString(), 4, rawClasspath.length);
+      assertEquals(Arrays.asList(rawClasspath).toString(), 5, rawClasspath.length);
       assertEquals("/MNGECLIPSE-20-ejb/src/main/java", rawClasspath[0].getPath().toString());
       assertEquals("/MNGECLIPSE-20-ejb/src/main/resources", rawClasspath[1].getPath().toString());
       assertEquals("org.eclipse.jdt.launching.JRE_CONTAINER", rawClasspath[2].getPath().toString());
       assertEquals("org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER", rawClasspath[3].getPath().toString());
+      assertEquals("org.eclipse.jst.j2ee.internal.module.container", rawClasspath[4].getPath().toString());
 
       IMarker[] markers = projects[4].findMarkers(null, true, IResource.DEPTH_INFINITE);
       assertEquals(toString(markers), 0, markers.length);
@@ -270,12 +271,13 @@ public class WTPProjectImportTest extends AsbtractMavenProjectTestCase {
       assertEquals("MNGECLIPSE-20-type-0.0.1-SNAPSHOT.jar", classpathEntries[1].getPath().lastSegment());
 
       IClasspathEntry[] rawClasspath = javaProject.getRawClasspath();
-      assertEquals(Arrays.asList(rawClasspath).toString(), 4, rawClasspath.length);
+      assertEquals(Arrays.asList(rawClasspath).toString(), 5, rawClasspath.length);
       assertEquals("/MNGECLIPSE-20-ejb/src/main/java", rawClasspath[0].getPath().toString());
       assertEquals("/MNGECLIPSE-20-ejb/src/main/resources", rawClasspath[1].getPath().toString());
       assertEquals("/MNGECLIPSE-20-ejb/target/classes", rawClasspath[1].getOutputLocation().toString());
       assertEquals("org.eclipse.jdt.launching.JRE_CONTAINER", rawClasspath[2].getPath().toString());
       assertEquals("org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER", rawClasspath[3].getPath().toString());
+      assertEquals("org.eclipse.jst.j2ee.internal.module.container", rawClasspath[4].getPath().toString());
 
       // IMarker[] markers = projects[4].findMarkers(null, true, IResource.DEPTH_INFINITE);
       List<IMarker> markers = findErrorMarkers(projects[4]);

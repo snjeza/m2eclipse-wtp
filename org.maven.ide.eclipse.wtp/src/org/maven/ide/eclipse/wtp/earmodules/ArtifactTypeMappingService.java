@@ -32,7 +32,6 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
  * Allows to map custom artifact type to standard type.
  * 
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
- * @version $Id$
  */
 public class ArtifactTypeMappingService {
   static final String ARTIFACT_TYPE_MAPPING_ELEMENT = "artifactTypeMapping";

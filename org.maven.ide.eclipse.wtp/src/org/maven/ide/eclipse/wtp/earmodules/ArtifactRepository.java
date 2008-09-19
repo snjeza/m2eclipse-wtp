@@ -29,7 +29,6 @@ import org.apache.maven.artifact.Artifact;
  * This is a Java 5 port of org.apache.maven.plugin.ear.ArtifactRepository from maven-ear-plugin
  * 
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
- * @version $Id$
  */
 public class ArtifactRepository
 {

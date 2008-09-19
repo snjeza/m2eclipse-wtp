@@ -33,7 +33,6 @@ import org.apache.maven.artifact.Artifact;
  * This class deprecates {@link org.apache.maven.plugin.ear.JavaModule}.
  *
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
- * @version $Id$
  */
 public class JarModule
     extends AbstractEarModule

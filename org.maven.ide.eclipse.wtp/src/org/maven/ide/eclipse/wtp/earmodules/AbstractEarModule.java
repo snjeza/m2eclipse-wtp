@@ -25,7 +25,6 @@ import org.apache.maven.artifact.Artifact;
  * A base implementation of an {@link EarModule}.
  *
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
- * @version $Id$
  */
 public abstract class AbstractEarModule
     implements EarModule

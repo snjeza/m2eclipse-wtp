@@ -32,7 +32,6 @@ import java.util.Map;
  * </ul>
  *
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
- * @version $Id$
  */
 public class FileNameMappingFactory
 {

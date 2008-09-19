@@ -26,7 +26,6 @@ import org.apache.maven.artifact.Artifact;
  * of the file in the local repository.
  *
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
- * @version $Id$
  */
 public class StandardFileNameMapping extends FileNameMapping
 {

@@ -31,7 +31,6 @@ import org.maven.ide.eclipse.wtp.ArtifactHelper;
  * TODO: it might be easier to use a token-based approach instead.
  * 
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
- * @version $Id$
  */
 @SuppressWarnings("restriction")
 public abstract class FileNameMapping

@@ -25,8 +25,6 @@ import org.apache.maven.artifact.Artifact;
  * The {@link EarModule} implementation for a JBoss sar module.
  *
  * @author Stephane Nicoll <snicoll@apache.org>
- * @author $Author$ (last edit)
- * @version $Revision$
  */
 public class SarModule
     extends AbstractEarModule

@@ -31,7 +31,6 @@ import org.maven.ide.eclipse.wtp.earmodules.output.FileNameMappingFactory;
  * Builds an {@link EarModule} based on an <tt>Artifact</tt>.
  *
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
- * @version $Id$
  */
 public final class EarModuleFactory
 {

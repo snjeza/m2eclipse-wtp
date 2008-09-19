@@ -24,7 +24,6 @@ package org.maven.ide.eclipse.wtp.earmodules;
  * Represents a JBoss specific ear module.
  *
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
- * @version $Id$
  */
 public interface JbossEarModule
 {

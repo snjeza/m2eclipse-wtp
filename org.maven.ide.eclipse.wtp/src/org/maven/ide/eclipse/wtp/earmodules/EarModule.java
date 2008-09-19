@@ -25,7 +25,6 @@ import org.apache.maven.artifact.Artifact;
  * The ear module interface.
  *
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
- * @version $Id$
  */
 public interface EarModule
 {

@@ -23,7 +23,6 @@ package org.maven.ide.eclipse.wtp.earmodules;
  * Thrown if an unknown artifact type is encountered.
  *
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
- * @version $Id$
  */
 public class UnknownArtifactTypeException
     extends EarPluginException

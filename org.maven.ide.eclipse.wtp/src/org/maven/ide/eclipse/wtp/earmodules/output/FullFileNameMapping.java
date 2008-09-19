@@ -26,7 +26,6 @@ import org.apache.maven.artifact.Artifact;
  * name accross groups.
  *
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
- * @version $Id$
  */
 public class FullFileNameMapping extends FileNameMapping
 {

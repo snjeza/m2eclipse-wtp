@@ -52,8 +52,9 @@ class WTPClasspathConfigurator extends AbstractClasspathConfigurator {
   public Set<IClasspathAttribute> getAttributes(Artifact artifact, int kind) {
     String scope = artifact.getScope();
     // Check the scope & set WTP non-dependency as appropriate
+    // Optional artifact shouldn't be deployed
     if(Artifact.SCOPE_PROVIDED.equals(scope) || Artifact.SCOPE_TEST.equals(scope)
-        || Artifact.SCOPE_SYSTEM.equals(scope)) {
+        || Artifact.SCOPE_SYSTEM.equals(scope) || artifact.isOptional()) { 
       return NONDEPENDENCY_ATTRIBUTES;
     }
     return null;

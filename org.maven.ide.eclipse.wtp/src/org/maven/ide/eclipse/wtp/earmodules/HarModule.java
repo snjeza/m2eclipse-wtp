@@ -25,7 +25,6 @@ import org.apache.maven.artifact.Artifact;
  * The {@link EarModule} implementation for a JBoss Hibernate archive.
  *
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
- * @version $Id$
  */
 public class HarModule
     extends AbstractEarModule

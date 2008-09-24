@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar id="ejb-jar_1" xmlns="http://java.sun.com/xml/ns/j2ee" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/ejb-jar_2_1.xsd" version="2.1">
+
+   <description>Hello World EJB</description>
+   <display-name>ejb21-1</display-name>
+   <enterprise-beans>
+      <session id="Session_HelloService">
+         <description>HelloService EJB</description>
+         <display-name>HelloService</display-name>
+         <ejb-name>HelloService</ejb-name>
+         <home>foo.bar.services.HelloServiceHome</home>
+         <remote>foo.bar.services.HelloService</remote>
+         <local-home>foo.bar.services.HelloServiceLocalHome</local-home>
+         <local>foo.bar.services.HelloServiceLocal</local>
+         <ejb-class>foo.bar.services.HelloServiceSession</ejb-class>
+         <session-type>Stateless</session-type>
+         <transaction-type>Container</transaction-type>
+      </session>
+   </enterprise-beans>
+</ejb-jar>

@@ -202,14 +202,10 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
   public void testMNGECLIPSE688_NonDeployedDependencies () throws Exception {
     IProject project = importProject("projects/MNGECLIPSE-688/war-optional/pom.xml", new ResolverConfiguration());
 
-    IJavaProject javaProject = JavaCore.create(project);
-    IClasspathEntry[] classpathEntries = BuildPathManager.getMaven2ClasspathContainer(javaProject)
-        .getClasspathEntries();
-
+    IClasspathEntry[] classpathEntries = getClassPathEntries(project);
     IClasspathEntry junit = classpathEntries[0];
     assertEquals("junit-3.8.1.jar", junit.getPath().lastSegment());
-    assertTrue(hasExtraAttribute(junit, IClasspathDependencyConstants.CLASSPATH_COMPONENT_NON_DEPENDENCY));
-    assertFalse(hasExtraAttribute(junit, IClasspathDependencyConstants.CLASSPATH_COMPONENT_DEPENDENCY));
+    assertNotDeployable(junit); //Junit is marked as <optional>true<optional>
   }
 
   public void testMNGECLIPSE688_CustomEarContent () throws Exception {
@@ -273,7 +269,6 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     assertMarkers(ear, 0);
     
     IFacetedProject fpCore = ProjectFacetsManager.create(core, false, monitor);
-    // XXX Fails miserably. It seems the import is messed up 
     assertNotNull(ProjectFacetsManager.getFacetedProjects().toString(), fpCore);  
     assertTrue(fpCore.hasProjectFacet(JavaFacetUtils.JAVA_FACET));
     assertEquals(UTILITY_10, fpCore.getInstalledVersion(UTILITY_FACET));
@@ -295,9 +290,57 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
  
 }
 
+  public void testMNGECLIPSE688_Pom14_1() throws Exception {
+    //These project can be actually deployed to JBoss
+    //Trying to import projects in unsorted order
+    IProject[] projects = importProjects(
+        "projects/MNGECLIPSE-688/", //
+        new String[] {"pom14-1/pom.xml", "pom14-1/ear14-1/pom.xml", "pom14-1/war23-1/pom.xml", "pom14-1/war23-2/pom.xml", "pom14-1/ejb21-1/pom.xml", "pom14-1/core-1/pom.xml"},
+        new ResolverConfiguration());
+
+    waitForJobsToComplete();
+    
+    assertEquals(6, projects.length);
+    IProject ear = projects[1];
+    
+    IVirtualComponent comp = ComponentCore.createComponent(ear);
+    IVirtualReference[] references = comp.getReferences();
+    assertEquals(5, references.length);
+    //The reference order changes between imports, so can't rely on references indexes
+    assertNotNull(comp.getReference("core-1"));
+    assertNotNull(comp.getReference("ejb21-1"));
+    assertNotNull(comp.getReference("war23-1"));
+    assertNotNull(comp.getReference("war23-2"));
+    assertNotNull(comp.getReference("var/M2_REPO/commons-lang/commons-lang/2.4/commons-lang-2.4.jar"));
+    //At this point, we checked provided dependencies won't be deployed in the ear
+    
+    IProject war1 = projects[2];
+    IClasspathEntry[] war1CP = getClassPathEntries(war1);
+    assertEquals(6, war1CP.length);
+    //war23-1 pom.xml states that no dependencies should be deployed (in WEB-INF/lib)
+    for (IClasspathEntry entry : war1CP){
+      assertNotDeployable(entry);
+    }
+    
+  }
+  
+  
   private void assertMarkers(IProject project, int expected) throws CoreException {
     IMarker[] markers = project.findMarkers(null, true, IResource.DEPTH_INFINITE);
-    assertEquals(toString(markers), expected, markers.length);
+    assertEquals(project.getName() + " : " + toString(markers), expected, markers.length);
+  }
+
+  private void  assertNotDeployable(IClasspathEntry entry){
+    assertDeployable(entry, false);
+  }
+  
+  private void  assertDeployable(IClasspathEntry entry){
+    assertDeployable(entry, true);
+  }
+
+  private void  assertDeployable(IClasspathEntry entry, boolean expectedDeploymentStatus){
+    assertEquals(entry.toString() + " " + IClasspathDependencyConstants.CLASSPATH_COMPONENT_DEPENDENCY, expectedDeploymentStatus,      hasExtraAttribute(entry, IClasspathDependencyConstants.CLASSPATH_COMPONENT_DEPENDENCY));
+    assertEquals(entry.toString() + " " + IClasspathDependencyConstants.CLASSPATH_COMPONENT_NON_DEPENDENCY, !expectedDeploymentStatus, hasExtraAttribute(entry, IClasspathDependencyConstants.CLASSPATH_COMPONENT_NON_DEPENDENCY));
   }
 
   private static boolean  hasExtraAttribute (IClasspathEntry entry, String expectedAttribute){
@@ -309,11 +352,18 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     return false;
   }
 
+  private static IClasspathEntry[] getClassPathEntries(IProject project) throws Exception {
+    IJavaProject javaProject = JavaCore.create(project);
+    IClasspathContainer container = BuildPathManager.getMaven2ClasspathContainer(javaProject);
+    return container.getClasspathEntries();
+  }
+  
+  
   private static IResource[] getUnderlyingResources(IProject project) {
     IVirtualComponent component = ComponentCore.createComponent(project);
     IVirtualFolder root = component.getRootFolder();
     IResource[] underlyingResources = root.getUnderlyingResources();
     return underlyingResources;
   }
-  
+ 
 }

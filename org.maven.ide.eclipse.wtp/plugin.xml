@@ -1,22 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
 <plugin>
-   <extension
-         point="org.maven.ide.eclipse.projectConfigurators">
-      <configurator
-            class="org.maven.ide.eclipse.wtp.WTPProjectConfigurator"
-            id="org.maven.ide.eclipse.configuration.wtp.configurator"
-            name="WTP"
-            priority="100">
-      </configurator>
+
+   <extension point="org.maven.ide.eclipse.projectConfigurators">
+      <configurator 
+          id="org.maven.ide.eclipse.configuration.wtp.configurator"
+          class="org.maven.ide.eclipse.wtp.WTPProjectConfigurator"
+          name="WTP" priority="100"/>
    </extension>
-   <extension
-         point="org.maven.ide.eclipse.classpathConfiguratorFactories">
+   
+   <extension point="org.maven.ide.eclipse.classpathConfiguratorFactories">
       <classpathConfiguratorFactory
-            class="org.maven.ide.eclipse.wtp.WTPClasspathConfiguratorFactory"
             id="org.maven.ide.eclipse.configuration.wtp.classpathConfiguratorFactory"
-            priority="100">
-      </classpathConfiguratorFactory>
+            class="org.maven.ide.eclipse.wtp.WTPClasspathConfiguratorFactory"
+            priority="100"/>
    </extension>
 
+   <!-- A workaround to allow to uninstall WTP facets -->
+   <extension point="org.eclipse.wst.common.project.facet.core.facets">
+      <action type="uninstall" facet="jst.ear" version="[1.2-5.0]">
+         <delegate class="org.maven.ide.eclipse.wtp.facets.EarUninstallDelegate"/>
+      </action>
+      <action type="uninstall" facet="jst.ejb" version="[1.1-3.0]">
+         <delegate class="org.maven.ide.eclipse.wtp.facets.EjbUninstallDelegate"/>
+      </action>
+      <action type="uninstall" facet="jst.web" version="[2.2-2.5]">
+         <delegate class="org.maven.ide.eclipse.wtp.facets.WarUninstallDelegate"/>
+      </action>
+      <action type="uninstall" facet="jst.java" version="[1.3-6.0]">
+         <delegate class="org.maven.ide.eclipse.wtp.facets.JavaUninstallDelegate"/>
+      </action>
+   </extension>
+  
 </plugin>

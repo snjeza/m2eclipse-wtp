@@ -9,7 +9,6 @@
 package org.maven.ide.eclipse.wtp;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -50,7 +49,6 @@ import org.maven.ide.eclipse.project.MavenProjectUtils;
  */
 abstract class AbstractProjectConfiguratorDelegate implements IProjectConfiguratorDelegate {
 
-
   protected final MavenProjectManager projectManager;
 
   AbstractProjectConfiguratorDelegate() {
@@ -75,11 +73,11 @@ abstract class AbstractProjectConfiguratorDelegate implements IProjectConfigurat
   }
 
   protected void configureWtpUtil(IProject project, IProgressMonitor monitor) throws CoreException {
-    //Adding utility facet on JEE projects is not allowed
-    if (WTPProjectsUtil.isJavaEEProject(project)){
-      return; 
+    // Adding utility facet on JEE projects is not allowed
+    if(WTPProjectsUtil.isJavaEEProject(project)) {
+      return;
     }
-    
+
     IFacetedProject facetedProject = ProjectFacetsManager.create(project, true, monitor);
     Set<Action> actions = new LinkedHashSet<Action>();
     installJavaFacet(actions, project, facetedProject);
@@ -87,7 +85,8 @@ abstract class AbstractProjectConfiguratorDelegate implements IProjectConfigurat
     if(!facetedProject.hasProjectFacet(WTPProjectsUtil.UTILITY_FACET)) {
       actions.add(new IFacetedProject.Action(IFacetedProject.Action.Type.INSTALL, WTPProjectsUtil.UTILITY_10, null));
     } else if(!facetedProject.hasProjectFacet(WTPProjectsUtil.UTILITY_10)) {
-      actions.add(new IFacetedProject.Action(IFacetedProject.Action.Type.VERSION_CHANGE, WTPProjectsUtil.UTILITY_10, null));
+      actions.add(new IFacetedProject.Action(IFacetedProject.Action.Type.VERSION_CHANGE, WTPProjectsUtil.UTILITY_10,
+          null));
     }
 
     facetedProject.modify(actions, monitor);
@@ -103,18 +102,14 @@ abstract class AbstractProjectConfiguratorDelegate implements IProjectConfigurat
   }
 
   @SuppressWarnings("unchecked")
-  protected Set<IPath> getTestRoots(IProject project, MavenProject mavenProject) {
-    Set<IPath> testRoots = new HashSet<IPath>();
-    testRoots.addAll(Arrays.asList(MavenProjectUtils.getSourceLocations(project, mavenProject.getTestCompileSourceRoots())));
-    testRoots.addAll(Arrays.asList(MavenProjectUtils.getResourceLocations(project, mavenProject.getTestResources())));
-    return testRoots;
-  }
-
   protected void removeTestFolderLinks(IProject project, MavenProject mavenProject, IProgressMonitor monitor,
       String folder) throws CoreException {
     IVirtualComponent component = ComponentCore.createComponent(project);
     IVirtualFolder jsrc = component.getRootFolder().getFolder(folder);
-    for(IPath location : getTestRoots(project, mavenProject)) {
+    for(IPath location : MavenProjectUtils.getSourceLocations(project, mavenProject.getTestCompileSourceRoots())) {
+      jsrc.removeLink(location, 0, monitor);
+    }
+    for(IPath location : MavenProjectUtils.getResourceLocations(project, mavenProject.getTestResources())) {
       jsrc.removeLink(location, 0, monitor);
     }
   }

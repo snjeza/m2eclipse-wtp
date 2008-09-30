@@ -31,23 +31,27 @@ import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
  */
 @SuppressWarnings("restriction")
 class WarPluginConfiguration {
-
   private static final String WAR_SOURCE_FOLDER = "/src/main/webapp";
+
   private static final String WAR_PACKAGING = "war";
+
   private static final String WEB_XML = "WEB-INF/web.xml";
 
   final Plugin plugin;
 
-  @SuppressWarnings("unchecked")
   public WarPluginConfiguration(MavenProject mavenProject) {
-    Plugin war = null;
-    for (Plugin plugin : (List<Plugin>) mavenProject.getBuildPlugins()) {
-      if ("org.apache.maven.plugins".equals(plugin.getGroupId()) && "maven-war-plugin".equals(plugin.getArtifactId())) {
-        war = plugin;
-        break;
+    this.plugin = findWarPlugin(mavenProject);
+  }
+
+  @SuppressWarnings("unchecked")
+  private Plugin findWarPlugin(MavenProject mavenProject) {
+    for(Plugin plugin : (List<Plugin>) mavenProject.getBuildPlugins()) {
+      if("org.apache.maven.plugins".equals(plugin.getGroupId()) //
+          && "maven-war-plugin".equals(plugin.getArtifactId())) {
+        return plugin;
       }
     }
-    this.plugin = war;
+    return null;
   }
 
   static boolean isWarProject(MavenProject mavenProject) {
@@ -55,47 +59,50 @@ class WarPluginConfiguration {
   }
 
   public String getWarSourceDirectory() {
-    if (plugin == null) {
+    if(plugin == null) {
       return WAR_SOURCE_FOLDER;
     }
 
     Xpp3Dom dom = (Xpp3Dom) plugin.getConfiguration();
-    if (dom == null) {
+    if(dom == null) {
       return WAR_SOURCE_FOLDER;
     }
-    
+
     Xpp3Dom[] warSourceDirectory = dom.getChildren("warSourceDirectory");
-    if (warSourceDirectory != null && warSourceDirectory.length > 0) {
+    if(warSourceDirectory != null && warSourceDirectory.length > 0) {
       // first one wins
       return warSourceDirectory[0].getValue();
     }
 
     return WAR_SOURCE_FOLDER;
   }
-  
-  
+
   public IProjectFacetVersion getWebFacetVersion(IProject project) {
     IFile webXml = project.getFolder(getWarSourceDirectory()).getFile(WEB_XML);
-    if (webXml.isAccessible()) {
+    if(webXml.isAccessible()) {
       try {
         InputStream is = webXml.getContents();
         try {
           JavaEEQuickPeek jqp = new JavaEEQuickPeek(is);
-          switch (jqp.getVersion()) {
-            case J2EEVersionConstants.WEB_2_2_ID: return WebFacetUtils.WEB_22;
-            case J2EEVersionConstants.WEB_2_3_ID: return WebFacetUtils.WEB_23;
-            case J2EEVersionConstants.WEB_2_4_ID: return WebFacetUtils.WEB_24;
-            case J2EEVersionConstants.WEB_2_5_ID: return WebFacetUtils.WEB_FACET.getVersion("2.5");
+          switch(jqp.getVersion()) {
+            case J2EEVersionConstants.WEB_2_2_ID:
+              return WebFacetUtils.WEB_22;
+            case J2EEVersionConstants.WEB_2_3_ID:
+              return WebFacetUtils.WEB_23;
+            case J2EEVersionConstants.WEB_2_4_ID:
+              return WebFacetUtils.WEB_24;
+            case J2EEVersionConstants.WEB_2_5_ID:
+              return WebFacetUtils.WEB_FACET.getVersion("2.5");
           }
         } finally {
           is.close();
         }
-      } catch (IOException ex) {
+      } catch(IOException ex) {
         // expected
       } catch(CoreException ex) {
         // expected
       }
+    }
+    return WebFacetUtils.WEB_23;
   }
-  return WebFacetUtils.WEB_23;
-}
 }

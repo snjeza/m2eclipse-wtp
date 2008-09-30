@@ -8,6 +8,7 @@
 
 package org.maven.ide.eclipse.wtp;
 
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -23,10 +24,12 @@ import org.eclipse.wst.common.project.facet.core.IFacetedProject;
 import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
 import org.eclipse.wst.common.project.facet.core.ProjectFacetsManager;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject.Action;
+import org.maven.ide.eclipse.core.MavenLogger;
+
 
 /**
  * EjbProjectConfiguratorDelegate
- *
+ * 
  * @author Fred Bricon
  */
 @SuppressWarnings("restriction")
@@ -34,26 +37,38 @@ class EjbProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
 
   public void configureProject(IProject project, MavenProject mavenProject, IProgressMonitor monitor)
       throws CoreException {
-
-    EjbPluginConfiguration config = new EjbPluginConfiguration(mavenProject);
     IFacetedProject facetedProject = ProjectFacetsManager.create(project, true, monitor);
+
+    if(facetedProject.hasProjectFacet(WTPProjectsUtil.EJB_FACET)) {
+      try {
+        facetedProject.modify(Collections.singleton(new IFacetedProject.Action(IFacetedProject.Action.Type.UNINSTALL,
+            facetedProject.getInstalledVersion(WTPProjectsUtil.EJB_FACET), null)), monitor);
+      } catch(Exception ex) {
+        MavenLogger.log("Error removing EJB facet", ex);
+      }
+    }
+
     Set<Action> actions = new LinkedHashSet<Action>();
     installJavaFacet(actions, project, facetedProject);
-    IProjectFacetVersion ejbFv = config.getEjbFacetVersion();
-    
-    IDataModel ejbModelCfg = DataModelFactory.createDataModel(new EjbFacetInstallDataModelProvider());
-    
-    //Configuring content directory : used by WTP to create META-INF/manifest.mf, ejb-jar.xml
-    String contentDir = config.getEjbContentDirectory(project);
-    ejbModelCfg.setProperty(IEjbFacetInstallDataModelProperties.CONFIG_FOLDER, contentDir);
 
-    if(!facetedProject.hasProjectFacet(WTPProjectsUtil.EJB_FACET)) {//WTP doesn't allow facet versions changes for JEE facets. 
+    // WTP doesn't allow facet versions changes for JEE facets 
+    if(!facetedProject.hasProjectFacet(WTPProjectsUtil.EJB_FACET)) {
+      // Configuring content directory, used by WTP to create META-INF/manifest.mf, ejb-jar.xml
+      EjbPluginConfiguration config = new EjbPluginConfiguration(mavenProject);
+      String contentDir = config.getEjbContentDirectory(project);
+      
+      IDataModel ejbModelCfg = DataModelFactory.createDataModel(new EjbFacetInstallDataModelProvider());
+      ejbModelCfg.setProperty(IEjbFacetInstallDataModelProperties.CONFIG_FOLDER, contentDir);
+
+      IProjectFacetVersion ejbFv = config.getEjbFacetVersion();
+      
       actions.add(new IFacetedProject.Action(IFacetedProject.Action.Type.INSTALL, ejbFv, ejbModelCfg));
     }
-    
-    if (!actions.isEmpty()) {
-      facetedProject.modify(actions, monitor);  
+
+    if(!actions.isEmpty()) {
+      facetedProject.modify(actions, monitor);
     }
+
     removeTestFolderLinks(project, mavenProject, monitor, "/"); //XXX Doesn't work !!!
   }
 

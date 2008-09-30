@@ -40,39 +40,42 @@ import org.maven.ide.eclipse.wtp.earmodules.output.FileNameMappingFactory;
  */
 class EarPluginConfiguration {
 
-  private static final String EAR_DEFAULT_LIB_DIR = "/"; //J2EEConstants.EAR_DEFAULT_LIB_DIR
+  private static final String EAR_DEFAULT_LIB_DIR = "/"; // J2EEConstants.EAR_DEFAULT_LIB_DIR
 
-  private static final String EAR_DEFAULT_CONTENT_DIR = "src/main/application"; //J2EEConstants.EAR_DEFAULT_LIB_DIR
+  private static final String EAR_DEFAULT_CONTENT_DIR = "src/main/application"; // J2EEConstants.EAR_DEFAULT_LIB_DIR
 
-  //Default EAR version produced by the maven-ear-plugin
+  // Default EAR version produced by the maven-ear-plugin
   private static final IProjectFacetVersion DEFAULT_EAR_FACET = IJ2EEFacetConstants.ENTERPRISE_APPLICATION_13;
-
-  private final Plugin plugin;
 
   private final MavenProject mavenProject;
 
+  private final Plugin plugin;
+  
   private String libDirectory;
 
   // private String contentDirectory;
 
-  //XXX see if Lazy loading / caching the different factories and services is relevant.
+  // XXX see if Lazy loading / caching the different factories and services is relevant.
   ArtifactTypeMappingService typeMappingService;
 
-  @SuppressWarnings("unchecked")
   public EarPluginConfiguration(MavenProject mavenProject) {
-
-    if(JEEPackaging.EAR != JEEPackaging.getValue(mavenProject.getPackaging()))
+    if(JEEPackaging.EAR != JEEPackaging.getValue(mavenProject.getPackaging())) {
       throw new IllegalArgumentException("Maven project must have ear packaging");
+    }
 
-    Plugin ear = null;
+    this.mavenProject = mavenProject;
+    this.plugin = findEarPlugin(mavenProject);
+  }
+
+  @SuppressWarnings("unchecked")
+  private Plugin findEarPlugin(MavenProject mavenProject) {
     for(Plugin plugin : (List<Plugin>) mavenProject.getBuildPlugins()) {
-      if("org.apache.maven.plugins".equals(plugin.getGroupId()) && "maven-ear-plugin".equals(plugin.getArtifactId())) {
-        ear = plugin;
-        break;
+      if("org.apache.maven.plugins".equals(plugin.getGroupId()) //
+          && "maven-ear-plugin".equals(plugin.getArtifactId())) {
+        return plugin;
       }
     }
-    this.plugin = ear;
-    this.mavenProject = mavenProject;
+    return null;
   }
 
   /**
@@ -100,8 +103,8 @@ class EarPluginConfiguration {
     if(domVersion != null) {
       String sVersion = domVersion.getValue();
       try {
-        double version = Double.parseDouble(sVersion); //hack to transform version 5 to 5.0
-        //IJ2EEFacetConstants.ENTERPRISE_APPLICATION_FACET.getVersion(String version) is available in WTP 3.x
+        double version = Double.parseDouble(sVersion); // hack to transform version 5 to 5.0
+        // IJ2EEFacetConstants.ENTERPRISE_APPLICATION_FACET.getVersion(String version) is available in WTP 3.x
         return WTPProjectsUtil.EAR_FACET.getVersion(Double.toString(version));
       } catch(NumberFormatException nfe) {
         MavenLogger.log("unable to read ear version : " + sVersion, nfe);

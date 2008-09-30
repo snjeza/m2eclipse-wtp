@@ -9,6 +9,7 @@
 package org.maven.ide.eclipse.wtp;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -44,6 +45,7 @@ import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
 import org.eclipse.wst.common.project.facet.core.ProjectFacetsManager;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject.Action;
 import org.maven.ide.eclipse.core.IMavenConstants;
+import org.maven.ide.eclipse.core.MavenLogger;
 import org.maven.ide.eclipse.project.IMavenProjectFacade;
 import org.maven.ide.eclipse.wtp.earmodules.EarModule;
 
@@ -52,7 +54,6 @@ import org.maven.ide.eclipse.wtp.earmodules.EarModule;
  * Configures Ear projects from maven-ear-plugin.
  * 
  * @see org.eclipse.jst.j2ee.ui.AddModulestoEARPropertiesPage
- * 
  * @author Fred Bricon
  */
 @SuppressWarnings("restriction")
@@ -65,32 +66,41 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
 
   public void configureProject(IProject project, MavenProject mavenProject, IProgressMonitor monitor)
       throws CoreException {
-
-    EarPluginConfiguration config = new EarPluginConfiguration(mavenProject);
     IFacetedProject facetedProject = ProjectFacetsManager.create(project, true, monitor);
+
+    if(facetedProject.hasProjectFacet(WTPProjectsUtil.EAR_FACET)) {
+      try {
+        facetedProject.modify(Collections.singleton(new IFacetedProject.Action(IFacetedProject.Action.Type.UNINSTALL,
+            facetedProject.getInstalledVersion(WTPProjectsUtil.EAR_FACET), null)), monitor);
+      } catch(Exception ex) {
+        MavenLogger.log("Error removing EAR facet", ex);
+      }
+    }
 
     Set<Action> actions = new LinkedHashSet<Action>();
 
-    IDataModel earModelCfg = DataModelFactory.createDataModel(new EarFacetInstallDataModelProvider());
+    // WTP doesn't allow facet versions changes for JEE facets 
+    if(!facetedProject.hasProjectFacet(WTPProjectsUtil.EAR_FACET)) {
+      EarPluginConfiguration config = new EarPluginConfiguration(mavenProject);
+      IDataModel earModelCfg = DataModelFactory.createDataModel(new EarFacetInstallDataModelProvider());
 
-    //Configuring content directory
-    String contentDir = config.getEarContentDirectory(project);
-    earModelCfg.setProperty(IEarFacetInstallDataModelProperties.CONTENT_DIR, contentDir);
+      // Configuring content directory
+      String contentDir = config.getEarContentDirectory(project);
+      earModelCfg.setProperty(IEarFacetInstallDataModelProperties.CONTENT_DIR, contentDir);
 
-    //Adding EAR Facet
-    IProjectFacetVersion earFv = config.getEarFacetVersion();
-
-    if(!facetedProject.hasProjectFacet(WTPProjectsUtil.EAR_FACET)) {//WTP doesn't allow facet versions changes for JEE facets. 
+      IProjectFacetVersion earFv = config.getEarFacetVersion();
+      
       actions.add(new IFacetedProject.Action(IFacetedProject.Action.Type.INSTALL, earFv, earModelCfg));
     }
 
     if(!actions.isEmpty()) {
       facetedProject.modify(actions, monitor);
     }
-    //FIXME Sometimes, test folders are still added to org.eclipse.wst.common.component
-    removeTestFolderLinks(project, mavenProject, monitor, "/");  
 
-    //XXX updating libdir?
+    // FIXME Sometimes, test folders are still added to org.eclipse.wst.common.component
+    removeTestFolderLinks(project, mavenProject, monitor, "/");
+
+    // XXX updating libdir?
   }
 
   public void setModuleDependencies(IProject project, MavenProject mavenProject, IProgressMonitor monitor)
@@ -101,12 +111,13 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
     }
 
     EarPluginConfiguration config = new EarPluginConfiguration(mavenProject);
-    //Retrieving all ear module configuration from maven-ear-plugin : User defined modules + artifacts dependencies.
+    // Retrieving all ear module configuration from maven-ear-plugin : User defined modules + artifacts dependencies.
     Set<EarModule> earModules = config.getEarModules();
     String libBundleDir = config.getDefaultLibDirectory();
 
-    //FB : I consider the delegate to be stateless - maybe I'm wrong -
-    //hence we wrap all the interesting attributes of our new ear in an inner class, to stay close to AddModulestoEARPropertiesPage. 
+    // FB : I consider the delegate to be stateless - maybe I'm wrong -
+    // hence we wrap all the interesting attributes of our new ear in an inner class, 
+    // to stay close to AddModulestoEARPropertiesPage. 
     EarComponentWrapper earComponentWrp = new EarComponentWrapper(project, libBundleDir);
 
     for(EarModule earModule : earModules) {
@@ -132,9 +143,9 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
 
     removeComponentsFromEAR(earComponentWrp, monitor);
     addComponentsToEAR(earComponentWrp, monitor);
-    //XXX how do we set security roles using wtp api?
-    //XXX how do we set alt-dds using wtp api?
-    //XXX generating Deployment Descriptor ? operation exists in WTP 3.0.0 
+    // XXX how do we set security roles using wtp api?
+    // XXX how do we set alt-dds using wtp api?
+    // XXX generating Deployment Descriptor ? operation exists in WTP 3.0.0 
   }
 
   private void configureDependencyProject(IMavenProjectFacade mavenProjectFacade, IProgressMonitor monitor)
@@ -144,7 +155,7 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
     IDataModel migrationdm = DataModelFactory.createDataModel(new JavaProjectMigrationDataModelProvider());
     migrationdm.setProperty(IJavaProjectMigrationDataModelProperties.PROJECT_NAME, project.getName());
     try{
-    migrationdm.getDefaultOperation().execute(monitor, null);
+      migrationdm.getDefaultOperation().execute(monitor, null);
     } catch (ExecutionException e) {
       throw new CoreException(new Status(IStatus.ERROR, IMavenConstants.PLUGIN_ID, "Unable to configure dependent project",e));
     } 
@@ -162,7 +173,7 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
         delegate.configureProject(project, mavenProjectFacade.getMavenProject(monitor), monitor);
       }
     } else {
-      //XXX Probably should create a UtilProjectConfiguratorDelegate
+      // XXX Probably should create a UtilProjectConfiguratorDelegate
       configureWtpUtil(project, monitor);
     }
   }
@@ -318,7 +329,7 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
       String artifactPath = M2_REPO_PREFIX
           + ArtifactHelper.getLocalRepoRelativePath(earModule.getArtifact()).toPortableString();
       IVirtualComponent depComponent = ComponentCore.createArchiveComponent(earComponent.getProject(), artifactPath);
-      
+
       addToAllComponentsMap(depComponent, earModule.getBundleDir());
 
       IVirtualReference newRef = ComponentCore.createReference(earComponent, depComponent);

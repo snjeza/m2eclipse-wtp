@@ -1,4 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2008 Sonatype, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *******************************************************************************/
+
 package org.maven.ide.eclipse.wtp.earmodules;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -20,22 +29,19 @@ package org.maven.ide.eclipse.wtp.earmodules;
 
 import org.apache.maven.artifact.Artifact;
 
+
 /**
  * The {@link EarModule} implementation for an ejb client module.
- *
+ * 
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
  */
-public class EjbClientModule
-    extends JarModule
-{
+public class EjbClientModule extends JarModule {
 
-    public EjbClientModule(Artifact artifact, String defaultLibBundleDir, String bundleFileName)
-    {
-        super( artifact, defaultLibBundleDir, bundleFileName );
-    }
+  public EjbClientModule(Artifact artifact, String defaultLibBundleDir, String bundleFileName) {
+    super(artifact, defaultLibBundleDir, bundleFileName);
+  }
 
-    public String getType()
-    {
-        return "ejb-client";
-    }
+  public String getType() {
+    return "ejb-client";
+  }
 }

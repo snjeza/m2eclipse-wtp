@@ -1,3 +1,11 @@
+/*******************************************************************************
+ * Copyright (c) 2008 Sonatype, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *******************************************************************************/
+
 package org.maven.ide.eclipse.wtp.earmodules;
 
 /*
@@ -21,22 +29,19 @@ package org.maven.ide.eclipse.wtp.earmodules;
 
 import org.apache.maven.artifact.Artifact;
 
+
 /**
  * The {@link EarModule} implementation for an Ejb3 module.
- *
+ * 
  * @author Stephane Nicoll <snicoll@apache.org>
  */
-public class Ejb3Module
-    extends EjbModule
-{
+public class Ejb3Module extends EjbModule {
 
-    public Ejb3Module( Artifact a, String bundleFileName )
-    {
-        super( a, bundleFileName );
-    }
+  public Ejb3Module(Artifact a, String bundleFileName) {
+    super(a, bundleFileName);
+  }
 
-    public String getType()
-    {
-        return "ejb3";
-    }
+  public String getType() {
+    return "ejb3";
+  }
 }

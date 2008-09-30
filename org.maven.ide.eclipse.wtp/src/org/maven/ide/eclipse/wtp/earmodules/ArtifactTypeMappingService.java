@@ -1,3 +1,10 @@
+/*******************************************************************************
+ * Copyright (c) 2008 Sonatype, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *******************************************************************************/
 
 package org.maven.ide.eclipse.wtp.earmodules;
 
@@ -72,7 +79,7 @@ public class ArtifactTypeMappingService {
 
     // Inject users configuration
     final Xpp3Dom[] artifactTypeMappings = plexusConfiguration.getChildren(ARTIFACT_TYPE_MAPPING_ELEMENT);
-    
+
     for(Xpp3Dom artifactTypeMapping : artifactTypeMappings) {
       final String customType = artifactTypeMapping.getAttribute(TYPE_ATTRIBUTE);
       final String mapping = artifactTypeMapping.getAttribute(MAPPING_ATTRIBUTE);
@@ -134,11 +141,11 @@ public class ArtifactTypeMappingService {
   }
 
   private void init() {
-    this.typeMappings = new HashMap<String, List<String>> ();
-    this.customMappings = new HashMap<String, String> ();
+    this.typeMappings = new HashMap<String, List<String>>();
+    this.customMappings = new HashMap<String, String>();
 
     // Initialize the mapping with the standard artifact types
-    for (String type : getStandardArtifactTypes()) {
+    for(String type : getStandardArtifactTypes()) {
       List<String> typeMapping = new ArrayList<String>();
       typeMapping.add(type);
       this.typeMappings.put(type, typeMapping);

@@ -1,3 +1,11 @@
+/*******************************************************************************
+ * Copyright (c) 2008 Sonatype, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *******************************************************************************/
+
 package org.maven.ide.eclipse.wtp.earmodules.output;
 
 /*
@@ -21,20 +29,20 @@ package org.maven.ide.eclipse.wtp.earmodules.output;
 
 import org.apache.maven.artifact.Artifact;
 
+
 /**
- * The standard fine name mapping. It returns the name
- * of the file in the local repository.
- *
+ * The standard fine name mapping. It returns the name of the file in the local repository.
+ * 
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
  */
-public class StandardFileNameMapping extends FileNameMapping
-{
-    public String mapFileName( final Artifact a )
-    {
-      String name = getProjectName(a);
-      if (name == null) {
-        name = a.getFile().getName();
-      }
-      return name;
+public class StandardFileNameMapping extends FileNameMapping {
+
+  public String mapFileName(final Artifact a) {
+    String name = getProjectName(a);
+    if(name == null) {
+      name = a.getFile().getName();
     }
+    return name;
+  }
+
 }

@@ -1,3 +1,11 @@
+/*******************************************************************************
+ * Copyright (c) 2008 Sonatype, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *******************************************************************************/
+
 package org.maven.ide.eclipse.wtp.earmodules;
 
 /*
@@ -21,46 +29,36 @@ package org.maven.ide.eclipse.wtp.earmodules;
 
 import org.apache.maven.artifact.Artifact;
 
+
 /**
- * The {@link EarModule} implementation for a non J2EE module such as
- * third party libraries.
- * <p/>
- * Such module is not incorporated in the generated <tt>application.xml<tt>
+ * The {@link EarModule} implementation for a non J2EE module such as third party libraries. <p/> Such module is not
+ * incorporated in the generated <tt>application.xml<tt>
  * but some application servers support it. To include it in the generated
- * deployment descriptor anyway, set the <tt>includeInApplicationXml</tt>
- * boolean flag.
- * <p/>
- * This class deprecates {@link org.apache.maven.plugin.ear.JavaModule}.
- *
+ * deployment descriptor anyway, set the <tt>includeInApplicationXml</tt> boolean flag. <p/> This class deprecates
+ * {@link org.apache.maven.plugin.ear.JavaModule}.
+ * 
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
  */
-public class JarModule
-    extends AbstractEarModule
-{
-    // private Boolean includeInApplicationXml = Boolean.FALSE;
+public class JarModule extends AbstractEarModule {
+  // private Boolean includeInApplicationXml = Boolean.FALSE;
 
-    public JarModule()
-    {
-        super();
-    }
+  public JarModule() {
+    super();
+  }
 
-    public JarModule( Artifact a, String defaultLibBundleDir, String bundleFileName )
-    {
-        super( a, bundleFileName );
-        setLibBundleDir( defaultLibBundleDir );
-        
-    }
+  public JarModule(Artifact a, String defaultLibBundleDir, String bundleFileName) {
+    super(a, bundleFileName);
+    setLibBundleDir(defaultLibBundleDir);
 
-    public String getType()
-    {
-        return "jar";
-    }
+  }
 
-    private void setLibBundleDir( String defaultLibBundleDir )
-    {
-        if ( defaultLibBundleDir != null && bundleDir == null )
-        {
-            this.bundleDir = defaultLibBundleDir;
-        }
+  public String getType() {
+    return "jar";
+  }
+
+  private void setLibBundleDir(String defaultLibBundleDir) {
+    if(defaultLibBundleDir != null && bundleDir == null) {
+      this.bundleDir = defaultLibBundleDir;
     }
+  }
 }

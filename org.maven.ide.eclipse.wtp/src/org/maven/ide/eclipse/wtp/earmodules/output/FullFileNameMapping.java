@@ -1,3 +1,11 @@
+/*******************************************************************************
+ * Copyright (c) 2008 Sonatype, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *******************************************************************************/
+
 package org.maven.ide.eclipse.wtp.earmodules.output;
 
 /*
@@ -21,23 +29,21 @@ package org.maven.ide.eclipse.wtp.earmodules.output;
 
 import org.apache.maven.artifact.Artifact;
 
+
 /**
- * A full file name mapping, useful if artifacts might have the same
- * name accross groups.
- *
+ * A full file name mapping, useful if artifacts might have the same name accross groups.
+ * 
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
  */
-public class FullFileNameMapping extends FileNameMapping
-{
-    
-    public String mapFileName( final Artifact a )
-    {
-      String name = getProjectName(a);
-      if (name == null) {
-        final String dashedGroupId = a.getGroupId().replace( '.', '-');
-        name =  dashedGroupId + "-" + a.getFile().getName();
-      }
-      return name;
+public class FullFileNameMapping extends FileNameMapping {
+
+  public String mapFileName(final Artifact a) {
+    String name = getProjectName(a);
+    if(name == null) {
+      final String dashedGroupId = a.getGroupId().replace('.', '-');
+      name = dashedGroupId + "-" + a.getFile().getName();
     }
-    
+    return name;
+  }
+
 }

@@ -1,3 +1,11 @@
+/*******************************************************************************
+ * Copyright (c) 2008 Sonatype, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *******************************************************************************/
+
 package org.maven.ide.eclipse.wtp.earmodules;
 
 /*
@@ -21,21 +29,18 @@ package org.maven.ide.eclipse.wtp.earmodules;
 
 import org.apache.maven.artifact.Artifact;
 
+
 /**
  * The {@link EarModule} implementation for a JBoss wsr module.
- *
+ * 
  * @author Brad O'Hearne <brado@neurofire.com>
  */
-public class WsrModule
-    extends RarModule
-{
-    public WsrModule( Artifact a, String bundleFileName )
-    {
-        super( a, bundleFileName );
-    }
+public class WsrModule extends RarModule {
+  public WsrModule(Artifact a, String bundleFileName) {
+    super(a, bundleFileName);
+  }
 
-    public String getType()
-    {
-        return "wsr";
-    }
+  public String getType() {
+    return "wsr";
+  }
 }

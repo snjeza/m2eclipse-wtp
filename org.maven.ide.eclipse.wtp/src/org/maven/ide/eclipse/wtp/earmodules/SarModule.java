@@ -1,3 +1,11 @@
+/*******************************************************************************
+ * Copyright (c) 2008 Sonatype, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *******************************************************************************/
+
 package org.maven.ide.eclipse.wtp.earmodules;
 
 /*
@@ -21,24 +29,20 @@ package org.maven.ide.eclipse.wtp.earmodules;
 
 import org.apache.maven.artifact.Artifact;
 
+
 /**
  * The {@link EarModule} implementation for a JBoss sar module.
- *
+ * 
  * @author Stephane Nicoll <snicoll@apache.org>
  */
-public class SarModule
-    extends AbstractEarModule
-    implements JbossEarModule
-{
-    protected static final String SAR_MODULE = "connector";
+public class SarModule extends AbstractEarModule implements JbossEarModule {
+  protected static final String SAR_MODULE = "connector";
 
-    public SarModule( Artifact a, String bundleFileName )
-    {
-        super( a, bundleFileName );
-    }
+  public SarModule(Artifact a, String bundleFileName) {
+    super(a, bundleFileName);
+  }
 
-    public String getType()
-    {
-        return "sar";
-    }
+  public String getType() {
+    return "sar";
+  }
 }

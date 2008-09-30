@@ -1,3 +1,11 @@
+/*******************************************************************************
+ * Copyright (c) 2008 Sonatype, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *******************************************************************************/
+
 package org.maven.ide.eclipse.wtp.earmodules.output;
 
 /*
@@ -25,39 +33,37 @@ import org.eclipse.jst.j2ee.application.internal.operations.IModuleExtensions;
 import org.eclipse.jst.j2ee.internal.project.J2EEProjectUtilities;
 import org.maven.ide.eclipse.wtp.ArtifactHelper;
 
+
 /**
- * Maps file name {@link Artifact}.
- * <p/>
- * TODO: it might be easier to use a token-based approach instead.
+ * Maps file name {@link Artifact}. <p/> TODO: it might be easier to use a token-based approach instead.
  * 
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
  */
 @SuppressWarnings("restriction")
-public abstract class FileNameMapping
-{
+public abstract class FileNameMapping {
 
-    /**
-     * Returns the file name of the specified artifact.
-     *
-     * @param a the artifact
-     * @return the name of the file for the specified artifact
-     */
-    public abstract String mapFileName(final Artifact a);
+  /**
+   * Returns the file name of the specified artifact.
+   * 
+   * @param a the artifact
+   * @return the name of the file for the specified artifact
+   */
+  public abstract String mapFileName(final Artifact a);
 
-    @SuppressWarnings("deprecation")
-    protected String getProjectName(final Artifact a){
-      IProject project =ArtifactHelper.getWorkspaceProject(a);
-      if (project == null) {
-        return null;
-      }
-      String name = project.getName().replace( ' ', '_');
-      if (J2EEProjectUtilities.isDynamicWebProject(project)) {
-        name += IModuleExtensions.DOT_WAR;
-      } else if (J2EEProjectUtilities.isJCAProject(project)) {
-        name += IModuleExtensions.DOT_RAR;
-      } else {
-        name += IModuleExtensions.DOT_JAR;
-      }
-     return name;
+  @SuppressWarnings("deprecation")
+  protected String getProjectName(final Artifact a) {
+    IProject project = ArtifactHelper.getWorkspaceProject(a);
+    if(project == null) {
+      return null;
     }
+    String name = project.getName().replace(' ', '_');
+    if(J2EEProjectUtilities.isDynamicWebProject(project)) {
+      name += IModuleExtensions.DOT_WAR;
+    } else if(J2EEProjectUtilities.isJCAProject(project)) {
+      name += IModuleExtensions.DOT_RAR;
+    } else {
+      name += IModuleExtensions.DOT_JAR;
+    }
+    return name;
+  }
 }

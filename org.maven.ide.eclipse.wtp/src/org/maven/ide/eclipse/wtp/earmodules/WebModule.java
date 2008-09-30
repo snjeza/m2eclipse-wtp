@@ -1,3 +1,11 @@
+/*******************************************************************************
+ * Copyright (c) 2008 Sonatype, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *******************************************************************************/
+
 package org.maven.ide.eclipse.wtp.earmodules;
 
 /*
@@ -21,67 +29,57 @@ package org.maven.ide.eclipse.wtp.earmodules;
 
 import org.apache.maven.artifact.Artifact;
 
+
 /**
  * The {@link EarModule} implementation for a Web application module.
- *
+ * 
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
  */
-public class WebModule
-    extends AbstractEarModule
-{
-    protected static final String WEB_MODULE = "web";
+public class WebModule extends AbstractEarModule {
+  protected static final String WEB_MODULE = "web";
 
-    protected static final String WEB_URI_FIELD = "web-uri";
+  protected static final String WEB_URI_FIELD = "web-uri";
 
-    protected static final String CONTEXT_ROOT_FIELD = "context-root";
+  protected static final String CONTEXT_ROOT_FIELD = "context-root";
 
-    private String contextRoot;
+  private String contextRoot;
 
-    public WebModule( Artifact a, String bundleFileName )
-    {
-        super( a, bundleFileName );
+  public WebModule(Artifact a, String bundleFileName) {
+    super(a, bundleFileName);
+  }
+
+  /**
+   * Returns the context root to use for the web module. <p/> Note that this might return <tt>null</tt> till the
+   * artifact has been resolved.
+   * 
+   * @return the context root
+   */
+  public String getContextRoot() {
+    // Context root has not been customized - using default
+    if(contextRoot == null) {
+      contextRoot = getDefaultContextRoot(getArtifact());
     }
+    return contextRoot;
+  }
 
-    /**
-     * Returns the context root to use for the web module.
-     * <p/>
-     * Note that this might return <tt>null</tt> till the
-     * artifact has been resolved.
-     *
-     * @return the context root
-     */
-    public String getContextRoot()
-    {
-        // Context root has not been customized - using default
-        if ( contextRoot == null )
-        {
-            contextRoot = getDefaultContextRoot( getArtifact() );
-        }
-        return contextRoot;
-    }
+  public String getType() {
+    return "war";
+  }
 
-    public String getType()
-    {
-        return "war";
+  /**
+   * Generates a default context root for the given artifact, based on the <tt>artifactId</tt>.
+   * 
+   * @param a the artifact
+   * @return a context root for the artifact
+   */
+  private static String getDefaultContextRoot(Artifact a) {
+    if(a == null) {
+      throw new NullPointerException("Artifact could not be null.");
     }
+    return "/" + a.getArtifactId();
+  }
 
-    /**
-     * Generates a default context root for the given artifact, based
-     * on the <tt>artifactId</tt>.
-     *
-     * @param a the artifact
-     * @return a context root for the artifact
-     */
-    private static String getDefaultContextRoot( Artifact a )
-    {
-        if ( a == null )
-        {
-            throw new NullPointerException( "Artifact could not be null." );
-        }
-        return "/" + a.getArtifactId();
-    }
-
-    public void setContextRoot(String contextRoot) {
-      this.contextRoot = contextRoot;
-    }
+  public void setContextRoot(String contextRoot) {
+    this.contextRoot = contextRoot;
+  }
 }

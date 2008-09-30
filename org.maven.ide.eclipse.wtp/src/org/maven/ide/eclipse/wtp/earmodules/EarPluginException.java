@@ -1,9 +1,18 @@
+/*******************************************************************************
+ * Copyright (c) 2008 Sonatype, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *******************************************************************************/
+
 package org.maven.ide.eclipse.wtp.earmodules;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.maven.ide.eclipse.core.IMavenConstants;
+
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -26,34 +35,28 @@ import org.maven.ide.eclipse.core.IMavenConstants;
 
 /**
  * The base exception of the EAR plugin.
- *
+ * 
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
  * @author Fred Bricon
  */
-public class EarPluginException
-    extends CoreException
-{
-    private static final long serialVersionUID = -819727447130647982L;
-    
-    private static final String DEFAULT_MESSAGE = "Error in ear plugin configuration";
+public class EarPluginException extends CoreException {
+  private static final long serialVersionUID = -819727447130647982L;
 
-    public EarPluginException()
-    {
-      super(new Status(IStatus.ERROR, IMavenConstants.PLUGIN_ID,  DEFAULT_MESSAGE));
-    }
+  private static final String DEFAULT_MESSAGE = "Error in ear plugin configuration";
 
-    public EarPluginException( String message )
-    {
-        super(new Status(IStatus.ERROR, IMavenConstants.PLUGIN_ID,  message));
-    }
+  public EarPluginException() {
+    super(new Status(IStatus.ERROR, IMavenConstants.PLUGIN_ID, DEFAULT_MESSAGE));
+  }
 
-    public EarPluginException( Throwable cause )
-    {
-        super(new Status(IStatus.ERROR, IMavenConstants.PLUGIN_ID, DEFAULT_MESSAGE, cause));
-    }
+  public EarPluginException(String message) {
+    super(new Status(IStatus.ERROR, IMavenConstants.PLUGIN_ID, message));
+  }
 
-    public EarPluginException( String message, Throwable cause )
-    {
-      super(new Status(IStatus.ERROR, IMavenConstants.PLUGIN_ID, message, cause));
-    }
+  public EarPluginException(Throwable cause) {
+    super(new Status(IStatus.ERROR, IMavenConstants.PLUGIN_ID, DEFAULT_MESSAGE, cause));
+  }
+
+  public EarPluginException(String message, Throwable cause) {
+    super(new Status(IStatus.ERROR, IMavenConstants.PLUGIN_ID, message, cause));
+  }
 }

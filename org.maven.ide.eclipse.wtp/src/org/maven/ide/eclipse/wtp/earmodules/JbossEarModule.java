@@ -1,3 +1,11 @@
+/*******************************************************************************
+ * Copyright (c) 2008 Sonatype, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *******************************************************************************/
+
 package org.maven.ide.eclipse.wtp.earmodules;
 
 /*
@@ -19,13 +27,11 @@ package org.maven.ide.eclipse.wtp.earmodules;
  * under the License.
  */
 
-
 /**
  * Represents a JBoss specific ear module.
- *
+ * 
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
  */
-public interface JbossEarModule
-{
+public interface JbossEarModule {
 
 }

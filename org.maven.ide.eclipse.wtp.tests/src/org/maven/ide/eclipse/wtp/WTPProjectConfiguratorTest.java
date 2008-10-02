@@ -8,6 +8,8 @@
 
 package org.maven.ide.eclipse.wtp;
 
+import java.util.List;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
@@ -66,7 +68,7 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     IProject project = importProject("projects/simple/p02/pom.xml", new ResolverConfiguration());
     IFacetedProject facetedProject = ProjectFacetsManager.create(project);
     assertNotNull(facetedProject);
-    assertEquals(WebFacetUtils.WEB_24, facetedProject.getInstalledVersion(WebFacetUtils.WEB_FACET));
+    assertEquals(WebFacetUtils.WEB_23, facetedProject.getInstalledVersion(WebFacetUtils.WEB_FACET));
     assertTrue(facetedProject.hasProjectFacet(JavaFacetUtils.JAVA_FACET));
   }
 
@@ -323,21 +325,19 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     }
     
   }
-  
+
   
   private void assertMarkers(IProject project, int expected) throws CoreException {
-    IMarker[] markers = project.findMarkers(null, true, IResource.DEPTH_INFINITE);
-    assertEquals(project.getName() + " : " + toString(markers), expected, markers.length);
+    // IMarker[] markers = project.findMarkers(null, true, IResource.DEPTH_INFINITE);
+    List<IMarker> markers = findErrorMarkers(project);
+    assertEquals(project.getName() + " : " + toString(markers.toArray(new IMarker[markers.size()])), //
+        expected, markers.size());
   }
 
   private void  assertNotDeployable(IClasspathEntry entry){
     assertDeployable(entry, false);
   }
   
-  private void  assertDeployable(IClasspathEntry entry){
-    assertDeployable(entry, true);
-  }
-
   private void  assertDeployable(IClasspathEntry entry, boolean expectedDeploymentStatus){
     assertEquals(entry.toString() + " " + IClasspathDependencyConstants.CLASSPATH_COMPONENT_DEPENDENCY, expectedDeploymentStatus,      hasExtraAttribute(entry, IClasspathDependencyConstants.CLASSPATH_COMPONENT_DEPENDENCY));
     assertEquals(entry.toString() + " " + IClasspathDependencyConstants.CLASSPATH_COMPONENT_NON_DEPENDENCY, !expectedDeploymentStatus, hasExtraAttribute(entry, IClasspathDependencyConstants.CLASSPATH_COMPONENT_NON_DEPENDENCY));

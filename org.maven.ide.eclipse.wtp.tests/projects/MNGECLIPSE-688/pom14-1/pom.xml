@@ -1,9 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <groupId>foo.bar</groupId>
   <artifactId>pom14-1</artifactId>
-  <packaging>pom</packaging>
   <version>0.0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
   <modules>
   	<module>core-1</module>
   	<module>ejb21-1</module>
@@ -11,6 +13,7 @@
   	<module>war23-2</module>
   	<module>ear14-1</module>
   </modules>
+
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -19,34 +22,33 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
   <dependencyManagement>
     <dependencies>
-	    <dependency>
+      <dependency>
     	<groupId>foo.bar</groupId>
     	<artifactId>core-1</artifactId>
     	<version>0.0.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
+      </dependency>
+      <dependency>
     	<groupId>foo.bar</groupId>
     	<artifactId>war23-2</artifactId>
     	<version>0.0.1-SNAPSHOT</version>
-      <type>war</type>
-    </dependency>
-    <dependency>
+        <type>war</type>
+      </dependency>
+      <dependency>
     	<groupId>foo.bar</groupId>
     	<artifactId>war23-1</artifactId>
     	<version>0.0.1-SNAPSHOT</version>
     	<type>war</type>
-    </dependency>
-    <dependency>
+      </dependency>
+      <dependency>
     	<groupId>foo.bar</groupId>
     	<artifactId>ejb21-1</artifactId>
     	<version>0.0.1-SNAPSHOT</version>
     	<type>ejb</type>
-    </dependency>
-  </dependencies>
-  
+      </dependency>
+    </dependencies>
   </dependencyManagement>
-  
   
 </project>

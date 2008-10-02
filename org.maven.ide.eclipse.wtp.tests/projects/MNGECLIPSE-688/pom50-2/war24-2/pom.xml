@@ -1,0 +1,56 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>foo.bar2</groupId>
+    <artifactId>pom50-2</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath>..</relativePath>
+  </parent>
+
+  <artifactId>war24-2</artifactId>
+  <packaging>war</packaging>
+
+  <build>
+    <sourceDirectory>src</sourceDirectory>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>2.0.1</version>
+        <configuration>
+          <warSourceDirectory>/WebContent</warSourceDirectory>
+          <!--
+          <webResources>
+            <resource>
+              <directory></directory>
+              <filtering>false</filtering>
+            </resource>
+          </webResources>
+          -->
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+    <dependency>
+      <groupId>foo.bar2</groupId>
+      <artifactId>jar-2</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>foo.bar2</groupId>
+      <artifactId>ejb30-2</artifactId>
+      <type>ejb</type>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>foo.bar2</groupId>
+      <artifactId>jar-2</artifactId>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+
+</project>

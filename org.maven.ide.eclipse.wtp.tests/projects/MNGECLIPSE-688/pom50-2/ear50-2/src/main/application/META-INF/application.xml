@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:application="http://java.sun.com/xml/ns/javaee/application_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application_5.xsd" version="5">
+  <display-name>ear50-2</display-name>
+  <module>
+    <web>
+      <web-uri>war24-2.war</web-uri>
+      <context-root>/war24-2</context-root>
+    </web>
+  </module>
+  <module>
+    <ejb>ejb30-2.jar</ejb>
+  </module>
+  <module>
+    <java>jar-2.jar</java>
+  </module>
+  <library-directory>jar</library-directory>
+</application>

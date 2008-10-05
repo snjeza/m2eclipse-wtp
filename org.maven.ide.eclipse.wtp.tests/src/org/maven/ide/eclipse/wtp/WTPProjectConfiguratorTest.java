@@ -8,6 +8,7 @@
 
 package org.maven.ide.eclipse.wtp;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -307,7 +308,7 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     
     IVirtualComponent comp = ComponentCore.createComponent(ear);
     IVirtualReference[] references = comp.getReferences();
-    assertEquals(5, references.length);
+    assertEquals(Arrays.asList(references).toString(), 5, references.length);
     //The reference order changes between imports, so can't rely on references indexes
     assertNotNull(comp.getReference("core-1"));
     assertNotNull(comp.getReference("ejb21-1"));

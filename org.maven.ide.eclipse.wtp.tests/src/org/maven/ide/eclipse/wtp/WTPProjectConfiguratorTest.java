@@ -319,7 +319,7 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     
     IProject war1 = projects[2];
     IClasspathEntry[] war1CP = getClassPathEntries(war1);
-    assertEquals(6, war1CP.length);
+    assertEquals(Arrays.asList(war1CP).toString(), 6, war1CP.length);
     //war23-1 pom.xml states that no dependencies should be deployed (in WEB-INF/lib)
     for (IClasspathEntry entry : war1CP){
       assertNotDeployable(entry);

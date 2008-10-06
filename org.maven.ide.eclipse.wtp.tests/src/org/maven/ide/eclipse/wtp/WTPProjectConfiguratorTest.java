@@ -308,26 +308,39 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     
     IVirtualComponent comp = ComponentCore.createComponent(ear);
     IVirtualReference[] references = comp.getReferences();
-    assertEquals(Arrays.asList(references).toString(), 5, references.length);
-    //The reference order changes between imports, so can't rely on references indexes
+    assertEquals(toString(references), 5, references.length);
+    // The reference order changes between imports, so can't rely on references indexes
     assertNotNull(comp.getReference("core-1"));
     assertNotNull(comp.getReference("ejb21-1"));
     assertNotNull(comp.getReference("war23-1"));
     assertNotNull(comp.getReference("war23-2"));
     assertNotNull(comp.getReference("var/M2_REPO/commons-lang/commons-lang/2.4/commons-lang-2.4.jar"));
-    //At this point, we checked provided dependencies won't be deployed in the ear
     
+    // checked provided dependencies won't be deployed in the ear
     IProject war1 = projects[2];
     IClasspathEntry[] war1CP = getClassPathEntries(war1);
     assertEquals(Arrays.asList(war1CP).toString(), 6, war1CP.length);
-    //war23-1 pom.xml states that no dependencies should be deployed (in WEB-INF/lib)
+    // war23-1 pom.xml states that no dependencies should be deployed (in WEB-INF/lib)
     for (IClasspathEntry entry : war1CP){
       assertNotDeployable(entry);
     }
-    
   }
 
-  
+  private String toString(IVirtualReference[] references) {
+    StringBuilder sb = new StringBuilder("[");
+    
+    String sep = "";
+    for(IVirtualReference reference : references) {
+      IVirtualComponent component = reference.getReferencedComponent();
+      sb.append(sep).append(reference.getRuntimePath() + " - ");
+      sb.append(component.getName());
+      sb.append(" " + component.getMetaProperties());
+      sep = ", ";
+    }
+    
+    return sb.append(']').toString();
+  }
+
   private void assertMarkers(IProject project, int expected) throws CoreException {
     // IMarker[] markers = project.findMarkers(null, true, IResource.DEPTH_INFINITE);
     List<IMarker> markers = findErrorMarkers(project);

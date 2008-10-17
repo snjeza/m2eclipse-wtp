@@ -22,9 +22,9 @@ import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jst.j2ee.classpathdep.IClasspathDependencyConstants;
-import org.maven.ide.eclipse.core.IMavenConstants;
 import org.maven.ide.eclipse.core.MavenLogger;
 import org.maven.ide.eclipse.jdt.AbstractClasspathConfigurator;
+import org.maven.ide.eclipse.jdt.BuildPathManager;
 
 
 /**
@@ -44,7 +44,7 @@ class WTPClasspathConfigurator extends AbstractClasspathConfigurator {
 
   private final String targetDir;
 
-  public WTPClasspathConfigurator(String targetDir) {
+  WTPClasspathConfigurator(String targetDir) {
     this.targetDir = targetDir;
   }
 
@@ -68,7 +68,7 @@ class WTPClasspathConfigurator extends AbstractClasspathConfigurator {
     Set<String> names = new HashSet<String>();
     for(IClasspathEntry entry : cp0) {
       // WTP 2.0 does not support workspace dependencies in third party classpath containers
-      String scope = getAttributeValue(entry, IMavenConstants.SCOPE_ATTRIBUTE);
+      String scope = getAttributeValue(entry, BuildPathManager.SCOPE_ATTRIBUTE);
       if(IClasspathEntry.CPE_PROJECT == entry.getEntryKind() && Artifact.SCOPE_COMPILE.equals(scope)) {
         continue;
       }
@@ -86,7 +86,7 @@ class WTPClasspathConfigurator extends AbstractClasspathConfigurator {
       IClasspathEntry newEntry = entry;
       if (dups.contains(entry.getPath().lastSegment())) {
         File src = new File(entry.getPath().toOSString());
-        String groupId = getAttributeValue(entry, IMavenConstants.GROUP_ID_ATTRIBUTE);
+        String groupId = getAttributeValue(entry, BuildPathManager.GROUP_ID_ATTRIBUTE);
         File dst = new File(targetDir, groupId + "-" + entry.getPath().lastSegment());
         try {
           if (src.canRead()) {

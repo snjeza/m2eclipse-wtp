@@ -46,6 +46,7 @@ import org.eclipse.wst.common.project.facet.core.ProjectFacetsManager;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject.Action;
 import org.maven.ide.eclipse.core.IMavenConstants;
 import org.maven.ide.eclipse.core.MavenLogger;
+import org.maven.ide.eclipse.jdt.BuildPathManager;
 import org.maven.ide.eclipse.project.IMavenProjectFacade;
 import org.maven.ide.eclipse.wtp.earmodules.EarModule;
 
@@ -60,7 +61,7 @@ import org.maven.ide.eclipse.wtp.earmodules.EarModule;
 class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate {
 
   private static String M2_REPO_PREFIX = VirtualArchiveComponent.VARARCHIVETYPE + IPath.SEPARATOR
-      + IMavenConstants.M2_REPO + IPath.SEPARATOR;
+      + BuildPathManager.M2_REPO + IPath.SEPARATOR;
 
   private static final IStatus OK_STATUS = IDataModelProvider.OK_STATUS;
 

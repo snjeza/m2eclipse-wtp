@@ -326,6 +326,30 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     }
   }
 
+  
+  public void testMNGECLIPSE597() throws Exception {
+    IProject[] projects = importProjects("projects/MNGECLIPSE-597", 
+        new String[] {"DWPDependency/pom.xml", "DWPMain/pom.xml"}, 
+        new ResolverConfiguration());
+
+    waitForJobsToComplete();
+    assertEquals(2, projects.length);
+    IProject main = projects[0];
+    IProject dep = projects[1];
+    
+    assertMarkers(main, 0);
+    assertMarkers(dep, 0);
+
+    IFacetedProject mainWar = ProjectFacetsManager.create(main);
+    assertNotNull(mainWar);
+    assertTrue(mainWar.hasProjectFacet(WebFacetUtils.WEB_FACET));
+
+    IFacetedProject depWar = ProjectFacetsManager.create(dep);
+    assertNotNull(depWar);
+    assertTrue(depWar.hasProjectFacet(WebFacetUtils.WEB_FACET));
+  }
+
+  
   private String toString(IVirtualReference[] references) {
     StringBuilder sb = new StringBuilder("[");
     

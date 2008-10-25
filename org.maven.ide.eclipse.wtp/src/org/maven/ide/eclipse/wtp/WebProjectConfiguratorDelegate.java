@@ -99,7 +99,7 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
     for(IMavenProjectFacade dependency : getWorkspaceDependencies(project, mavenProject)) {
       String depPackaging = dependency.getPackaging();
       //jee dependency has not been configured yet - i.e. has not JEE facet-
-      if(JEEPackaging.isJEEPackaging(depPackaging) && !WTPProjectsUtil.isJavaEEProject(project)) {
+      if(JEEPackaging.isJEEPackaging(depPackaging) && !WTPProjectsUtil.isJavaEEProject(dependency.getProject())) {
         IProjectConfiguratorDelegate delegate = ProjectConfiguratorDelegateFactory
             .getProjectConfiguratorDelegate(depPackaging);
         if(delegate != null) {

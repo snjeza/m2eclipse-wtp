@@ -28,10 +28,9 @@ package org.maven.ide.eclipse.wtp.earmodules.output;
  */
 
 import org.apache.maven.artifact.Artifact;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jst.j2ee.application.internal.operations.IModuleExtensions;
-import org.eclipse.jst.j2ee.internal.project.J2EEProjectUtilities;
 import org.maven.ide.eclipse.wtp.ArtifactHelper;
+import org.maven.ide.eclipse.wtp.JEEPackaging;
 
 
 /**
@@ -50,20 +49,30 @@ public abstract class FileNameMapping {
    */
   public abstract String mapFileName(final Artifact a);
 
-  @SuppressWarnings("deprecation")
-  protected String getProjectName(final Artifact a) {
-    IProject project = ArtifactHelper.getWorkspaceProject(a);
-    if(project == null) {
+  
+  /**
+   * Construct the exported project filename if the artifact is a workspace project. 
+   * @param artifact
+   * @return the project's exported filename using the pattern [artifactId]-[version].[extension] or 
+   * null if the artifact is not a workspace project. 
+   */
+  protected String getProjectName(final Artifact artifact) {
+    if(ArtifactHelper.getWorkspaceProject(artifact) == null) {
       return null;
     }
-    String name = project.getName().replace(' ', '_');
-    if(J2EEProjectUtilities.isDynamicWebProject(project)) {
-      name += IModuleExtensions.DOT_WAR;
-    } else if(J2EEProjectUtilities.isJCAProject(project)) {
-      name += IModuleExtensions.DOT_RAR;
-    } else {
-      name += IModuleExtensions.DOT_JAR;
+    StringBuilder name = new StringBuilder(artifact.getArtifactId()); //ArtifactIds contain no spaces, no need to .replace(' ', '_')
+    name.append("-").append(artifact.getVersion());//MNGECLIPSE-967 add versions to project filenames
+    JEEPackaging packaging = JEEPackaging.getValue(artifact.getType());
+    switch(packaging) {
+      case WAR:
+        name.append(IModuleExtensions.DOT_WAR);
+        break;
+      case RAR:
+        name.append(IModuleExtensions.DOT_RAR);
+        break;
+      default:
+        name.append(IModuleExtensions.DOT_JAR);
     }
-    return name;
+    return name.toString();
   }
 }

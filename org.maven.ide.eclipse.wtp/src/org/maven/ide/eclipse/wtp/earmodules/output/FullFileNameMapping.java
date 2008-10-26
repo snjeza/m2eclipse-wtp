@@ -40,10 +40,10 @@ public class FullFileNameMapping extends FileNameMapping {
   public String mapFileName(final Artifact a) {
     String name = getProjectName(a);
     if(name == null) {
-      final String dashedGroupId = a.getGroupId().replace('.', '-');
-      name = dashedGroupId + "-" + a.getFile().getName();
+      name= a.getFile().getName();
     }
-    return name;
+    final String dashedGroupId = a.getGroupId().replace('.', '-');
+    return dashedGroupId + "-" + name;
   }
 
 }

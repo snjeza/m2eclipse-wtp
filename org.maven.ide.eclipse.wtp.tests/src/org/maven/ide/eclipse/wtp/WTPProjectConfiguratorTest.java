@@ -354,6 +354,44 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     assertEquals(dep, depRef.getReferencedComponent().getProject());
   }
 
+
+  public void testMNGECLIPSE965_fileNames() throws Exception {
+    //Exported filenames should be consistent when workspace resolution is on/off
+    IProject[] projects = importProjects(
+        "projects/MNGECLIPSE-965/", //
+        new String[] {"ear-standardFileNames/pom.xml", "ear-fullFileNames/pom.xml", "testFileNameWar/pom.xml"},
+        new ResolverConfiguration());
+
+    waitForJobsToComplete();
+    
+    assertEquals(3, projects.length);
+    IProject earStandardFN = projects[0];
+    IProject earFullFN = projects[1];
+    IProject war = projects[2];
+    
+    assertMarkers(earStandardFN, 0);
+    assertMarkers(earFullFN, 0);
+    assertMarkers(war, 0);
+
+    //Check standard file name mapping
+    IVirtualComponent earStandardFNcomp = ComponentCore.createComponent(earStandardFN);
+    IVirtualReference warRef = earStandardFNcomp.getReference("testFileNameWar");
+    assertNotNull(warRef);
+    assertEquals("testFileNameWar-0.0.1-SNAPSHOT.war",warRef.getArchiveName());
+
+    //Check full file name mapping
+    IVirtualComponent earFullFNcomp = ComponentCore.createComponent(earFullFN);
+    warRef = earFullFNcomp.getReference("testFileNameWar");
+    assertNotNull(warRef);
+    assertEquals("foo-bar-testFileNameWar-0.0.1-SNAPSHOT.war",warRef.getArchiveName());
+
+
+    /* FIXME FullFileNameMapping doesn't work for non project refs. Need to fix that 
+    IVirtualReference junitRef = comp.getReference("var/M2_REPO/junit/junit/3.8.1/junit-3.8.1.jar");
+    assertNotNull(junitRef);
+    assertEquals("junit-junit-3.8.1.jar",junitRef.getArchiveName());
+    */
+  }  
   
   private String toString(IVirtualReference[] references) {
     StringBuilder sb = new StringBuilder("[");

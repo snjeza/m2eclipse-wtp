@@ -57,7 +57,7 @@ public enum JEEPackaging {
    * @param packaging of a maven artifact.
    * @return the corresponding JEEPackaging or UNKNOWN if the package type is not supported.
    */
-  static JEEPackaging getValue(String packaging) {
+  public static JEEPackaging getValue(String packaging) {
     if(packaging == null) {
       throw new IllegalArgumentException("packaging must not be null");
     }

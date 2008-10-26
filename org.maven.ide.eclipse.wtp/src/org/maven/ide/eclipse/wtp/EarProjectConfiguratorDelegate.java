@@ -34,6 +34,8 @@ import org.eclipse.jst.j2ee.internal.common.classpath.J2EEComponentClasspathUpda
 import org.eclipse.jst.j2ee.internal.earcreation.EarFacetInstallDataModelProvider;
 import org.eclipse.wst.common.componentcore.ComponentCore;
 import org.eclipse.wst.common.componentcore.datamodel.properties.ICreateReferenceComponentsDataModelProperties;
+import org.eclipse.wst.common.componentcore.internal.StructureEdit;
+import org.eclipse.wst.common.componentcore.internal.WorkbenchComponent;
 import org.eclipse.wst.common.componentcore.internal.resources.VirtualArchiveComponent;
 import org.eclipse.wst.common.componentcore.resources.IVirtualComponent;
 import org.eclipse.wst.common.componentcore.resources.IVirtualReference;
@@ -134,7 +136,7 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
           && workspaceDependency.getFullPath(artifact.getFile()) != null) {
         //artifact dependency is a workspace project
         IProject depProject = workspaceDependency.getProject();
-        configureDependencyProject(workspaceDependency, monitor);
+        configureDependencyProject(workspaceDependency, monitor, earModule);
         earComponentWrp.addProject(depProject, earModule);
       } else {
         //artifact dependency should be added as a JEE module, referenced with M2_REPO variable 
@@ -149,7 +151,7 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
     // XXX generating Deployment Descriptor ? operation exists in WTP 3.0.0 
   }
 
-  private void configureDependencyProject(IMavenProjectFacade mavenProjectFacade, IProgressMonitor monitor)
+  private void configureDependencyProject(IMavenProjectFacade mavenProjectFacade, IProgressMonitor monitor, EarModule earModule)
       throws CoreException {
     // TODO Check what to do w/ the following datamodel
     /*
@@ -177,6 +179,30 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
       // XXX Probably should create a UtilProjectConfiguratorDelegate
       configureWtpUtil(project, monitor);
     }
+
+    //MNGECLIPSE-965 : project deployed name should use the same pattern as non workspace artifacts.
+    configureDeployedName(project, earModule.getBundleFileName());
+  }
+
+  private void configureDeployedName(IProject project, String deployedFileName) {
+    //We need to remove the file extension from deployedFileName 
+    int extSeparatorPos  = deployedFileName.lastIndexOf('.');
+    String deployedName = extSeparatorPos > -1? deployedFileName.substring(0, extSeparatorPos): deployedFileName;
+    //From jerr's patch in MNGECLIPSE-965
+    IVirtualComponent projectComponent = ComponentCore.createComponent(project);
+    if(!projectComponent.getDeployedName().equals(deployedName)){
+      StructureEdit moduleCore = null;
+      try {
+        moduleCore = StructureEdit.getStructureEditForWrite(project);
+        WorkbenchComponent component = moduleCore.getComponent();
+        component.setName(deployedName);
+        moduleCore.saveIfNecessary(null);
+      } finally {
+        if (moduleCore != null) {
+          moduleCore.dispose();
+        }
+      }
+    }  
   }
 
   private void addComponentsToEAR(EarComponentWrapper earComponentWrapper, IProgressMonitor monitor)

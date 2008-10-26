@@ -40,7 +40,8 @@ import org.maven.ide.eclipse.wtp.earmodules.output.FileNameMappingFactory;
  */
 class EarPluginConfiguration {
 
-  private static final String EAR_DEFAULT_LIB_DIR = "/"; // J2EEConstants.EAR_DEFAULT_LIB_DIR
+  //Careful : This has a different meaning from the default library directory (/lib)
+  private static final String EAR_DEFAULT_BUNDLE_DIR = "/"; 
 
   private static final String EAR_DEFAULT_CONTENT_DIR = "src/main/application"; // J2EEConstants.EAR_DEFAULT_LIB_DIR
 
@@ -50,7 +51,10 @@ class EarPluginConfiguration {
   private final MavenProject mavenProject;
 
   private final Plugin plugin;
-  
+
+  /**
+   * directory where jars will be deployed.
+   */
   private String libDirectory;
 
   // private String contentDirectory;
@@ -120,9 +124,6 @@ class EarPluginConfiguration {
    * @return the first resource directory found in pom.xml.
    */
   public String getEarContentDirectory(IProject project) {
-    //Returns the first resource directory we find
-    //default should be src/main/resources
-    //return MavenProjectUtils.getResourceLocations(project, mavenProject.getResources())[0].toString();
     Xpp3Dom config = getConfiguration();
     if(config != null) {
       Xpp3Dom contentDirDom = config.getChild("earSourceDirectory");
@@ -136,17 +137,20 @@ class EarPluginConfiguration {
     return EAR_DEFAULT_CONTENT_DIR;
   }
 
-  public String getDefaultLibDirectory() {
+  /**
+   * Return the default bundle directory, where jars will be deployed.
+   */
+  public String getDefaultBundleDirectory() {
     if(libDirectory == null) {
       Xpp3Dom config = getConfiguration();
       if(config != null) {
         Xpp3Dom libDom = config.getChild("defaultLibBundleDir");
         if(libDom != null) {
           String libDir = libDom.getValue().trim();
-          libDirectory = (libDir == null || libDir.length() == 0) ? EAR_DEFAULT_LIB_DIR : libDir;
+          libDirectory = (libDir == null || libDir.length() == 0) ? EAR_DEFAULT_BUNDLE_DIR : libDir;
         }
       }
-      libDirectory = (libDirectory  == null)?EAR_DEFAULT_LIB_DIR:libDirectory;
+      libDirectory = (libDirectory  == null)?EAR_DEFAULT_BUNDLE_DIR:libDirectory;
     }
     return libDirectory;
   }
@@ -165,11 +169,11 @@ class EarPluginConfiguration {
     }
 
     Set<EarModule> earModules = new HashSet<EarModule>(artifacts.size());
-    String defaultLibDir = getDefaultLibDirectory();
+    String defaultBundleDir = getDefaultBundleDirectory();
     EarModuleFactory earModuleFactory = EarModuleFactory.createEarModuleFactory(getArtifactTypeMappingService(),
         getFileNameMapping(), getMainArtifactId(), artifacts);
 
-    earModules.addAll(getEarModulesFromConfig(earModuleFactory, defaultLibDir)); //Resolve Ear modules from plugin config
+    earModules.addAll(getEarModulesFromConfig(earModuleFactory, defaultBundleDir)); //Resolve Ear modules from plugin config
 
     ScopeArtifactFilter filter = new ScopeArtifactFilter(Artifact.SCOPE_RUNTIME);
 
@@ -185,7 +189,7 @@ class EarPluginConfiguration {
       // Artifact is not yet registered and it has neither test, nor a
       // provided scope, nor is it optional
       if(!isArtifactRegistered(artifact, earModules) && filter.include(artifact) && !artifact.isOptional()) {
-        EarModule module = earModuleFactory.newEarModule(artifact, defaultLibDir);
+        EarModule module = earModuleFactory.newEarModule(artifact, defaultBundleDir);
         if(module != null) {
           earModules.add(module);
         }

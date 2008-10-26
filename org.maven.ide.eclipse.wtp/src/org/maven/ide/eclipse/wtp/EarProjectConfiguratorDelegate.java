@@ -80,11 +80,10 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
       }
     }
 
+    EarPluginConfiguration config = new EarPluginConfiguration(mavenProject);
     Set<Action> actions = new LinkedHashSet<Action>();
-
     // WTP doesn't allow facet versions changes for JEE facets 
     if(!facetedProject.hasProjectFacet(WTPProjectsUtil.EAR_FACET)) {
-      EarPluginConfiguration config = new EarPluginConfiguration(mavenProject);
       IDataModel earModelCfg = DataModelFactory.createDataModel(new EarFacetInstallDataModelProvider());
 
       // Configuring content directory
@@ -103,7 +102,8 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
     // FIXME Sometimes, test folders are still added to org.eclipse.wst.common.component
     removeTestFolderLinks(project, mavenProject, monitor, "/");
 
-    // XXX updating libdir?
+    //String libBundleDir = config.getDefaultLibDirectory();
+    //updateLibDir(project, libBundleDir, monitor);
   }
 
   public void setModuleDependencies(IProject project, MavenProject mavenProject, IProgressMonitor monitor)
@@ -116,7 +116,7 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
     EarPluginConfiguration config = new EarPluginConfiguration(mavenProject);
     // Retrieving all ear module configuration from maven-ear-plugin : User defined modules + artifacts dependencies.
     Set<EarModule> earModules = config.getEarModules();
-    String libBundleDir = config.getDefaultLibDirectory();
+    String libBundleDir = config.getDefaultBundleDirectory();
 
     // FB : I consider the delegate to be stateless - maybe I'm wrong -
     // hence we wrap all the interesting attributes of our new ear in an inner class, 
@@ -151,6 +151,32 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
     // XXX generating Deployment Descriptor ? operation exists in WTP 3.0.0 
   }
 
+//  FB : maven-ear-plugin doesn't support configuration of <library-directory> so the following is useless ... so far.
+//  
+//  private void updateLibDir(IProject project, final String newLibDir, IProgressMonitor monitor) {
+//    //Update lib dir only applies to Java EE 5 ear projects
+//    if(!J2EEProjectUtilities.isJEEProject(project)){ 
+//      return;
+//    }
+//    
+//    //if the ear project Java EE level was < 5.0, the following would throw a ClassCastException  
+//    final Application app = (Application)ModelProviderManager.getModelProvider(project).getModelObject();
+//    if (app != null) {
+//      if (newLibDir == null || "/".equals(newLibDir)) {
+//        newLibDir = J2EEConstants.EAR_DEFAULT_LIB_DIR;
+//      }
+//      String oldLibDir = app.getLibraryDirectory();
+//      if (newLibDir.equals(oldLibDir)) return;
+//      
+//      final IEARModelProvider earModel = (IEARModelProvider)ModelProviderManager.getModelProvider(project);
+//      earModel.modify(new Runnable() {
+//        public void run() {     
+//        app.setLibraryDirectory(newLibDir);
+//      }}, null);
+//    }
+//  }
+
+  
   private void configureDependencyProject(IMavenProjectFacade mavenProjectFacade, IProgressMonitor monitor, EarModule earModule)
       throws CoreException {
     // TODO Check what to do w/ the following datamodel

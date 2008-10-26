@@ -334,8 +334,8 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
 
     waitForJobsToComplete();
     assertEquals(2, projects.length);
-    IProject main = projects[0];
-    IProject dep = projects[1];
+    IProject dep = projects[0];
+    IProject main = projects[1];
     
     assertMarkers(main, 0);
     assertMarkers(dep, 0);
@@ -347,6 +347,11 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     IFacetedProject depWar = ProjectFacetsManager.create(dep);
     assertNotNull(depWar);
     assertTrue(depWar.hasProjectFacet(WebFacetUtils.WEB_FACET));
+
+    IVirtualComponent comp = ComponentCore.createComponent(main);
+    IVirtualReference[] references = comp.getReferences();
+    IVirtualReference depRef = references[0];
+    assertEquals(dep, depRef.getReferencedComponent().getProject());
   }
 
   

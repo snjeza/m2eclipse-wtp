@@ -16,6 +16,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathContainer;
@@ -46,7 +47,7 @@ import org.maven.ide.eclipse.tests.AsbtractMavenProjectTestCase;
  * @author igor
  */
 public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
-  private static final IProjectFacetVersion DEFAULT_WEB_VERSION = WebFacetUtils.WEB_23;
+  private static final IProjectFacetVersion DEFAULT_WEB_VERSION = WebFacetUtils.WEB_FACET.getVersion("2.5");
   public static final IProjectFacet EJB_FACET = ProjectFacetsManager.getProjectFacet(IJ2EEFacetConstants.EJB); 
   public static final IProjectFacet UTILITY_FACET = ProjectFacetsManager.getProjectFacet(IJ2EEFacetConstants.UTILITY);
   public static final IProjectFacetVersion UTILITY_10 = UTILITY_FACET.getVersion("1.0");
@@ -230,6 +231,8 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
   public void testMNGECLIPSE688_Ear50 () throws Exception {
     IProject ear = importProject("projects/MNGECLIPSE-688/ear50-1/pom.xml", new ResolverConfiguration());
 
+    assertMarkers(ear, 0);
+    
     IFacetedProject fpEar = ProjectFacetsManager.create(ear);
     assertNotNull(fpEar);
     assertFalse(fpEar.hasProjectFacet(JavaFacetUtils.JAVA_FACET)); //Ears don't have java facet
@@ -290,7 +293,11 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     assertNotNull(fpEar);
     assertFalse(fpEar.hasProjectFacet(JavaFacetUtils.JAVA_FACET)); //Ears don't have java facet
     assertEquals(DEFAULT_EAR_FACET, fpEar.getInstalledVersion(EAR_FACET));
- 
+
+    IVirtualComponent comp = ComponentCore.createComponent(ear);
+    IVirtualReference warRef = comp.getReference("war");
+    assertNotNull(warRef);
+    assertEquals("war-0.0.1-SNAPSHOT.war",warRef.getArchiveName());    
 }
 
   public void XXXtestMNGECLIPSE688_Pom14_1() throws Exception {
@@ -393,6 +400,32 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     */
   }  
   
+  public void testMNGECLIPSE984_errorMarkers() throws Exception {
+    IProject project = importProject("projects/MNGECLIPSE-984/pom.xml", new ResolverConfiguration());
+    waitForJobsToComplete();
+
+    //Web Project configuration failed because Web 2.5 projects need Java 1.5 
+    List<IMarker> markers = findErrorMarkers(project);
+    assertEquals(2, markers.size());
+    assertHasMarker("One or more constraints have not been satisfied.", markers);
+    assertHasMarker("Dynamic Web Module 2.5 requires Java 5.0 or newer.", markers);
+
+    //Markers disappear when the compiler level is set to 1.5
+    /* can't get it to work for now
+    copyContent(project, "good_pom.xml", "pom.xml");
+    waitForJobsToComplete();
+    project.build(IncrementalProjectBuilder.FULL_BUILD, monitor);
+    waitForJobsToComplete();
+    assertMarkers(project, 0);    
+
+    IFacetedProject facetedProject = ProjectFacetsManager.create(project);
+    assertNotNull(facetedProject);
+    assertEquals(DEFAULT_WEB_VERSION, facetedProject.getInstalledVersion(WebFacetUtils.WEB_FACET));
+    assertTrue(facetedProject.hasProjectFacet(JavaFacetUtils.JAVA_FACET));
+    */
+  }
+
+  
   private String toString(IVirtualReference[] references) {
     StringBuilder sb = new StringBuilder("[");
     
@@ -406,6 +439,15 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     }
     
     return sb.append(']').toString();
+  }
+
+  private void assertHasMarker(String message, List<IMarker> markers) throws CoreException {
+    for (IMarker marker : markers) {
+      if (marker.getAttribute(IMarker.MESSAGE).equals(message)) {
+        return ;
+      }
+    }
+    fail("Markers doesn't contain " + message);
   }
 
   private void assertMarkers(IProject project, int expected) throws CoreException {

@@ -35,7 +35,7 @@ import org.maven.ide.eclipse.core.MavenLogger;
 @SuppressWarnings("restriction")
 class EjbProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate {
 
-  public void configureProject(IProject project, MavenProject mavenProject, IProgressMonitor monitor)
+  protected void configure(IProject project, MavenProject mavenProject, IProgressMonitor monitor)
       throws CoreException {
     IFacetedProject facetedProject = ProjectFacetsManager.create(project, true, monitor);
 

@@ -103,6 +103,7 @@ class WarPluginConfiguration {
         // expected
       }
     }
-    return WebFacetUtils.WEB_23;
+    //MNGECLIPSE-984 web.xml is optional for 2.5 Web Projects 
+    return WTPProjectsUtil.DEFAULT_WEB_FACET;
   }
 }

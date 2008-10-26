@@ -27,9 +27,9 @@ interface IProjectConfiguratorDelegate {
    * @param mavenProject
    * @param project
    * @param monitor
-   * @throws CoreException
+   * @throws MarkedException   
    */
-  void configureProject(IProject project, MavenProject mavenProject, IProgressMonitor monitor) throws CoreException;
+  void configureProject(IProject project, MavenProject mavenProject, IProgressMonitor monitor) throws MarkedException;
 
   /**
    * Configure project module dependencies based on maven plugin configuration.
@@ -41,5 +41,5 @@ interface IProjectConfiguratorDelegate {
    */
   void setModuleDependencies(IProject project, MavenProject mavenProject, IProgressMonitor monitor)
       throws CoreException;
-
+ 
 }

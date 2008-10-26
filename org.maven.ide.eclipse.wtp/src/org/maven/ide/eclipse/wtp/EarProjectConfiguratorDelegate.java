@@ -67,7 +67,7 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
 
   private static final IStatus OK_STATUS = IDataModelProvider.OK_STATUS;
 
-  public void configureProject(IProject project, MavenProject mavenProject, IProgressMonitor monitor)
+  protected void configure(IProject project, MavenProject mavenProject, IProgressMonitor monitor)
       throws CoreException {
     IFacetedProject facetedProject = ProjectFacetsManager.create(project, true, monitor);
 
@@ -199,7 +199,11 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
           .getProjectConfiguratorDelegate(mavenProjectFacade.getPackaging());
       if(delegate != null) {
         //Lets install the proper facets
-        delegate.configureProject(project, mavenProjectFacade.getMavenProject(monitor), monitor);
+        try {
+          delegate.configureProject(project, mavenProjectFacade.getMavenProject(monitor), monitor);
+        } catch(MarkedException ex) {
+          //Markers already have been created for this exception 
+        }
       }
     } else {
       // XXX Probably should create a UtilProjectConfiguratorDelegate

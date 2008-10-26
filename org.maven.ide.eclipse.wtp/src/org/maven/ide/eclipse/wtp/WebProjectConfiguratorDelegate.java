@@ -42,7 +42,7 @@ import org.maven.ide.eclipse.project.IMavenProjectFacade;
  */
 class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate {
 
-  public void configureProject(IProject project, MavenProject mavenProject, IProgressMonitor monitor)
+  protected void configure(IProject project, MavenProject mavenProject, IProgressMonitor monitor)
       throws CoreException {
     IFacetedProject facetedProject = ProjectFacetsManager.create(project, true, monitor);
 
@@ -103,8 +103,11 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
         IProjectConfiguratorDelegate delegate = ProjectConfiguratorDelegateFactory
             .getProjectConfiguratorDelegate(depPackaging);
         if(delegate != null) {
-          delegate.configureProject(dependency.getProject(), dependency.getMavenProject(monitor), monitor);
-        }
+          try {
+            delegate.configureProject(dependency.getProject(), dependency.getMavenProject(monitor), monitor);
+          } catch(MarkedException ex) {
+            //Markers already have been created for this exception 
+          }        }
       } else {
         // standard jar project
         configureWtpUtil(dependency.getProject(), monitor);

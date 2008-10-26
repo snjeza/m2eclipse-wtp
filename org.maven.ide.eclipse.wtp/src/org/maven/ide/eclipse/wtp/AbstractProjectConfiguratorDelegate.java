@@ -37,6 +37,7 @@ import org.eclipse.wst.common.project.facet.core.IFacetedProject.Action;
 import org.maven.ide.eclipse.MavenPlugin;
 import org.maven.ide.eclipse.jdt.BuildPathManager;
 import org.maven.ide.eclipse.project.IMavenProjectFacade;
+import org.maven.ide.eclipse.project.IMavenMarkerManager;
 import org.maven.ide.eclipse.project.MavenProjectManager;
 import org.maven.ide.eclipse.project.MavenProjectUtils;
 
@@ -51,9 +52,25 @@ abstract class AbstractProjectConfiguratorDelegate implements IProjectConfigurat
 
   protected final MavenProjectManager projectManager;
 
+  protected final IMavenMarkerManager mavenMarkerManager;
+
   AbstractProjectConfiguratorDelegate() {
     this.projectManager = MavenPlugin.getDefault().getMavenProjectManager();
+    this.mavenMarkerManager = MavenPlugin.getDefault().getMavenMarkerManager();
   }
+  
+  public void configureProject(IProject project, MavenProject mavenProject, IProgressMonitor monitor) throws MarkedException {
+    try {
+      mavenMarkerManager.deleteMarkers(project);
+      configure(project, mavenProject, monitor);
+    } catch (CoreException cex) {
+      //TODO Filter out constraint violations
+      mavenMarkerManager.addErrorMarkers(project, cex);
+      throw new MarkedException("Unable to configure "+project.getName(), cex);
+    }
+  }
+ 
+  protected abstract void configure(IProject project, MavenProject mavenProject, IProgressMonitor monitor) throws CoreException;
 
   protected List<IMavenProjectFacade> getWorkspaceDependencies(IProject project, MavenProject mavenProject) {
     Set<IProject> projects = new HashSet<IProject>();

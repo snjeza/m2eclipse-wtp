@@ -14,6 +14,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.wst.common.componentcore.ModuleCoreNature;
+import org.maven.ide.eclipse.core.MavenLogger;
 import org.maven.ide.eclipse.project.IMavenProjectFacade;
 import org.maven.ide.eclipse.project.MavenProjectChangedEvent;
 import org.maven.ide.eclipse.project.configurator.AbstractProjectConfigurator;
@@ -37,8 +38,12 @@ public class WTPProjectConfigurator extends AbstractProjectConfigurator {
         .getProjectConfiguratorDelegate(mavenProject.getPackaging());
     if(configuratorDelegate != null) {
       IProject project = request.getProject();
-      configuratorDelegate.configureProject(project, mavenProject, monitor);
-      configuratorDelegate.setModuleDependencies(project, mavenProject, monitor);
+      try {
+        configuratorDelegate.configureProject(project, mavenProject, monitor);
+        configuratorDelegate.setModuleDependencies(project, mavenProject, monitor);
+      } catch(MarkedException ex) {
+        MavenLogger.log(ex.getMessage(), ex);
+      }
     }
   }
 

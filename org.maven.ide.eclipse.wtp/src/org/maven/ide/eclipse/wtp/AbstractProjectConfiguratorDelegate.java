@@ -89,7 +89,7 @@ abstract class AbstractProjectConfiguratorDelegate implements IProjectConfigurat
     return dependencies;
   }
 
-  protected void configureWtpUtil(IProject project, IProgressMonitor monitor) throws CoreException {
+  protected void configureWtpUtil(IProject project, MavenProject mavenProject, IProgressMonitor monitor) throws CoreException {
     // Adding utility facet on JEE projects is not allowed
     if(WTPProjectsUtil.isJavaEEProject(project)) {
       return;
@@ -107,6 +107,10 @@ abstract class AbstractProjectConfiguratorDelegate implements IProjectConfigurat
     }
 
     facetedProject.modify(actions, monitor);
+    
+    //MNGECLIPSE-904 remove tests folder links for utility jars
+    //TODO handle modules in a parent pom (the following doesn't work)
+    removeTestFolderLinks(project, mavenProject, monitor, "/");
   }
 
   protected void installJavaFacet(Set<Action> actions, IProject project, IFacetedProject facetedProject) {

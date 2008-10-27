@@ -190,8 +190,9 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
     } 
     */
 
-    //XXX Refactor the following w/ 
+    //XXX Refactor the following w/ Web delegate 
     IProject project = mavenProjectFacade.getProject();
+    MavenProject mavenProject = mavenProjectFacade.getMavenProject(monitor);
     String depPackaging = mavenProjectFacade.getPackaging();
     //jee dependency has not been configured yet - i.e. it has no JEE facet-
     if(JEEPackaging.isJEEPackaging(depPackaging) && !WTPProjectsUtil.isJavaEEProject(project)) {
@@ -200,14 +201,14 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
       if(delegate != null) {
         //Lets install the proper facets
         try {
-          delegate.configureProject(project, mavenProjectFacade.getMavenProject(monitor), monitor);
+          delegate.configureProject(project, mavenProject, monitor);
         } catch(MarkedException ex) {
           //Markers already have been created for this exception 
         }
       }
     } else {
       // XXX Probably should create a UtilProjectConfiguratorDelegate
-      configureWtpUtil(project, monitor);
+      configureWtpUtil(project, mavenProject, monitor);
     }
 
     //MNGECLIPSE-965 : project deployed name should use the same pattern as non workspace artifacts.

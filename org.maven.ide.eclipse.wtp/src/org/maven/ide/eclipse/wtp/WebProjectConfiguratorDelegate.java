@@ -98,19 +98,21 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
     Set<IVirtualReference> references = new LinkedHashSet<IVirtualReference>();
     for(IMavenProjectFacade dependency : getWorkspaceDependencies(project, mavenProject)) {
       String depPackaging = dependency.getPackaging();
+      MavenProject depMavenProject =  dependency.getMavenProject(monitor);
       //jee dependency has not been configured yet - i.e. has not JEE facet-
       if(JEEPackaging.isJEEPackaging(depPackaging) && !WTPProjectsUtil.isJavaEEProject(dependency.getProject())) {
         IProjectConfiguratorDelegate delegate = ProjectConfiguratorDelegateFactory
             .getProjectConfiguratorDelegate(depPackaging);
         if(delegate != null) {
           try {
-            delegate.configureProject(dependency.getProject(), dependency.getMavenProject(monitor), monitor);
+            delegate.configureProject(dependency.getProject(), depMavenProject, monitor);
           } catch(MarkedException ex) {
             //Markers already have been created for this exception 
-          }        }
+          }        
+        }
       } else {
         // standard jar project
-        configureWtpUtil(dependency.getProject(), monitor);
+        configureWtpUtil(dependency.getProject(), depMavenProject, monitor);
       }
       IVirtualComponent depComponent = ComponentCore.createComponent(dependency.getProject());
       IVirtualReference reference = ComponentCore.createReference(component, depComponent);

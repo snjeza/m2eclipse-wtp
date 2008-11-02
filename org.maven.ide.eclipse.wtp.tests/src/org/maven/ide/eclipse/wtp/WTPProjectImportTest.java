@@ -413,6 +413,26 @@ public class WTPProjectImportTest extends AsbtractMavenProjectTestCase {
     IMarker[] markers = project.findMarkers(null, true, IResource.DEPTH_INFINITE);
     assertEquals(toString(markers), 0, markers.length);
   }
+
+  public void testMNGECLIPSE1028() throws Exception {
+    deleteProject("import-order-matters");
+    deleteProject("project1");
+    deleteProject("project2");
+    deleteProject("project3");
+    deleteProject("project4");
+    deleteProject("project5");
+
+    IProject[] projects = importProjects("projects/import-order-matters", new String[] {"pom.xml", "project1/pom.xml",
+        "project2/pom.xml", "project3/pom.xml", "project4/pom.xml", "project5/pom.xml",}, new ResolverConfiguration());
+
+    waitForJobsToComplete();
+    
+    assertEquals(projects.length, 6);
+    for (IProject project : projects)
+    {
+      assertMarkers(project, 0);    
+    }
+  }
   
 }
 

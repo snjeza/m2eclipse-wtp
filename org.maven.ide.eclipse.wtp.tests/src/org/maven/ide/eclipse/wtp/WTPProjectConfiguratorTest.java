@@ -336,13 +336,13 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
   
   public void testMNGECLIPSE597() throws Exception {
     IProject[] projects = importProjects("projects/MNGECLIPSE-597", 
-        new String[] {"DWPDependency/pom.xml", "DWPMain/pom.xml"}, 
+        new String[] {"DWPMain/pom.xml", "DWPDependency/pom.xml", }, 
         new ResolverConfiguration());
 
     waitForJobsToComplete();
     assertEquals(2, projects.length);
-    IProject dep = projects[0];
-    IProject main = projects[1];
+    IProject dep = projects[1];
+    IProject main = projects[0];
     
     assertMarkers(main, 0);
     assertMarkers(dep, 0);
@@ -448,13 +448,6 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
       }
     }
     fail("Markers doesn't contain " + message);
-  }
-
-  private void assertMarkers(IProject project, int expected) throws CoreException {
-    // IMarker[] markers = project.findMarkers(null, true, IResource.DEPTH_INFINITE);
-    List<IMarker> markers = findErrorMarkers(project);
-    assertEquals(project.getName() + " : " + toString(markers.toArray(new IMarker[markers.size()])), //
-        expected, markers.size());
   }
 
   private void  assertNotDeployable(IClasspathEntry entry){

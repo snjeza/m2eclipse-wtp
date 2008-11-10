@@ -32,14 +32,15 @@ public class ArtifactHelper {
     if (artifact == null) {
       throw new IllegalArgumentException("artifact must not be null");
     }
-  
-    // M2_REPO is different from local repo set during tests 
-    //    IPath m2repo = JavaCore.getClasspathVariable(IMavenConstants.M2_REPO); //always set
-    //    IPath absolutePath = new Path(artifact.getFile().getAbsolutePath());
-    //    IPath relativePath = absolutePath.removeFirstSegments(m2repo.segmentCount()).makeRelative().setDevice(null);
-    //    return relativePath;
+    /*FIXME the following is broken, as the workspaceEmbedder is cached at the MavenPlugin start during ITs, the wrong embedder is used for local repo determination. 
+    IPath m2repo = JavaCore.getClasspathVariable(BuildPathManager.M2_REPO); //always set
+    IPath absolutePath = new Path(artifact.getFile().getAbsolutePath());
+    IPath relativePath = absolutePath.removeFirstSegments(m2repo.segmentCount()).makeRelative().setDevice(null);
+    return relativePath;
+    */
 
-    String prefix = artifact.getGroupId().replace('.', IPath.SEPARATOR) + IPath.SEPARATOR + artifact.getArtifactId() + IPath.SEPARATOR + artifact.getVersion();
+    //MNGECLIPSE-1045 : patch from jerr, use artifact.getBaseVersion() to handle timestamped snapshots
+    String prefix = artifact.getGroupId().replace('.', IPath.SEPARATOR) + IPath.SEPARATOR + artifact.getArtifactId() + IPath.SEPARATOR + artifact.getBaseVersion();
     String fullPath = artifact.getFile().getAbsolutePath().replace('\\', IPath.SEPARATOR); //relocated artifact expose their new jar location
     return new Path(fullPath.substring(fullPath.lastIndexOf(prefix)));    //Should work for stupid repo locations like c:\junit\junit\3.8.1\localrepo\junit\junit\3.8.1\junit-3.8.1.jar
   }

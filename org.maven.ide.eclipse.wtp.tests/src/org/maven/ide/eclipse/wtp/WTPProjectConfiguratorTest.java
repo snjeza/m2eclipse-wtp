@@ -425,6 +425,18 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     */
   }
 
+  public void testMNGECLIPSE1045_TimestampedSnapshots() throws Exception {
+    IProject ear = importProject("projects/MNGECLIPSE-1045/pom.xml", new ResolverConfiguration());
+
+    assertMarkers(ear, 0);
+    
+    IVirtualComponent comp = ComponentCore.createComponent(ear);
+    IVirtualReference[] references = comp.getReferences();
+    assertEquals(1, references.length);
+    IVirtualReference snapshot = references[0];
+    assertEquals("MNGECLIPSE-1045-DEP-0.0.1-SNAPSHOT.jar", snapshot.getArchiveName());
+  }
+
   
   private String toString(IVirtualReference[] references) {
     StringBuilder sb = new StringBuilder("[");

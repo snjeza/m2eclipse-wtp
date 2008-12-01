@@ -111,6 +111,9 @@ abstract class AbstractProjectConfiguratorDelegate implements IProjectConfigurat
     //MNGECLIPSE-904 remove tests folder links for utility jars
     //TODO handle modules in a parent pom (the following doesn't work)
     removeTestFolderLinks(project, mavenProject, monitor, "/");
+    
+    //Remove "library unavailable at runtime" warning.
+    addContainerAttribute(project, WTPClasspathConfigurator.NONDEPENDENCY_ATTRIBUTE, monitor);
   }
 
   protected void installJavaFacet(Set<Action> actions, IProject project, IFacetedProject facetedProject) {

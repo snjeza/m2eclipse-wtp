@@ -19,6 +19,11 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jst.common.project.facet.JavaFacetUtils;
+import org.eclipse.jst.j2ee.project.facet.IJ2EEFacetConstants;
+import org.eclipse.jst.j2ee.web.project.facet.WebFacetUtils;
+import org.eclipse.wst.common.project.facet.core.IFacetedProject;
+import org.eclipse.wst.common.project.facet.core.ProjectFacetsManager;
 import org.maven.ide.eclipse.jdt.BuildPathManager;
 import org.maven.ide.eclipse.project.ResolverConfiguration;
 import org.maven.ide.eclipse.tests.AsbtractMavenProjectTestCase;
@@ -433,6 +438,32 @@ public class WTPProjectImportTest extends AsbtractMavenProjectTestCase {
       assertMarkers(project, 0);    
     }
   }
+
+  public void testMNGECLIPSE1028_JavaVersion() throws Exception {
+    deleteProject("import-order-matters2");
+    deleteProject("project1-ear");
+    deleteProject("project2-war");
+    deleteProject("project3-jar");
+
+    IProject[] projects = importProjects("projects/import-order-matters2", new String[] {"pom.xml", "project1-ear/pom.xml",
+        "project2-war/pom.xml", "project3-jar/pom.xml"}, new ResolverConfiguration());
+
+    waitForJobsToComplete();
+    
+    assertEquals(projects.length, 4);
+    for (IProject project : projects)
+    {
+      assertMarkers(project, 0);    
+    }
+    
+    IFacetedProject jarUtilityProject = ProjectFacetsManager.create(projects[3]);
+    assertNotNull(jarUtilityProject);
+    assertTrue(jarUtilityProject.hasProjectFacet(JavaFacetUtils.JAVA_FACET));
+    assertTrue(jarUtilityProject.hasProjectFacet(ProjectFacetsManager.getProjectFacet(IJ2EEFacetConstants.UTILITY)));
+    assertEquals(JavaFacetUtils.JAVA_13, jarUtilityProject.getInstalledVersion(JavaFacetUtils.JAVA_FACET));
+  }
+  
+  
   
 }
 

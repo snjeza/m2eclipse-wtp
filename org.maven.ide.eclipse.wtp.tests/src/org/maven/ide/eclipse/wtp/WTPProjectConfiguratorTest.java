@@ -16,7 +16,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathContainer;
@@ -301,8 +300,8 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
 }
 
   public void XXXtestMNGECLIPSE688_Pom14_1() throws Exception {
-    //These project can actually be deployed to JBoss
-    //Trying to import projects in unsorted order
+    // these projects can actually be deployed to JBoss
+    // importing projects in unsorted order
     IProject[] projects = importProjects(
         "projects/MNGECLIPSE-688/", //
         new String[] {"pom14-1/pom.xml", "pom14-1/ear14-1/pom.xml", "pom14-1/war23-1/pom.xml", "pom14-1/war23-2/pom.xml", "pom14-1/ejb21-1/pom.xml", "pom14-1/core-1/pom.xml"},
@@ -363,7 +362,7 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
 
 
   public void testMNGECLIPSE965_fileNames() throws Exception {
-    //Exported filenames should be consistent when workspace resolution is on/off
+    // Exported filenames should be consistent when workspace resolution is on/off
     IProject[] projects = importProjects(
         "projects/MNGECLIPSE-965/", //
         new String[] {"ear-standardFileNames/pom.xml", "ear-fullFileNames/pom.xml", "testFileNameWar/pom.xml"},
@@ -425,7 +424,7 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     */
   }
 
-  //FIXME fails on the CI server.
+  // FIXME fails on the CI server.
   public void XXXtestMNGECLIPSE1045_TimestampedSnapshots() throws Exception {
     IProject ear = importProject("projects/MNGECLIPSE-1045/pom.xml", new ResolverConfiguration());
 

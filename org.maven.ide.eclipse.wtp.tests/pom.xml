@@ -21,10 +21,6 @@
 
   <name>Maven Integration for Eclipse WTP tests</name>
 
-  <properties>
-    <org.maven.ide.eclipse.wtp.tests.skip>false</org.maven.ide.eclipse.wtp.tests.skip>
-  </properties>
-
   <build>
     <sourceDirectory>src</sourceDirectory>
     <resources>
@@ -41,7 +37,7 @@
         <groupId>org.codehaus.tycho</groupId>
         <artifactId>maven-osgi-test-plugin</artifactId>
         <configuration>
-          <skip>${org.maven.ide.eclipse.wtp.tests.skip}</skip>
+          <skip>${org.maven.ide.eclipse.tests.skip}</skip>
         </configuration>
       </plugin>
     </plugins>    

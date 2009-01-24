@@ -31,5 +31,61 @@
          <delegate class="org.maven.ide.eclipse.wtp.facets.JavaUninstallDelegate"/>
       </action>
    </extension>
+   
+   <!-- Project Explorer extensions -->
+   
+   <extension point="org.eclipse.ui.navigator.navigatorContent">
+      <navigatorContent id="org.maven.ide.eclipse.wtp.navigatorContent"
+            contentProvider="org.maven.ide.eclipse.wtp.internal.WebResourcesContentProvider"
+            labelProvider="org.maven.ide.eclipse.wtp.internal.WebResourcesLabelProvider"
+            name="Web Resources"
+            icon="icons/web-resources.gif"
+            activeByDefault="true"
+            priority="normal">
+       
+        <override suppressedExtensionId="org.eclipse.ui.navigator.resourceContent"        
+                  policy="InvokeOnlyIfSuppressedExtAlsoVisibleAndActive"/>
+          
+        <triggerPoints>
+          <instanceof value="org.eclipse.core.resources.IProject"/>
+        </triggerPoints>
+        
+        <possibleChildren>
+          <instanceof value="org.maven.ide.eclipse.wtp.internal.WebResourcesNode"/>
+        </possibleChildren>
+      
+        <commonSorter id="org.maven.ide.eclipse.wtp.sorter"
+                      class="org.maven.ide.eclipse.wtp.internal.WebResourcesSorter">
+          <parentExpression>
+            <instanceof value="org.eclipse.core.resources.IProject"/>
+          </parentExpression>
+        </commonSorter>
+      </navigatorContent>
+      
+      <!--
+      <actionProvider id="org.maven.ide.eclipse.wtp.actionProvider"
+             class="org.maven.ide.eclipse.wtp.internal.WebResourcesActionProvider">
+         <enablement>
+            <or>
+              <adapt type="org.eclipse.core.resources.IResource"/>   
+            </or>
+          </enablement>
+      </actionProvider>
+      -->
+   </extension>
+      
+   <extension point="org.eclipse.ui.navigator.viewer">
+      <viewerActionBinding viewerId="org.eclipse.ui.navigator.ProjectExplorer">
+         <includes>
+           <actionExtension pattern="org.maven.ide.eclipse.wtp.actionProvider"/>
+         </includes>
+      </viewerActionBinding>
+      
+      <viewerContentBinding viewerId="org.eclipse.ui.navigator.ProjectExplorer">
+         <includes>
+            <contentExtension pattern="org.maven.ide.eclipse.wtp.navigatorContent"/>
+         </includes>
+      </viewerContentBinding>
+   </extension> 
   
 </plugin>

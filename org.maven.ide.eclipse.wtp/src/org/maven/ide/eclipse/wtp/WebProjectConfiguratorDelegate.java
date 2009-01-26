@@ -9,7 +9,9 @@
 package org.maven.ide.eclipse.wtp;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.maven.project.MavenProject;
@@ -30,8 +32,10 @@ import org.eclipse.wst.common.project.facet.core.IFacetedProject;
 import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
 import org.eclipse.wst.common.project.facet.core.ProjectFacetsManager;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject.Action;
+import org.maven.ide.eclipse.MavenPlugin;
 import org.maven.ide.eclipse.core.MavenLogger;
 import org.maven.ide.eclipse.project.IMavenProjectFacade;
+import org.maven.ide.eclipse.wtp.internal.ExtensionReader;
 
 
 /**
@@ -95,6 +99,10 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
       throws CoreException {
     IVirtualComponent component = ComponentCore.createComponent(project);
 
+    List<AbstractDependencyConfigurator> depConfigurators = ExtensionReader.readDependencyConfiguratorExtensions(projectManager, 
+        MavenPlugin.getDefault().getMavenRuntimeManager(), mavenMarkerManager, 
+        MavenPlugin.getDefault().getConsole());
+    
     Set<IVirtualReference> references = new LinkedHashSet<IVirtualReference>();
     for(IMavenProjectFacade dependency : getWorkspaceDependencies(project, mavenProject)) {
       String depPackaging = dependency.getPackaging();
@@ -121,6 +129,18 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
     }
 
     component.setReferences(references.toArray(new IVirtualReference[references.size()]));
+
+    for(IMavenProjectFacade dependency : getWorkspaceDependencies(project, mavenProject)) {
+      MavenProject depMavenProject =  dependency.getMavenProject(monitor);
+      Iterator<AbstractDependencyConfigurator> configurators = depConfigurators.iterator();
+      while (configurators.hasNext()) {
+        try {
+          configurators.next().configureDependency(mavenProject, project, depMavenProject, dependency.getProject(), monitor);
+        } catch(MarkedException ex) {
+          //XXX handle this
+        }
+      }
+    }
   }
 
 }

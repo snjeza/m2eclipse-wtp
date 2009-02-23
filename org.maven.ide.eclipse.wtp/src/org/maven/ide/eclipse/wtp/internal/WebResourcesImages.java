@@ -10,7 +10,6 @@ package org.maven.ide.eclipse.wtp.internal;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.maven.ide.eclipse.core.MavenLogger;
 
@@ -46,11 +45,11 @@ public class WebResourcesImages {
     return null;
   }
 
-  private static Image createImage(String key) {
-    create(key);
-    ImageRegistry imageRegistry = getImageRegistry();
-    return imageRegistry == null ? null : imageRegistry.get(key);
-  }
+//  private static Image createImage(String key) {
+//    create(key);
+//    ImageRegistry imageRegistry = getImageRegistry();
+//    return imageRegistry == null ? null : imageRegistry.get(key);
+//  }
 
   private static ImageRegistry getImageRegistry() {
     MavenWtpPlugin plugin = MavenWtpPlugin.getDefault();

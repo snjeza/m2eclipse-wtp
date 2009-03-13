@@ -11,7 +11,7 @@
           name="WTP" priority="100"/>
    </extension>
    
-   <extension point="org.maven.ide.eclipse.classpathConfiguratorFactories">
+   <extension point="org.maven.ide.eclipse.jdt.classpathConfiguratorFactories">
       <classpathConfiguratorFactory
             id="org.maven.ide.eclipse.configuration.wtp.classpathConfiguratorFactory"
             class="org.maven.ide.eclipse.wtp.WTPClasspathConfiguratorFactory"

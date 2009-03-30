@@ -23,7 +23,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.wst.common.project.facet.core,
  org.maven.ide.components.maven_embedder,
  org.maven.ide.eclipse,
- org.maven.ide.eclipse.jdt
+ org.maven.ide.eclipse.jdt,
+ org.eclipse.ui.console
 Bundle-Vendor: Sonatype, Inc.
 Export-Package: org.maven.ide.eclipse.wtp
 Bundle-Activator: org.maven.ide.eclipse.wtp.internal.MavenWtpPlugin

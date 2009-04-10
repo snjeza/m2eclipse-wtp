@@ -203,7 +203,8 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
         try {
           delegate.configureProject(project, mavenProject, monitor);
         } catch(MarkedException ex) {
-          //Markers already have been created for this exception 
+          //Markers already have been created for this exception, no more to do.
+          return;
         }
       }
     } else {

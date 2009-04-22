@@ -16,6 +16,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathContainer;
@@ -410,8 +411,15 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     assertHasMarker("Dynamic Web Module 2.5 requires Java 5.0 or newer.", markers);
 
     //Markers disappear when the compiler level is set to 1.5
-    /* can't get it to work for now
+    ////* can't get it to work for now
     copyContent(project, "good_pom.xml", "pom.xml");
+    
+    IProjectConfigurationManager configurationManager = MavenPlugin.getDefault().getProjectConfigurationManager();
+    ResolverConfiguration configuration = new ResolverConfiguration();
+    configurationManager.enableMavenNature(project, configuration, monitor);
+    configurationManager.updateProjectConfiguration(project, configuration, runtimeManager.getGoalOnImport(), monitor);
+    
+    
     waitForJobsToComplete();
     project.build(IncrementalProjectBuilder.FULL_BUILD, monitor);
     waitForJobsToComplete();
@@ -421,7 +429,7 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     assertNotNull(facetedProject);
     assertEquals(DEFAULT_WEB_VERSION, facetedProject.getInstalledVersion(WebFacetUtils.WEB_FACET));
     assertTrue(facetedProject.hasProjectFacet(JavaFacetUtils.JAVA_FACET));
-    */
+    
   }
 
   // FIXME fails on the CI server.

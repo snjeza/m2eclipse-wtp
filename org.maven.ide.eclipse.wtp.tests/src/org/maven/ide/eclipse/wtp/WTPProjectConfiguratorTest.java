@@ -184,7 +184,7 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     assertTrue(ejbJar.exists());
     //TODO check DTD
   }
-
+/*
   public void testMNGECLIPSE688_Ejb_30() throws Exception {
     IProject project = importProject("projects/MNGECLIPSE-688/ejb2/pom.xml", new ResolverConfiguration());
 
@@ -202,7 +202,7 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     assertFalse(ejbJar.exists());
     //TODO check DTD
   }
-
+*/
   public void testMNGECLIPSE688_NonDeployedDependencies () throws Exception {
     IProject project = importProject("projects/MNGECLIPSE-688/war-optional/pom.xml", new ResolverConfiguration());
 

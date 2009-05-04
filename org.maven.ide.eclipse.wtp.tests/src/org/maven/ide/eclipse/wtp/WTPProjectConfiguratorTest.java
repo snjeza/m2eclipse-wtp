@@ -227,7 +227,7 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     IFile applicationXml = ear.getFile("CustomEarSourceDirectory/META-INF/application.xml"); 
     assertTrue(applicationXml.exists());
   }
-/*
+
   public void testMNGECLIPSE688_Ear50 () throws Exception {
     IProject ear = importProject("projects/MNGECLIPSE-688/ear50-1/pom.xml", new ResolverConfiguration());
 
@@ -252,7 +252,7 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     assertEquals("junit-3.8.1.jar", junit.getArchiveName());
     assertEquals("lib/", junit.getRuntimePath().toPortableString());
   
-  }*/
+  }
 
   
   public void testMNGECLIPSE688_Jee1() throws Exception {

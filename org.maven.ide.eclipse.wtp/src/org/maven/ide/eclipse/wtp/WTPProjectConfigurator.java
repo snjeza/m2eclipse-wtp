@@ -8,7 +8,6 @@
 
 package org.maven.ide.eclipse.wtp;
 
-import org.apache.maven.embedder.MavenEmbedder;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -30,7 +29,7 @@ import org.maven.ide.eclipse.project.configurator.ProjectConfigurationRequest;
 public class WTPProjectConfigurator extends AbstractProjectConfigurator {
 
   @Override
-  public void configure(MavenEmbedder embedder, ProjectConfigurationRequest request, IProgressMonitor monitor)
+  public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor)
       throws CoreException {
     MavenProject mavenProject = request.getMavenProject();
     //Lookup the project configurator 

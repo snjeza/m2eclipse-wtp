@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -417,7 +416,7 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     IProjectConfigurationManager configurationManager = MavenPlugin.getDefault().getProjectConfigurationManager();
     ResolverConfiguration configuration = new ResolverConfiguration();
     configurationManager.enableMavenNature(project, configuration, monitor);
-    configurationManager.updateProjectConfiguration(project, configuration, runtimeManager.getGoalOnImport(), monitor);
+    configurationManager.updateProjectConfiguration(project, configuration, mavenConfiguration.getGoalOnImport(), monitor);
     
     
     waitForJobsToComplete();

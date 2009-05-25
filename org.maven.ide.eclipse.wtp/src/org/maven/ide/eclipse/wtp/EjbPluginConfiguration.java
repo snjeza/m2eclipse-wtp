@@ -8,8 +8,6 @@
 
 package org.maven.ide.eclipse.wtp;
 
-import java.util.List;
-
 import org.apache.maven.model.Plugin;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
@@ -35,7 +33,6 @@ class EjbPluginConfiguration {
  
   final MavenProject ejbProject;
   
-  @SuppressWarnings("unchecked")
   public EjbPluginConfiguration(MavenProject mavenProject) {
 
     if (JEEPackaging.EJB != JEEPackaging.getValue(mavenProject.getPackaging()))
@@ -44,7 +41,7 @@ class EjbPluginConfiguration {
     this.ejbProject = mavenProject;
     
     Plugin ejbPlugin = null;
-    for (Plugin plugin : (List<Plugin>) mavenProject.getBuildPlugins()) {
+    for (Plugin plugin : mavenProject.getBuildPlugins()) {
       if ("org.apache.maven.plugins".equals(plugin.getGroupId()) && "maven-ejb-plugin".equals(plugin.getArtifactId())) {
         ejbPlugin = plugin;
         break;
@@ -77,7 +74,6 @@ class EjbPluginConfiguration {
   /**
    * @return the first resource location directory declared in pom.xml
    */
-  @SuppressWarnings("unchecked")
   public String getEjbContentDirectory(IProject project) {
     IPath[] resources = MavenProjectUtils.getResourceLocations(project, ejbProject.getResources());
     return resources[0].toPortableString();

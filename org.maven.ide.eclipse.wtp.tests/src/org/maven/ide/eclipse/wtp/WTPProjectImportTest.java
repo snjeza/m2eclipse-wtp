@@ -45,21 +45,6 @@ public class WTPProjectImportTest extends AsbtractMavenProjectTestCase {
     waitForJobsToComplete();
 
     {
-      IJavaProject javaProject = JavaCore.create(projects[0]);
-      IClasspathEntry[] classpathEntries = BuildPathManager.getMaven2ClasspathContainer(javaProject)
-          .getClasspathEntries();
-      assertEquals(0, classpathEntries.length);
-
-      IClasspathEntry[] rawClasspath = javaProject.getRawClasspath();
-      assertEquals(2, rawClasspath.length);
-      assertEquals("org.eclipse.jdt.launching.JRE_CONTAINER", rawClasspath[0].getPath().toString());
-      assertEquals("org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER", rawClasspath[1].getPath().toString());
-
-      IMarker[] markers = projects[0].findMarkers(null, true, IResource.DEPTH_INFINITE);
-      assertEquals(toString(markers), 0, markers.length);
-    }
-
-    {
       IJavaProject javaProject = JavaCore.create(projects[1]);
       IClasspathEntry[] classpathEntries = BuildPathManager.getMaven2ClasspathContainer(javaProject)
           .getClasspathEntries();
@@ -186,22 +171,6 @@ public class WTPProjectImportTest extends AsbtractMavenProjectTestCase {
     assertTrue(res2.exists());
 
     workspace.build(IncrementalProjectBuilder.FULL_BUILD, monitor);
-
-    {
-      IJavaProject javaProject = JavaCore.create(projects[0]);
-      IClasspathEntry[] classpathEntries = BuildPathManager.getMaven2ClasspathContainer(javaProject)
-          .getClasspathEntries();
-      assertEquals(0, classpathEntries.length);
-
-      IClasspathEntry[] rawClasspath = javaProject.getRawClasspath();
-      assertEquals(2, rawClasspath.length);
-      assertEquals("org.eclipse.jdt.launching.JRE_CONTAINER", rawClasspath[0].getPath().toString());
-      assertEquals("org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER", rawClasspath[1].getPath().toString());
-
-      // IMarker[] markers = projects[0].findMarkers(null, true, IResource.DEPTH_INFINITE);
-      List<IMarker> markers = findErrorMarkers(projects[0]);
-      assertEquals(markers.toString(), 0, markers.size());
-    }
 
     {
       // type

@@ -14,6 +14,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.wst.common.componentcore.ModuleCoreNature;
 import org.maven.ide.eclipse.core.MavenLogger;
+import org.maven.ide.eclipse.jdt.IClasspathDescriptor;
+import org.maven.ide.eclipse.jdt.IJavaProjectConfigurator;
 import org.maven.ide.eclipse.project.IMavenProjectFacade;
 import org.maven.ide.eclipse.project.MavenProjectChangedEvent;
 import org.maven.ide.eclipse.project.configurator.AbstractProjectConfigurator;
@@ -26,7 +28,7 @@ import org.maven.ide.eclipse.project.configurator.ProjectConfigurationRequest;
  * 
  * @author Igor Fedorenko
  */
-public class WTPProjectConfigurator extends AbstractProjectConfigurator {
+public class WTPProjectConfigurator extends AbstractProjectConfigurator implements IJavaProjectConfigurator {
 
   @Override
   public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor)
@@ -64,6 +66,27 @@ public class WTPProjectConfigurator extends AbstractProjectConfigurator {
 
   static boolean isWTPProject(IProject project) {
     return ModuleCoreNature.getModuleCoreNature(project) != null;
+  }
+
+  public void configureClasspath(IMavenProjectFacade facade, IClasspathDescriptor classpath, IProgressMonitor monitor)
+      throws CoreException {
+    MavenProject mavenProject = facade.getMavenProject(monitor);
+    //Lookup the project configurator 
+    IProjectConfiguratorDelegate configuratorDelegate = ProjectConfiguratorDelegateFactory
+        .getProjectConfiguratorDelegate(mavenProject.getPackaging());
+    if(configuratorDelegate != null) {
+      IProject project = facade.getProject();
+      try {
+        configuratorDelegate.configureClasspath(project, mavenProject, classpath, monitor);
+      } catch(CoreException ex) {
+        MavenLogger.log(ex.getMessage(), ex);
+      }
+    }
+  }
+
+  public void configureRawClasspath(ProjectConfigurationRequest request, IClasspathDescriptor classpath,
+      IProgressMonitor monitor) throws CoreException {
+    // we do not change raw project classpath, do we? 
   }
 
 }

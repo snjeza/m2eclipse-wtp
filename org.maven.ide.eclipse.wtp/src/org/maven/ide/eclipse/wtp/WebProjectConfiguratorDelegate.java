@@ -8,17 +8,26 @@
 
 package org.maven.ide.eclipse.wtp;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.FileUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.core.IClasspathAttribute;
+import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jst.j2ee.classpathdep.IClasspathDependencyConstants;
 import org.eclipse.jst.j2ee.project.facet.IJ2EEModuleFacetInstallDataModelProperties;
 import org.eclipse.jst.j2ee.web.project.facet.WebFacetInstallDataModelProvider;
 import org.eclipse.jst.j2ee.web.project.facet.WebFacetUtils;
@@ -34,6 +43,9 @@ import org.eclipse.wst.common.project.facet.core.ProjectFacetsManager;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject.Action;
 import org.maven.ide.eclipse.MavenPlugin;
 import org.maven.ide.eclipse.core.MavenLogger;
+import org.maven.ide.eclipse.jdt.IClasspathDescriptor;
+import org.maven.ide.eclipse.jdt.IClasspathEntryDescriptor;
+import org.maven.ide.eclipse.jdt.internal.ClasspathEntryDescriptor;
 import org.maven.ide.eclipse.project.IMavenProjectFacade;
 import org.maven.ide.eclipse.wtp.internal.ExtensionReader;
 
@@ -45,6 +57,12 @@ import org.maven.ide.eclipse.wtp.internal.ExtensionReader;
  * @author Fred Bricon
  */
 class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate {
+
+  static final IClasspathAttribute NONDEPENDENCY_ATTRIBUTE = JavaCore.newClasspathAttribute(
+      IClasspathDependencyConstants.CLASSPATH_COMPONENT_NON_DEPENDENCY, "");
+
+  static final IClasspathAttribute DEPENDENCY_ATTRIBUTE = JavaCore.newClasspathAttribute(
+      IClasspathDependencyConstants.CLASSPATH_COMPONENT_DEPENDENCY, "/WEB-INF/lib");
 
   protected void configure(IProject project, MavenProject mavenProject, IProgressMonitor monitor)
       throws CoreException {
@@ -92,7 +110,7 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
     // MNGECLIPSE-632 remove test sources/resources from WEB-INF/classes
     removeTestFolderLinks(project, mavenProject, monitor, "/WEB-INF/classes");
 
-    addContainerAttribute(project, WTPClasspathConfigurator.DEPENDENCY_ATTRIBUTE, monitor);
+    addContainerAttribute(project, DEPENDENCY_ATTRIBUTE, monitor);
   }
 
   public void setModuleDependencies(IProject project, MavenProject mavenProject, IProgressMonitor monitor)
@@ -141,6 +159,90 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
         }
       }
     }
+  }
+
+  public void configureClasspath(IProject project, MavenProject mavenProject, IClasspathDescriptor classpath,
+      IProgressMonitor monitor) throws CoreException {
+
+    /*
+     * Need to take care of three separate cases
+     * 
+     * 1. remove any project dependencies (they are represented as J2EE module dependencies)
+     * 2. add non-dependency attribute for entries originated by artifacts with
+     *    runtime, system, test scopes or optional dependencies (not sure about the last one)
+     * 3. make sure all dependency JAR files have unique file names, i.e. artifactId/version collisions
+     */
+
+    Set<String> dups = new LinkedHashSet<String>();
+    Set<String> names = new HashSet<String>();
+
+    // first pass removes projects, adds non-dependency attribute and collects colliding filenames
+    Iterator<IClasspathEntryDescriptor> iter = classpath.getEntryDescriptors().iterator();
+    while (iter.hasNext()) {
+      IClasspathEntryDescriptor descriptor = iter.next();
+      IClasspathEntry entry = descriptor.getClasspathEntry();
+      String scope = descriptor.getScope();
+
+      // remove project dependencies
+      if (IClasspathEntry.CPE_PROJECT == entry.getEntryKind() && Artifact.SCOPE_COMPILE.equals(scope)) {
+        iter.remove();
+        continue;
+      }
+
+      // add non-dependency attribute
+      // Check the scope & set WTP non-dependency as appropriate
+      // Optional artifact shouldn't be deployed
+      if(Artifact.SCOPE_PROVIDED.equals(scope) || Artifact.SCOPE_TEST.equals(scope)
+          || Artifact.SCOPE_SYSTEM.equals(scope) || descriptor.isOptionalDependency()) {
+        descriptor.addClasspathAttribute(NONDEPENDENCY_ATTRIBUTE);
+      }
+
+      // collect duplicate file names 
+      if (!names.add(entry.getPath().lastSegment())) {
+        dups.add(entry.getPath().lastSegment());
+      }
+    }
+
+    String targetDir = mavenProject.getBuild().getDirectory();
+
+    // second pass disambiguates colliding entry file names
+    iter = classpath.getEntryDescriptors().iterator();
+    while (iter.hasNext()) {
+      IClasspathEntryDescriptor descriptor = iter.next();
+      IClasspathEntry entry = descriptor.getClasspathEntry();
+
+      if (dups.contains(entry.getPath().lastSegment())) {
+        File src = new File(entry.getPath().toOSString());
+        String groupId = descriptor.getGroupId();
+        File dst = new File(targetDir, groupId + "-" + entry.getPath().lastSegment());
+        try {
+          if (src.canRead()) {
+            if (isDifferent(src, dst)) { // uses lastModified
+              FileUtils.copyFile(src, dst);
+              dst.setLastModified(src.lastModified());
+            }
+            descriptor.setClasspathEntry(JavaCore.newLibraryEntry(Path.fromOSString(dst.getCanonicalPath()), //
+                entry.getSourceAttachmentPath(), //
+                entry.getSourceAttachmentRootPath(), //
+                entry.getAccessRules(), //
+                entry.getExtraAttributes(), //
+                entry.isExported()));
+          }
+        } catch(IOException ex) {
+          MavenLogger.log("File copy failed", ex);
+        }
+      }
+      
+    }
+  }
+
+  private static boolean isDifferent(File src, File dst) {
+    if (!dst.exists()) {
+      return true;
+    }
+
+    return src.length() != dst.length() 
+        || src.lastModified() != dst.lastModified();
   }
 
 }

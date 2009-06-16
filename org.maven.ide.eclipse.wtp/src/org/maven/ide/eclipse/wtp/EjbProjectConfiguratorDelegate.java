@@ -25,6 +25,7 @@ import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
 import org.eclipse.wst.common.project.facet.core.ProjectFacetsManager;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject.Action;
 import org.maven.ide.eclipse.core.MavenLogger;
+import org.maven.ide.eclipse.jdt.IClasspathDescriptor;
 
 
 /**
@@ -78,6 +79,11 @@ class EjbProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
   public void setModuleDependencies(IProject project, MavenProject mavenProject, IProgressMonitor monitor)
       throws CoreException {
     // TODO check if there's anything to do!
+  }
+
+  public void configureClasspath(IProject project, MavenProject mavenProject, IClasspathDescriptor classpath,
+      IProgressMonitor monitor) throws CoreException {
+    // do nothing
   }
 
 }

@@ -19,17 +19,5 @@
 			<artifactId>core</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-		<dependency>
-			<groupId>mygroup</groupId>
-			<artifactId>common</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-			<classifier>tests</classifier>
-		</dependency>
-		<dependency>
-			<groupId>mygroup</groupId>
-			<artifactId>common</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-			<type>test-jar</type>
-		</dependency>
 	</dependencies>
 </project>

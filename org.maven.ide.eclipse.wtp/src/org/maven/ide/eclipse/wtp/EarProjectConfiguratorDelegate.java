@@ -49,6 +49,7 @@ import org.eclipse.wst.common.project.facet.core.IFacetedProject.Action;
 import org.maven.ide.eclipse.core.IMavenConstants;
 import org.maven.ide.eclipse.core.MavenLogger;
 import org.maven.ide.eclipse.jdt.BuildPathManager;
+import org.maven.ide.eclipse.jdt.IClasspathDescriptor;
 import org.maven.ide.eclipse.project.IMavenProjectFacade;
 import org.maven.ide.eclipse.wtp.earmodules.EarModule;
 
@@ -508,6 +509,11 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
       return componentsToAddMap;
     }
 
+  }
+
+  public void configureClasspath(IProject project, MavenProject mavenProject, IClasspathDescriptor classpath,
+      IProgressMonitor monitor) throws CoreException {
+    // do nothing
   }
 
 }

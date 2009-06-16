@@ -36,8 +36,8 @@ import org.eclipse.wst.common.project.facet.core.ProjectFacetsManager;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject.Action;
 import org.maven.ide.eclipse.MavenPlugin;
 import org.maven.ide.eclipse.jdt.BuildPathManager;
-import org.maven.ide.eclipse.project.IMavenProjectFacade;
 import org.maven.ide.eclipse.project.IMavenMarkerManager;
+import org.maven.ide.eclipse.project.IMavenProjectFacade;
 import org.maven.ide.eclipse.project.MavenProjectManager;
 import org.maven.ide.eclipse.project.MavenProjectUtils;
 
@@ -75,7 +75,6 @@ abstract class AbstractProjectConfiguratorDelegate implements IProjectConfigurat
   protected List<IMavenProjectFacade> getWorkspaceDependencies(IProject project, MavenProject mavenProject) {
     Set<IProject> projects = new HashSet<IProject>();
     List<IMavenProjectFacade> dependencies = new ArrayList<IMavenProjectFacade>();
-    @SuppressWarnings("unchecked")
     Set<Artifact> artifacts = mavenProject.getArtifacts();
     for(Artifact artifact : artifacts) {
       IMavenProjectFacade dependency = projectManager.getMavenProject(artifact.getGroupId(), artifact.getArtifactId(),
@@ -125,7 +124,6 @@ abstract class AbstractProjectConfiguratorDelegate implements IProjectConfigurat
     }
   }
 
-  @SuppressWarnings("unchecked")
   protected void removeTestFolderLinks(IProject project, MavenProject mavenProject, IProgressMonitor monitor,
       String folder) throws CoreException {
     IVirtualComponent component = ComponentCore.createComponent(project);
@@ -138,7 +136,7 @@ abstract class AbstractProjectConfiguratorDelegate implements IProjectConfigurat
     }
   }
 
-  // XXX consider adding getContainerAttributes to ClasspathConfigurator
+  // XXX move to IJavaProjectConfiguration#configureRawClasspath
   protected void addContainerAttribute(IProject project, IClasspathAttribute attribute, IProgressMonitor monitor)
       throws JavaModelException {
     IJavaProject javaProject = JavaCore.create(project);

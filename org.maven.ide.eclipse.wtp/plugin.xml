@@ -11,13 +11,6 @@
           name="WTP" priority="100"/>
    </extension>
    
-   <extension point="org.maven.ide.eclipse.jdt.classpathConfiguratorFactories">
-      <classpathConfiguratorFactory
-            id="org.maven.ide.eclipse.configuration.wtp.classpathConfiguratorFactory"
-            class="org.maven.ide.eclipse.wtp.WTPClasspathConfiguratorFactory"
-            priority="100"/>
-   </extension>
-
    <!-- A workaround to allow to uninstall WTP facets -->
    <extension point="org.eclipse.wst.common.project.facet.core.facets">
       <action type="uninstall" facet="jst.ear" version="[1.2-5.0]">

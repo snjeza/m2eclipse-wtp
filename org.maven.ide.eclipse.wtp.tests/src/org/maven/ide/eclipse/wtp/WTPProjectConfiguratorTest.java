@@ -88,8 +88,8 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     IVirtualComponent component = ComponentCore.createComponent(projects[2]);
     IVirtualReference[] references = component.getReferences();
     assertEquals(2, references.length);
-    assertEquals(projects[0], references[0].getReferencedComponent().getProject());
-    assertEquals(projects[1], references[1].getReferencedComponent().getProject());
+    assertEquals(projects[0], references[1].getReferencedComponent().getProject());
+    assertEquals(projects[1], references[0].getReferencedComponent().getProject());
   }
 
   public void testSimple04_testScopeDependency() throws Exception {

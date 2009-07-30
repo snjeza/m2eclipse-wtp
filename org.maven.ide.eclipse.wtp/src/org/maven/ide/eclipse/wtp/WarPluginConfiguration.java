@@ -58,6 +58,33 @@ class WarPluginConfiguration {
     return WAR_PACKAGING.equals(mavenProject.getPackaging());
   }
 
+  public Xpp3Dom[] getWebResources(){
+    if(plugin != null){
+      Xpp3Dom dom = (Xpp3Dom) plugin.getConfiguration();
+      Xpp3Dom[] children = dom.getChildren("webResources");
+      return children;
+    }
+    return null;
+  }
+  
+  public String getValueForWebResource(Xpp3Dom dom, String value){
+    Xpp3Dom resource = dom.getChild("resource");
+    if(resource != null){
+      Xpp3Dom child = resource.getChild(value);
+      if(child != null){
+        return child.getValue();
+      }
+    }
+    return null;
+  }
+  
+  public String getDirectoryForWebResource(Xpp3Dom dom){
+    return getValueForWebResource(dom, "directory");
+  }
+  
+  public String getTargetPathForWebResource(Xpp3Dom dom){
+    return getValueForWebResource(dom, "targetPath");
+  }
   public String getWarSourceDirectory() {
     if(plugin == null) {
       return WAR_SOURCE_FOLDER;

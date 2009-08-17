@@ -125,9 +125,6 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
     EarComponentWrapper earComponentWrp = new EarComponentWrapper(project, libBundleDir);
 
     for(EarModule earModule : earModules) {
-      if(earModule.isExcluded()) {
-        continue;
-      }
 
       Artifact artifact = earModule.getArtifact();
       IMavenProjectFacade workspaceDependency = projectManager.getMavenProject(artifact.getGroupId(), artifact
@@ -147,6 +144,7 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
 
     removeComponentsFromEAR(earComponentWrp, monitor);
     addComponentsToEAR(earComponentWrp, monitor);
+
     // XXX how do we set security roles using wtp api?
     // XXX how do we set alt-dds using wtp api?
     // XXX generating Deployment Descriptor ? operation exists in WTP 3.0.0 
@@ -516,4 +514,11 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
     // do nothing
   }
 
+//  TODO implement context root mgt  
+//  private void handleWebProject(IProject earProject, IProject webProject, String contextRoot)
+//  {
+//    IEARModelProvider iearModelProvider = (IEARModelProvider)ModelProviderManager.getModelProvider(earProject);;
+//    iearModelProvider.setWebContextRoot(webProject, contextRoot);
+//  }
+  
 }

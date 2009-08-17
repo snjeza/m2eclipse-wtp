@@ -27,6 +27,7 @@ package org.maven.ide.eclipse.wtp.earmodules;
  * under the License.
  */
 
+import static org.maven.ide.eclipse.wtp.DomUtils.getBooleanChildValue;
 import static org.maven.ide.eclipse.wtp.DomUtils.getChildValue;
 
 import java.util.Set;
@@ -43,6 +44,7 @@ import org.maven.ide.eclipse.wtp.earmodules.output.FileNameMappingFactory;
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
  */
 public final class EarModuleFactory {
+  
   private ArtifactTypeMappingService artifactTypeMappingService;
 
   private FileNameMapping fileNameMapping;
@@ -80,95 +82,101 @@ public final class EarModuleFactory {
   public EarModule newEarModule(Artifact artifact, String defaultLibBundleDir) throws UnknownArtifactTypeException {
     // Get the standard artifact type based on default config and user-defined mapping(s)
     final String artifactType = artifactTypeMappingService.getStandardType(artifact.getType());
-    String bundleFileName = fileNameMapping.mapFileName(artifact);
-
+    AbstractEarModule earModule = null;
     if("jar".equals(artifactType)) {
-      return new JarModule(artifact, defaultLibBundleDir, bundleFileName);
-    } else if("ejb".equals(artifactType)) {
-      return new EjbModule(artifact, bundleFileName);
-    } else if("ejb3".equals(artifactType)) {
-      return new Ejb3Module(artifact, bundleFileName);
+      earModule = new JarModule(artifact);
+      ((JarModule)earModule).setLibBundleDir(defaultLibBundleDir);
+    } else if("ejb".equals(artifactType) || "ejb3".equals(artifactType)) {
+      earModule  = new EjbModule(artifact);
     } else if("par".equals(artifactType)) {
-      return new ParModule(artifact, bundleFileName);
+      earModule  = new ParModule(artifact);
     } else if("ejb-client".equals(artifactType)) {
-      return new EjbClientModule(artifact, null, bundleFileName);
+      earModule  = new EjbClientModule(artifact);
     } else if("rar".equals(artifactType)) {
-      return new RarModule(artifact, bundleFileName);
+      earModule  = new RarModule(artifact);
     } else if("war".equals(artifactType)) {
-      return new WebModule(artifact, bundleFileName);
+      earModule  = new WebModule(artifact);
     } else if("sar".equals(artifactType)) {
-      return new SarModule(artifact, bundleFileName);
+      earModule  = new SarModule(artifact);
     } else if("wsr".equals(artifactType)) {
-      return new WsrModule(artifact, bundleFileName);
+      earModule  = new WsrModule(artifact);
     } else if("har".equals(artifactType)) {
-      return new HarModule(artifact, bundleFileName);
+      earModule  = new HarModule(artifact);
     } else {
       throw new IllegalStateException("Could not handle artifact type[" + artifactType + "]");
     }
+
+    earModule.setBundleFileName(fileNameMapping.mapFileName(artifact));
+    
+    return earModule;
+
   }
 
-  //XXX needs to be implemented
-  public EarModule newEarModule(Xpp3Dom domModule, String defaultLib) throws EarPluginException {
-    String groupId = getChildValue(domModule, "groupId");
-    String artifactId = getChildValue(domModule, "artifactId");
-    String type = getChildValue(domModule, "type");
-    String classifier = getChildValue(domModule, "classifier");
-
-    Artifact artifact = artifactRepository.resolveArtifact(groupId, artifactId, type, classifier);
-
+  public EarModule newEarModule(Xpp3Dom domModule, String defaultLibBundleDir) throws EarPluginException {
+    String artifactType = domModule.getName();
+    String groupId      = getChildValue(domModule, "groupId");
+    String artifactId   = getChildValue(domModule, "artifactId");
+    String classifier   = getChildValue(domModule, "classifier");
+    
+    AbstractEarModule earModule = null;
     // Get the standard artifact type based on default config and user-defined mapping(s)
-    //XXX need to create earmodules from xpp3dom
-    /*
-    if ( "jarModule".equals( artifactType ) || "javaModule".equals( artifactType ))
-    {
-        return new JarModule( artifact, defaultLib);
+    if ( "jarModule".equals(artifactType) || "javaModule".equals(artifactType)) {
+      JarModule jarModule = new JarModule();
+      jarModule.setIncludeInApplicationXml(getBooleanChildValue(domModule, "includeInApplicationXml"));
+      earModule = jarModule;
+    } 
+    else if ( "ejbModule".equals(artifactType) || "ejb3Module".equals(artifactType)) {
+      earModule  = new EjbModule();
+    } 
+    else if ( "warModule".equals(artifactType)){
+      WebModule webModule  = new WebModule();
+      webModule.setContextRoot(getChildValue(domModule, "contextRoot"));
+      earModule = webModule;
     }
-    else if ( "ejbModule".equals( artifactType ) )
-    {
-        return new EjbModule( artifact );
+    else if ( "parModule".equals(artifactType)){
+      earModule = new ParModule();
     }
-    else if ( "ejb3Module".equals( artifactType ) )
-    {
-        return new Ejb3Module( artifact );
+    else if ( "ejbClientModule".equals(artifactType)){
+      earModule = new EjbClientModule();
     }
-    else if ( "warModule".equals( artifactType ) )
-    {
-        return new WebModule( artifact );
+    else if ( "rarModule".equals(artifactType)){
+      earModule = new RarModule();
     }
-    else if ( "parModule".equals( artifactType ) )
-    {
-        return new ParModule( artifact );
+    else if ( "warModule".equals(artifactType)){
+      earModule = new WebModule();
     }
-    else if ( "ejbClientModule".equals( artifactType ) )
-    {
-        return new EjbClientModule( artifact, null );
+    else if ( "sarModule".equals(artifactType)){
+      earModule = new SarModule();
     }
-    else if ( "rarModule".equals( artifactType ) )
-    {
-        return new RarModule( artifact );
+    else if ( "wsrModule".equals(artifactType)){
+      earModule = new WsrModule();
     }
-    else if ( "warModule".equals( artifactType ) )
-    {
-        return new WebModule( artifact );
+    else if ( "harModule".equals(artifactType)){
+      earModule = new HarModule();
     }
-    else if ( "sarModule".equals( artifactType ) )
-    {
-        return new SarModule( artifact );
-    }
-    else if ( "wsrModule".equals( artifactType ) )
-    {
-        return new WsrModule( artifact );
-    }
-    else if ( "harModule".equals( artifactType ) )
-    {
-        return new HarModule( artifact );
-    }
-    else
-    {
+    else {
         throw new IllegalStateException( "Could not handle artifact type[" + artifactType + "]" );
     }
-    */
+    
+    Artifact artifact   = artifactRepository.resolveArtifact(groupId, artifactId, earModule.getType(), classifier);
+    earModule.setArtifact(artifact);
+    
+    earModule.setBundleDir(getChildValue(domModule, "bundleDir"));
+    //To this point, we're sure to have a valid earModule ...
+    String bundleFileName  = getChildValue(domModule, "bundleFileName");
+    if (null==bundleFileName){
+      bundleFileName = fileNameMapping.mapFileName(artifact);
+    }
+    earModule.setBundleFileName(bundleFileName);
+    earModule.setUri(getChildValue(domModule, "uri"));
+    earModule.setExcluded(getBooleanChildValue(domModule, "excluded"));
 
-    return newEarModule(artifact, defaultLib);
+    //The following will be ignored by WTP - so far
+    String unpack = getChildValue(domModule, "unpack");
+    earModule.setShouldUnpack(unpack==null?null:Boolean.valueOf(unpack));
+    earModule.setAltDeploymentDescriptor(getChildValue(domModule, "altDeploymentDescriptor"));
+    
+    return earModule;
   }
+
 }

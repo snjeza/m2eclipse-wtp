@@ -40,25 +40,34 @@ import org.apache.maven.artifact.Artifact;
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
  */
 public class JarModule extends AbstractEarModule {
-  // private Boolean includeInApplicationXml = Boolean.FALSE;
+  
+  private boolean includeInApplicationXml = false;
+
+
+  public JarModule(Artifact a) {
+    super(a);
+  }
 
   public JarModule() {
     super();
-  }
-
-  public JarModule(Artifact a, String defaultLibBundleDir, String bundleFileName) {
-    super(a, bundleFileName);
-    setLibBundleDir(defaultLibBundleDir);
-
   }
 
   public String getType() {
     return "jar";
   }
 
-  private void setLibBundleDir(String defaultLibBundleDir) {
+  void setLibBundleDir(String defaultLibBundleDir) {
     if(defaultLibBundleDir != null && bundleDir == null) {
       this.bundleDir = defaultLibBundleDir;
     }
   }
+
+  public boolean isIncludeInApplicationXml() {
+    return includeInApplicationXml;
+  }
+
+  public void setIncludeInApplicationXml(boolean includeInApplicationXml) {
+    this.includeInApplicationXml = includeInApplicationXml;
+  }
+
 }

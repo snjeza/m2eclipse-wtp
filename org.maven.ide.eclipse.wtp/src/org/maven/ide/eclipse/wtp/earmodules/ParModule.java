@@ -37,8 +37,12 @@ import org.apache.maven.artifact.Artifact;
  */
 public class ParModule extends EjbModule {
 
-  public ParModule(Artifact a, String bundleFileName) {
-    super(a, bundleFileName);
+  public ParModule() {
+    super();
+  }
+
+  public ParModule(Artifact a) {
+    super(a);
   }
 
   public String getType() {

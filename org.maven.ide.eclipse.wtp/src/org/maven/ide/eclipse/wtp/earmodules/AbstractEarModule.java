@@ -37,12 +37,6 @@ import org.apache.maven.artifact.Artifact;
  */
 public abstract class AbstractEarModule implements EarModule {
 
-  protected static final String MODULE_ELEMENT = "module";
-
-  protected static final String JAVA_MODULE = "java";
-
-  protected static final String ALT_DD = "alt-dd";
-
   private String uri;
 
   private Artifact artifact;
@@ -59,10 +53,12 @@ public abstract class AbstractEarModule implements EarModule {
 
   protected String bundleFileName;
 
-  protected Boolean excluded = Boolean.FALSE;
+  protected boolean excluded;
 
+  //Unusable by WTP so far
   protected Boolean unpack = null;
 
+  //Unusable by WTP so far
   protected String altDeploymentDescriptor;
 
   /**
@@ -76,17 +72,19 @@ public abstract class AbstractEarModule implements EarModule {
    * 
    * @param a the artifact
    */
-  public AbstractEarModule(Artifact a, String bundleFileName) {
+  public AbstractEarModule(Artifact a) {
+    setArtifact(a);
+  }
+  
+  public Artifact getArtifact() {
+    return artifact;
+  }
+
+  void setArtifact(Artifact a) {
     this.artifact = a;
     this.groupId = a.getGroupId();
     this.artifactId = a.getArtifactId();
     this.classifier = a.getClassifier();
-    this.bundleDir = null;
-    this.bundleFileName = bundleFileName;
-  }
-
-  public Artifact getArtifact() {
-    return artifact;
   }
 
   public String getUri() {
@@ -166,13 +164,15 @@ public abstract class AbstractEarModule implements EarModule {
    * @return true if this module should be skipped, false otherwise
    */
   public boolean isExcluded() {
-    return excluded.booleanValue();
+    return excluded;
   }
 
   public Boolean shouldUnpack() {
+    //Unusable by WTP so far
     return unpack;
   }
 
+  @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append(getType()).append(":").append(groupId).append(":").append(artifactId);
@@ -212,19 +212,28 @@ public abstract class AbstractEarModule implements EarModule {
     return bundleDir;
   }
 
-  /**
-   * Specify if the objects are both null or both equal.
-   * 
-   * @param first the first object
-   * @param second the second object
-   * @return true if parameters are either both null or equal
-   */
-  static boolean areNullOrEqual(Object first, Object second) {
-    if(first != null) {
-      return first.equals(second);
-    } else {
-      return second == null;
-    }
+  void setBundleDir(String bundleDir) {
+    this.bundleDir = bundleDir;
   }
 
+  void setBundleFileName(String fileName) {
+    this.bundleFileName = fileName;
+  }
+
+  void setUri(String uri) {
+    this.uri = uri;
+  }
+
+  void setExcluded(boolean excluded) {
+    this.excluded = excluded;
+  }
+
+  void setAltDeploymentDescriptor(String altDeploymentDescriptor) {
+    //Unusable by WTP so far
+    this.altDeploymentDescriptor = altDeploymentDescriptor;
+  }
+  
+  void setShouldUnpack(Boolean unpack) {
+    this.unpack = unpack;
+  }
 }

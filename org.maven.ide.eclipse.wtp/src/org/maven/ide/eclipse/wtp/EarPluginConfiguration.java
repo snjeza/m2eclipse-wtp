@@ -10,7 +10,7 @@ package org.maven.ide.eclipse.wtp;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
@@ -71,9 +71,8 @@ class EarPluginConfiguration {
     this.plugin = findEarPlugin(mavenProject);
   }
 
-  @SuppressWarnings("unchecked")
   private Plugin findEarPlugin(MavenProject mavenProject) {
-    for(Plugin plugin : (List<Plugin>) mavenProject.getBuildPlugins()) {
+    for(Plugin plugin : mavenProject.getBuildPlugins()) {
       if("org.apache.maven.plugins".equals(plugin.getGroupId()) //
           && "maven-ear-plugin".equals(plugin.getArtifactId())) {
         return plugin;
@@ -162,7 +161,6 @@ class EarPluginConfiguration {
    * @return an unmodifiable set of EarModule
    */
   public Set<EarModule> getEarModules() throws EarPluginException {
-    @SuppressWarnings("unchecked")
     Set<Artifact> artifacts = mavenProject.getArtifacts();
     if(artifacts == null || artifacts.isEmpty()) {
       return Collections.<EarModule> emptySet();
@@ -173,7 +171,8 @@ class EarPluginConfiguration {
     EarModuleFactory earModuleFactory = EarModuleFactory.createEarModuleFactory(getArtifactTypeMappingService(),
         getFileNameMapping(), getMainArtifactId(), artifacts);
 
-    earModules.addAll(getEarModulesFromConfig(earModuleFactory, defaultBundleDir)); //Resolve Ear modules from plugin config
+    //Resolve Ear modules from plugin config
+    earModules.addAll(getEarModulesFromConfig(earModuleFactory, defaultBundleDir)); 
 
     ScopeArtifactFilter filter = new ScopeArtifactFilter(Artifact.SCOPE_RUNTIME);
 
@@ -195,6 +194,18 @@ class EarPluginConfiguration {
         }
       }
     }
+    
+    //Remove excluded artifacts 
+    Iterator<EarModule> modulesIterator = earModules.iterator();
+    while (modulesIterator.hasNext())
+    {
+      EarModule module = modulesIterator.next();
+      if (module.isExcluded())
+      {
+        modulesIterator.remove();  
+      }
+    }
+
     return Collections.unmodifiableSet(earModules);
   }
 
@@ -230,7 +241,7 @@ class EarPluginConfiguration {
    * 
    * @param earModuleFactory
    */
-  private Set<EarModule> getEarModulesFromConfig(EarModuleFactory earModuleFactory, String defaultLib) {
+  private Set<EarModule> getEarModulesFromConfig(EarModuleFactory earModuleFactory, String defaultBundleDir) throws EarPluginException {
     Set<EarModule> earModules = new HashSet<EarModule>();
     Xpp3Dom configuration = getConfiguration();
     if(configuration == null) {
@@ -246,14 +257,14 @@ class EarPluginConfiguration {
     if(domModules == null || domModules.length == 0) {
       return earModules;
     }
-    /*
+    
     for(Xpp3Dom domModule : domModules) {
-      EarModule earModule = earModuleFactory.newEarModule(domModule, defaultLib, mavenProject.getArtifacts());
-      if(earModule != null && !earModule.isExcluded()) {
+      EarModule earModule = earModuleFactory.newEarModule(domModule, defaultBundleDir);
+      if(earModule != null) {
         earModules.add(earModule);
       }
     }
-    */
+    
     return earModules;
   }
 

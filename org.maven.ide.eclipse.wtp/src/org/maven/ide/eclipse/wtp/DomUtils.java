@@ -28,4 +28,8 @@ public class DomUtils {
     }
     return result;
   }
+
+  public static final boolean getBooleanChildValue(Xpp3Dom parent, String childName) {
+    return Boolean.valueOf(getChildValue(parent, childName));
+  }
 }

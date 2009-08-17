@@ -36,8 +36,13 @@ import org.apache.maven.artifact.Artifact;
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
  */
 public class HarModule extends AbstractEarModule implements JbossEarModule {
-  public HarModule(Artifact a, String bundleFileName) {
-    super(a, bundleFileName);
+
+  public HarModule() {
+    super();
+  }
+
+  public HarModule(Artifact a) {
+    super(a);
   }
 
   public String getType() {

@@ -36,16 +36,15 @@ import org.apache.maven.artifact.Artifact;
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
  */
 public class WebModule extends AbstractEarModule {
-  protected static final String WEB_MODULE = "web";
-
-  protected static final String WEB_URI_FIELD = "web-uri";
-
-  protected static final String CONTEXT_ROOT_FIELD = "context-root";
-
+  
   private String contextRoot;
 
-  public WebModule(Artifact a, String bundleFileName) {
-    super(a, bundleFileName);
+  public WebModule() {
+    super();
+  }
+
+  public WebModule(Artifact a) {
+    super(a);
   }
 
   /**

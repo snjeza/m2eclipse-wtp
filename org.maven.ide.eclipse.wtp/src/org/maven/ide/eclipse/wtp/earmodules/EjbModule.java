@@ -36,10 +36,13 @@ import org.apache.maven.artifact.Artifact;
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
  */
 public class EjbModule extends AbstractEarModule {
-  protected static final String EJB_MODULE = "ejb";
 
-  public EjbModule(Artifact a, String bundleFileName) {
-    super(a, bundleFileName);
+  public EjbModule() {
+    super();
+  }
+
+  public EjbModule(Artifact a) {
+    super(a);
   }
 
   public String getType() {

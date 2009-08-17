@@ -36,10 +36,13 @@ import org.apache.maven.artifact.Artifact;
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
  */
 public class RarModule extends AbstractEarModule {
-  protected static final String RAR_MODULE = "connector";
 
-  public RarModule(Artifact a, String bundleFileName) {
-    super(a, bundleFileName);
+  public RarModule() {
+    super();
+  }
+
+  public RarModule(Artifact a) {
+    super(a);
   }
 
   public String getType() {

@@ -10,7 +10,6 @@ package org.maven.ide.eclipse.wtp;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 
 import org.apache.maven.model.Plugin;
 import org.apache.maven.project.MavenProject;
@@ -43,9 +42,8 @@ class WarPluginConfiguration {
     this.plugin = findWarPlugin(mavenProject);
   }
 
-  @SuppressWarnings("unchecked")
   private Plugin findWarPlugin(MavenProject mavenProject) {
-    for(Plugin plugin : (List<Plugin>) mavenProject.getBuildPlugins()) {
+    for(Plugin plugin : mavenProject.getBuildPlugins()) {
       if("org.apache.maven.plugins".equals(plugin.getGroupId()) //
           && "maven-war-plugin".equals(plugin.getArtifactId())) {
         return plugin;

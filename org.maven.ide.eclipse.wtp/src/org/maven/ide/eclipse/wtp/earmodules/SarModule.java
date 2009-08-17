@@ -36,10 +36,13 @@ import org.apache.maven.artifact.Artifact;
  * @author Stephane Nicoll <snicoll@apache.org>
  */
 public class SarModule extends AbstractEarModule implements JbossEarModule {
-  protected static final String SAR_MODULE = "connector";
 
-  public SarModule(Artifact a, String bundleFileName) {
-    super(a, bundleFileName);
+  public SarModule() {
+    super();
+  }
+
+  public SarModule(Artifact a) {
+    super(a);
   }
 
   public String getType() {

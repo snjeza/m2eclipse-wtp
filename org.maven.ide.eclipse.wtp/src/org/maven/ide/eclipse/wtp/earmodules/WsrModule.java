@@ -36,8 +36,13 @@ import org.apache.maven.artifact.Artifact;
  * @author Brad O'Hearne <brado@neurofire.com>
  */
 public class WsrModule extends RarModule {
-  public WsrModule(Artifact a, String bundleFileName) {
-    super(a, bundleFileName);
+
+  public WsrModule() {
+    super();
+  }
+
+  public WsrModule(Artifact a) {
+    super(a);
   }
 
   public String getType() {

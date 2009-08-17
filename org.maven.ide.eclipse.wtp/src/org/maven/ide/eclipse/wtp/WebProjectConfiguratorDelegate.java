@@ -45,7 +45,6 @@ import org.maven.ide.eclipse.MavenPlugin;
 import org.maven.ide.eclipse.core.MavenLogger;
 import org.maven.ide.eclipse.jdt.IClasspathDescriptor;
 import org.maven.ide.eclipse.jdt.IClasspathEntryDescriptor;
-import org.maven.ide.eclipse.jdt.internal.ClasspathEntryDescriptor;
 import org.maven.ide.eclipse.project.IMavenProjectFacade;
 import org.maven.ide.eclipse.wtp.internal.ExtensionReader;
 

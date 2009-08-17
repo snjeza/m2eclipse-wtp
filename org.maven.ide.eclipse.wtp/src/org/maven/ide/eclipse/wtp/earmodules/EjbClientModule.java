@@ -37,8 +37,12 @@ import org.apache.maven.artifact.Artifact;
  */
 public class EjbClientModule extends JarModule {
 
-  public EjbClientModule(Artifact artifact, String defaultLibBundleDir, String bundleFileName) {
-    super(artifact, defaultLibBundleDir, bundleFileName);
+  public EjbClientModule() {
+    super();
+  }
+
+  public EjbClientModule(Artifact artifact) {
+    super(artifact);
   }
 
   public String getType() {

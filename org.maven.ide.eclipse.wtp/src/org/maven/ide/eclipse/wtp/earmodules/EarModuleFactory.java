@@ -128,7 +128,7 @@ public final class EarModuleFactory {
     else if ( "ejbModule".equals(artifactType) || "ejb3Module".equals(artifactType)) {
       earModule  = new EjbModule();
     } 
-    else if ( "warModule".equals(artifactType)){
+    else if ( "webModule".equals(artifactType)){
       WebModule webModule  = new WebModule();
       webModule.setContextRoot(getChildValue(domModule, "contextRoot"));
       earModule = webModule;

@@ -115,7 +115,11 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
   public void setModuleDependencies(IProject project, MavenProject mavenProject, IProgressMonitor monitor)
       throws CoreException {
     IVirtualComponent component = ComponentCore.createComponent(project);
-
+    //if the attempt to create dependencies happens before the project is actually created, abort. 
+    //this will be created again when the project exists.
+    if(component == null){
+      return;
+    }
     List<AbstractDependencyConfigurator> depConfigurators = ExtensionReader.readDependencyConfiguratorExtensions(projectManager, 
         MavenPlugin.getDefault().getMavenRuntimeManager(), mavenMarkerManager, 
         MavenPlugin.getDefault().getConsole());

@@ -57,6 +57,9 @@ import org.maven.ide.eclipse.wtp.internal.ExtensionReader;
  */
 class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate {
 
+  /**
+   * See http://wiki.eclipse.org/ClasspathEntriesPublishExportSupport
+   */
   static final IClasspathAttribute NONDEPENDENCY_ATTRIBUTE = JavaCore.newClasspathAttribute(
       IClasspathDependencyConstants.CLASSPATH_COMPONENT_NON_DEPENDENCY, "");
 

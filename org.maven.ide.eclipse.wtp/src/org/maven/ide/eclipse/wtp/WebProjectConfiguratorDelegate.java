@@ -21,6 +21,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
@@ -28,6 +29,9 @@ import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jst.j2ee.classpathdep.IClasspathDependencyConstants;
+import org.eclipse.jst.j2ee.commonarchivecore.internal.helpers.ArchiveManifest;
+import org.eclipse.jst.j2ee.commonarchivecore.internal.helpers.ArchiveManifestImpl;
+import org.eclipse.jst.j2ee.internal.project.J2EEProjectUtilities;
 import org.eclipse.jst.j2ee.project.facet.IJ2EEModuleFacetInstallDataModelProperties;
 import org.eclipse.jst.j2ee.web.project.facet.WebFacetInstallDataModelProvider;
 import org.eclipse.jst.j2ee.web.project.facet.WebFacetUtils;
@@ -46,6 +50,7 @@ import org.maven.ide.eclipse.core.MavenLogger;
 import org.maven.ide.eclipse.jdt.IClasspathDescriptor;
 import org.maven.ide.eclipse.jdt.IClasspathEntryDescriptor;
 import org.maven.ide.eclipse.project.IMavenProjectFacade;
+import org.maven.ide.eclipse.wtp.internal.AntPathMatcher;
 import org.maven.ide.eclipse.wtp.internal.ExtensionReader;
 
 
@@ -55,6 +60,7 @@ import org.maven.ide.eclipse.wtp.internal.ExtensionReader;
  * @author Igor Fedorenko
  * @author Fred Bricon
  */
+@SuppressWarnings("restriction")
 class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate {
 
   /**
@@ -123,6 +129,10 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
     if(component == null){
       return;
     }
+
+    WarPluginConfiguration config = new WarPluginConfiguration(mavenProject);
+    WarPackagingOptions opts = new WarPackagingOptions(config);
+
     List<AbstractDependencyConfigurator> depConfigurators = ExtensionReader.readDependencyConfiguratorExtensions(projectManager, 
         MavenPlugin.getDefault().getMavenRuntimeManager(), mavenMarkerManager, 
         MavenPlugin.getDefault().getConsole());
@@ -147,6 +157,13 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
         configureWtpUtil(dependency.getProject(), depMavenProject, monitor);
       }
       IVirtualComponent depComponent = ComponentCore.createComponent(dependency.getProject());
+
+      //in a skinny war the dependency modules are referenced by manifest classpath
+      //see also <code>configureClasspath</code> the dependeny project is handled in the skinny case
+      if(opts.isSkinnyWar() && opts.isReferenceFromEar(depComponent)) {
+        continue;
+      }
+
       IVirtualReference reference = ComponentCore.createReference(component, depComponent);
       reference.setRuntimePath(new Path("/WEB-INF/lib"));
       references.add(reference);
@@ -170,6 +187,14 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
   public void configureClasspath(IProject project, MavenProject mavenProject, IClasspathDescriptor classpath,
       IProgressMonitor monitor) throws CoreException {
 
+    //Improve skinny war support by generating the manifest classpath
+    //similar to mvn eclipse:eclipse 
+    //http://maven.apache.org/plugins/maven-war-plugin/examples/skinny-wars.html
+    WarPluginConfiguration config = new WarPluginConfiguration(mavenProject);
+    WarPackagingOptions opts = new WarPackagingOptions(config);
+
+    StringBuilder manifestCp = new StringBuilder();
+
     /*
      * Need to take care of three separate cases
      * 
@@ -189,8 +214,36 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
       IClasspathEntry entry = descriptor.getClasspathEntry();
       String scope = descriptor.getScope();
 
-      // remove project dependencies
-      if (IClasspathEntry.CPE_PROJECT == entry.getEntryKind() && Artifact.SCOPE_COMPILE.equals(scope)) {
+      if(IClasspathEntry.CPE_PROJECT == entry.getEntryKind() && Artifact.SCOPE_COMPILE.equals(scope)) {
+
+        //get deployed name for project dependencies
+        //TODO can this be done somehow more elegantly?
+        IProject p = (IProject) ResourcesPlugin.getWorkspace().getRoot().findMember(entry.getPath());
+        IVirtualComponent component = ComponentCore.createComponent(p);
+
+        if(opts.isSkinnyWar() && opts.isReferenceFromEar(component)) {
+          if(manifestCp.length() > 0) {
+            manifestCp.append(" ");
+          }
+          manifestCp.append(component.getDeployedName()).append(".jar");
+        }
+
+        // remove project dependencies in any case
+        iter.remove();
+        continue;
+      }
+
+      if(opts.isSkinnyWar() && opts.isReferenceFromEar(descriptor)) {
+
+        if(manifestCp.length() > 0) {
+          manifestCp.append(" ");
+        }
+        if(config.getManifestClasspathPrefix() != null) {
+          manifestCp.append(config.getManifestClasspathPrefix());
+        }
+        manifestCp.append(entry.getPath().lastSegment());
+
+        // ear references aren't kept in the Maven Dependencies
         iter.remove();
         continue;
       }
@@ -240,6 +293,30 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
       }
       
     }
+
+    if(opts.isSkinnyWar()) {
+      
+      //writing the manifest only works when the project has been properly created
+      //placing this check on the top of the method broke 2 other tests
+      //thats why its placed here now.
+      if(ComponentCore.createComponent(project) == null) {
+        return;
+      }
+
+      //write manifest, using internal API - seems ok for 3.4/3.5, though
+      ArchiveManifest mf = J2EEProjectUtilities.readManifest(project);
+      if(mf == null) {
+        mf = new ArchiveManifestImpl();
+      }
+      mf.addVersionIfNecessary();
+      mf.setClassPath(manifestCp.toString());
+
+      try {
+        J2EEProjectUtilities.writeManifest(project, mf);
+      } catch(Exception ex) {
+        MavenLogger.log("Could not write web module manifest file", ex);
+      }
+    }
   }
 
   private static boolean isDifferent(File src, File dst) {
@@ -251,4 +328,94 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
         || src.lastModified() != dst.lastModified();
   }
 
+  private static class WarPackagingOptions {
+
+    private boolean isAddManifestClasspath;
+
+    //these are used in the skinny use case to decide wheter a dependencies gets 
+    //referenced from the ear, or if it is (exceptionally) placed in the WEB-INF/lib
+    String[] packagingIncludes;
+
+    String[] packagingExcludes;
+
+    public WarPackagingOptions(WarPluginConfiguration config) {
+
+      isAddManifestClasspath = config.isAddManifestClasspath();
+
+      packagingExcludes = config.getPackagingExcludes();
+      packagingIncludes = config.getPackagingIncludes();
+    }
+
+    public boolean isSkinnyWar() {
+      return isAddManifestClasspath;
+    }
+
+    public boolean isReferenceFromEar(IClasspathEntryDescriptor descriptor) {
+
+      IClasspathEntry entry = descriptor.getClasspathEntry();
+      String scope = descriptor.getScope();
+
+      //these dependencies aren't added to the manifest cp
+      //retain optional dependencies here, they might be used just to express the 
+      //dependency to be used in the manifest
+      if(Artifact.SCOPE_PROVIDED.equals(scope) || Artifact.SCOPE_TEST.equals(scope)
+          || Artifact.SCOPE_SYSTEM.equals(scope)) {
+        return false;
+      }
+
+      //calculate in regard to includes/excludes whether this jar is
+      //to be packaged into  WEB-INF/lib
+      String jarFileName = "WEB-INF/lib/" + entry.getPath().lastSegment();
+      return isExcludedFromWebInfLib(jarFileName);
+    }
+
+    /**
+     * @param depComponent
+     * @return
+     */
+    public boolean isReferenceFromEar(IVirtualComponent depComponent) {
+      
+      if (depComponent==null) {
+        return false;
+      }
+
+      //calculate in regard to includes/excludes wether this jar is
+      //to be packaged into  WEB-INF/lib
+      String jarFileName = "WEB-INF/lib/" + depComponent.getDeployedName() + ".jar";
+      return isExcludedFromWebInfLib(jarFileName);
+    }
+
+    private boolean isExcludedFromWebInfLib(String virtualLibPath) {
+
+      AntPathMatcher matcher = new AntPathMatcher();
+
+      for(String excl : packagingExcludes) {
+        if(matcher.match(excl, virtualLibPath)) {
+
+          //stop here already, since exclusions seem to have precedence over inclusions
+          //it is not documented as such for the maven war-plugin, I concluded this from experimentation
+          //should be verfied, though
+          return true;
+        }
+      }
+
+      //so the path is not excluded, check if it is included into the war packaging
+      for(String incl : packagingIncludes) {
+        if(matcher.match(incl, virtualLibPath)) {
+          return false;
+        }
+      }
+
+      //if we're here it means the path has not been specifically included either
+      //that means either no inclusions are defined at all (<packagingIncludes> missing or empty)
+      //or the jar is really not included
+      if(packagingIncludes.length == 0) {
+        //undefined inclusions mean maven war plugin default -> will be included in war
+        return false;
+      } else {
+        //specifically not included
+        return true;
+      }
+    }
+  }
 }

@@ -10,6 +10,8 @@ package org.maven.ide.eclipse.wtp;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -17,6 +19,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
@@ -24,9 +27,11 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jst.common.project.facet.JavaFacetUtils;
 import org.eclipse.jst.j2ee.classpathdep.IClasspathDependencyConstants;
+import org.eclipse.jst.j2ee.internal.J2EEConstants;
 import org.eclipse.jst.j2ee.project.facet.IJ2EEFacetConstants;
 import org.eclipse.jst.j2ee.web.project.facet.WebFacetUtils;
 import org.eclipse.wst.common.componentcore.ComponentCore;
+import org.eclipse.wst.common.componentcore.internal.util.ComponentUtilities;
 import org.eclipse.wst.common.componentcore.resources.IVirtualComponent;
 import org.eclipse.wst.common.componentcore.resources.IVirtualFolder;
 import org.eclipse.wst.common.componentcore.resources.IVirtualReference;
@@ -443,6 +448,119 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     IVirtualReference snapshot = references[0];
     assertEquals("MNGECLIPSE-1045-DEP-0.0.1-SNAPSHOT.jar", snapshot.getArchiveName());
   }
+  
+  public void testMNGECLIPSE1627_SkinnyWars() throws Exception {
+    
+    IProject[] projects = importProjects(
+        "projects/MNGECLIPSE-1627/", //
+        new String[] {"ear/pom.xml", "utility1/pom.xml", "utility2/pom.xml", "war-fullskinny/pom.xml", "war-mixedskinny/pom.xml", },
+        new ResolverConfiguration());
+
+    waitForJobsToComplete();
+    
+    assertEquals(5, projects.length);
+    IProject ear = projects[0];
+    IProject utility1 = projects[1];
+    IProject utility2 = projects[2];
+    IProject fullskinnywar = projects[3];
+    IProject mixedskinnywar = projects[4];
+    
+    assertMarkers(ear, 0);
+    assertMarkers(utility1, 0);
+    assertMarkers(utility2, 0);
+    assertMarkers(fullskinnywar, 0);
+    assertMarkers(mixedskinnywar, 0);
+    
+    IVirtualComponent comp = ComponentCore.createComponent(ear);
+    
+    IVirtualReference utilityRef1 = comp.getReference("MNGECLIPSE-1627-utility1");
+    assertNotNull(utilityRef1);
+    IVirtualReference utilityRef2 = comp.getReference("MNGECLIPSE-1627-utility2");
+    assertNotNull(utilityRef2);
+    
+    ////////////
+    //check the fullskinny war project
+    ////////////
+    IVirtualReference warRef1 = comp.getReference("MNGECLIPSE-1627-war-fullskinny");
+    assertNotNull(warRef1);
+    assertEquals("MNGECLIPSE-1627-war-fullskinny-0.0.1-SNAPSHOT.war",warRef1.getArchiveName());    
+    
+    //the fully skinny war contains to project refs whatsoever
+    IVirtualComponent warComp1 = warRef1.getReferencedComponent();
+    IVirtualReference[] fromWarRefs1 = warComp1.getReferences();
+    assertEquals(4, fromWarRefs1.length);
+    
+    //check the component refs and their runtime path
+    //TODO the reference ordering seems stable, but someone experienced should have a look
+    assertEquals(utility1, fromWarRefs1[0].getReferencedComponent().getProject());
+    assertEquals("/", fromWarRefs1[0].getRuntimePath().toString());
+    assertEquals(utility2, fromWarRefs1[1].getReferencedComponent().getProject());
+    assertEquals("/", fromWarRefs1[1].getRuntimePath().toString());    
+    assertTrue(fromWarRefs1[2].getReferencedComponent().getDeployedName().endsWith("commons-lang-2.4.jar"));  
+    assertEquals("/", fromWarRefs1[2].getRuntimePath().toString());  
+    assertTrue(fromWarRefs1[3].getReferencedComponent().getDeployedName().endsWith("commons-collections-3.2.1.jar"));  
+    assertEquals("/", fromWarRefs1[3].getRuntimePath().toString());  
+    
+    //check for all expected dependencies in the manifest
+    IFile war1ManifestFile = ComponentUtilities.findFile(warComp1, new Path(J2EEConstants.MANIFEST_URI));
+    Manifest mf1 = new Manifest(war1ManifestFile.getContents());
+    
+    //check that manifest classpath contains all dependencies
+    String classpath = mf1.getMainAttributes().getValue(Attributes.Name.CLASS_PATH);
+    assertTrue(classpath.contains(utilityRef1.getArchiveName()));
+    assertTrue(classpath.contains(utilityRef2.getArchiveName()));
+    assertTrue(classpath.contains("commons-lang-2.4.jar"));
+    assertTrue(classpath.contains("commons-collections-3.2.1.jar"));
+    //...but not junit, which is a test dependency
+    assertFalse(classpath.contains("junit-3.8.1.jar"));
+    
+    //check that junit is in the maven classpath container instead
+    IClasspathEntry[] mavenContainerEntries = getMavenContainerEntries(fullskinnywar);
+    assertEquals(1, mavenContainerEntries.length);
+    assertEquals("junit-3.8.1.jar", mavenContainerEntries[0].getPath().lastSegment());
+    
+    ////////////
+    //check the mixedskinny war project
+    ////////////
+    IVirtualReference warRef2 = comp.getReference("MNGECLIPSE-1627-war-mixedskinny");
+    assertNotNull(warRef2);
+    assertEquals("MNGECLIPSE-1627-war-mixedskinny-0.0.1-SNAPSHOT.war",warRef2.getArchiveName());    
+    
+    IVirtualComponent warComp2 = warRef2.getReferencedComponent();
+    IVirtualReference[] fromWarRefs2 = warComp2.getReferences();
+    
+    //check the component refs and their runtime path
+    //TODO the reference ordering seems stable, but someone experienced should have a look
+    //TODO the WEB-INF/lib located refs seem to come first
+    assertEquals(utility2, fromWarRefs2[0].getReferencedComponent().getProject());
+    assertEquals("/WEB-INF/lib", fromWarRefs2[0].getRuntimePath().toString());    
+    assertTrue(fromWarRefs2[1].getReferencedComponent().getDeployedName().endsWith("commons-collections-3.2.1.jar"));  
+    assertEquals("/WEB-INF/lib", fromWarRefs2[1].getRuntimePath().toString());  
+    assertEquals(utility1, fromWarRefs2[2].getReferencedComponent().getProject());
+    assertEquals("/", fromWarRefs2[2].getRuntimePath().toString());
+    assertTrue(fromWarRefs2[3].getReferencedComponent().getDeployedName().endsWith("commons-lang-2.4.jar"));  
+    assertEquals("/", fromWarRefs2[3].getRuntimePath().toString());  
+
+    //check for all expected dependencies in the manifest
+    IFile war2ManifestFile = ComponentUtilities.findFile(warComp2, new Path(J2EEConstants.MANIFEST_URI));
+    Manifest mf2 = new Manifest(war2ManifestFile.getContents());
+    
+    //check that manifest classpath only contain utility1 and commons-lang
+    classpath = mf2.getMainAttributes().getValue(Attributes.Name.CLASS_PATH);
+    assertTrue(classpath.contains(utilityRef1.getArchiveName()));
+    assertFalse(classpath.contains(utilityRef2.getArchiveName()));
+    assertTrue(classpath.contains("commons-lang-2.4.jar"));
+    assertFalse(classpath.contains("commons-collections-3.2.1.jar"));
+    //...but not junit, which is a test dependency
+    assertFalse(classpath.contains("junit-3.8.1.jar"));
+    
+    //check that junit and commons-collections is in the maven classpath container instead
+    mavenContainerEntries = getMavenContainerEntries(mixedskinnywar);
+    assertEquals(2, mavenContainerEntries.length);
+    assertEquals("commons-collections-3.2.1.jar", mavenContainerEntries[0].getPath().lastSegment());
+    assertEquals("junit-3.8.1.jar", mavenContainerEntries[1].getPath().lastSegment());
+}
+
 
   
   private String toString(IVirtualReference[] references) {

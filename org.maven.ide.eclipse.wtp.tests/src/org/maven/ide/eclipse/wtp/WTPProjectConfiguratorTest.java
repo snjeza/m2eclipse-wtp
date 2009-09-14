@@ -733,6 +733,40 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     assertEquals(4, roles.size());//TODO remove deleted roles
 }
 
+  public void testMNGECLIPSE1088_generateApplicationXml() throws Exception {
+
+    IProject[] projects = importProjects(
+        "projects/MNGECLIPSE-1088/", //
+        new String[] {"A/pom.xml", "B/pom.xml", "C/pom.xml", "D/pom.xml"},
+        new ResolverConfiguration());
+
+    waitForJobsToComplete();
+    
+    assertEquals(4, projects.length);
+    IProject ejb = projects[0];
+    IProject war = projects[1];
+    IProject ear1 = projects[2];
+    IProject ear2 = projects[3];
+    
+    assertMarkers(war, 0);
+    assertMarkers(ejb, 0);
+    assertMarkers(ear1, 0);
+    assertMarkers(ear2, 0);
+   
+    String applicationXmlRelativePath = "src/main/application/META-INF/application.xml";
+    assertTrue(ear1.getFile(applicationXmlRelativePath).exists()); // application.xml is created as maven-ear-plugin is configured as such by default
+    Application app1 = (Application)ModelProviderManager.getModelProvider(ear1).getModelObject();
+    assertEquals(2,app1.getModules().size());
+    assertNotNull("missing jarmodule for C",app1.getFirstModule("A-0.0.1-SNAPSHOT.jar"));
+    assertNotNull("missing webmodule for C",app1.getFirstModule("B-0.0.1-SNAPSHOT.war"));
+
+    Application app2 = (Application)ModelProviderManager.getModelProvider(ear2).getModelObject();
+    assertEquals(2,app2.getModules().size());
+    assertNotNull("missing jarmodule for D",app2.getFirstModule("A.jar"));
+    assertNotNull("missing webmodule for D",app2.getFirstModule("B.war"));
+    assertFalse(ear2.getFile(applicationXmlRelativePath).exists());// application.xml is not created as per maven-ear-plugin configuration 
+    
+}
 
   //Lars Ködderitzsch test case from https://issues.sonatype.org/browse/MNGECLIPSE-1644
   public void testMNGECLIPSE1644_contextRoot() throws Exception {

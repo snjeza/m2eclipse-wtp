@@ -29,6 +29,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jst.common.project.facet.JavaFacetUtils;
 import org.eclipse.jst.j2ee.application.WebModule;
 import org.eclipse.jst.j2ee.classpathdep.IClasspathDependencyConstants;
+import org.eclipse.jst.j2ee.componentcore.util.EARArtifactEdit;
 import org.eclipse.jst.j2ee.internal.J2EEConstants;
 import org.eclipse.jst.j2ee.model.ModelProviderManager;
 import org.eclipse.jst.j2ee.project.facet.IJ2EEFacetConstants;
@@ -713,6 +714,37 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     roles = app.getSecurityRoles();
     assertEquals(4, roles.size());//TODO remove deleted roles
 }
+
+
+  //Lars Ködderitzsch test case from https://issues.sonatype.org/browse/MNGECLIPSE-1644
+  public void testMNGECLIPSE1644_contextRoot() throws Exception {
+     
+     IProject[] projects = importProjects(
+         "projects/MNGECLIPSE-1644/", //
+         new String[] {"ear/pom.xml", "war1/pom.xml", "war2/pom.xml", },
+         new ResolverConfiguration());
+
+     waitForJobsToComplete();
+     
+     assertEquals(3, projects.length);
+     IProject ear = projects[0];
+     IProject war1 = projects[1];
+     IProject war2 = projects[2];
+     
+     assertMarkers(ear, 0);
+     assertMarkers(war1, 0);
+     assertMarkers(war2, 0);
+     
+     //check the context roots of the wars in the ear
+     EARArtifactEdit edit = EARArtifactEdit.getEARArtifactEditForRead(ear);
+     assertNotNull(edit);
+     String war1ContextRoot = edit.getWebContextRoot(war1);
+     String war2ContextRoot = edit.getWebContextRoot(war2);
+     edit.dispose();
+     
+     assertEquals("/custom-context-root", war1ContextRoot);
+     assertEquals("/MNGECLIPSE-1644-war2", war2ContextRoot);
+  }
 
   
   private String toString(IVirtualReference[] references) {

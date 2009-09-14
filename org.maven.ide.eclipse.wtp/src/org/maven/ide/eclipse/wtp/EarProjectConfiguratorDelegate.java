@@ -8,6 +8,8 @@
 
 package org.maven.ide.eclipse.wtp;
 
+
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -20,9 +22,9 @@ import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
@@ -30,17 +32,24 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jst.j2ee.application.internal.operations.AddComponentToEnterpriseApplicationDataModelProvider;
 import org.eclipse.jst.j2ee.application.internal.operations.RemoveComponentFromEnterpriseApplicationDataModelProvider;
 import org.eclipse.jst.j2ee.earcreation.IEarFacetInstallDataModelProperties;
+import org.eclipse.jst.j2ee.internal.J2EEConstants;
 import org.eclipse.jst.j2ee.internal.common.classpath.J2EEComponentClasspathUpdater;
 import org.eclipse.jst.j2ee.internal.earcreation.EarFacetInstallDataModelProvider;
+import org.eclipse.jst.j2ee.internal.project.J2EEProjectUtilities;
+import org.eclipse.jst.j2ee.model.IEARModelProvider;
+import org.eclipse.jst.j2ee.model.ModelProviderManager;
+import org.eclipse.jst.javaee.application.Application;
+import org.eclipse.jst.jee.project.facet.EarCreateDeploymentFilesDataModelProvider;
+import org.eclipse.jst.jee.project.facet.ICreateDeploymentFilesDataModelProperties;
 import org.eclipse.wst.common.componentcore.ComponentCore;
 import org.eclipse.wst.common.componentcore.datamodel.properties.ICreateReferenceComponentsDataModelProperties;
 import org.eclipse.wst.common.componentcore.internal.StructureEdit;
 import org.eclipse.wst.common.componentcore.internal.WorkbenchComponent;
-import org.eclipse.wst.common.componentcore.internal.resources.VirtualArchiveComponent;
 import org.eclipse.wst.common.componentcore.resources.IVirtualComponent;
 import org.eclipse.wst.common.componentcore.resources.IVirtualReference;
 import org.eclipse.wst.common.frameworks.datamodel.DataModelFactory;
 import org.eclipse.wst.common.frameworks.datamodel.IDataModel;
+import org.eclipse.wst.common.frameworks.datamodel.IDataModelOperation;
 import org.eclipse.wst.common.frameworks.datamodel.IDataModelProvider;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject;
 import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
@@ -48,7 +57,6 @@ import org.eclipse.wst.common.project.facet.core.ProjectFacetsManager;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject.Action;
 import org.maven.ide.eclipse.core.IMavenConstants;
 import org.maven.ide.eclipse.core.MavenLogger;
-import org.maven.ide.eclipse.jdt.BuildPathManager;
 import org.maven.ide.eclipse.jdt.IClasspathDescriptor;
 import org.maven.ide.eclipse.project.IMavenProjectFacade;
 import org.maven.ide.eclipse.wtp.earmodules.EarModule;
@@ -62,9 +70,6 @@ import org.maven.ide.eclipse.wtp.earmodules.EarModule;
  */
 @SuppressWarnings("restriction")
 class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate {
-
-  private static String M2_REPO_PREFIX = VirtualArchiveComponent.VARARCHIVETYPE + IPath.SEPARATOR
-      + BuildPathManager.M2_REPO + IPath.SEPARATOR;
 
   private static final IStatus OK_STATUS = IDataModelProvider.OK_STATUS;
 
@@ -83,12 +88,13 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
 
     EarPluginConfiguration config = new EarPluginConfiguration(mavenProject);
     Set<Action> actions = new LinkedHashSet<Action>();
-    // WTP doesn't allow facet versions changes for JEE facets 
+    // WTP doesn't allow facet versions changes for JEE facets
+    String contentDir = config.getEarContentDirectory(project);
+    
     if(!facetedProject.hasProjectFacet(WTPProjectsUtil.EAR_FACET)) {
       IDataModel earModelCfg = DataModelFactory.createDataModel(new EarFacetInstallDataModelProvider());
 
       // Configuring content directory
-      String contentDir = config.getEarContentDirectory(project);
       earModelCfg.setProperty(IEarFacetInstallDataModelProperties.CONTENT_DIR, contentDir);
 
       IProjectFacetVersion earFv = config.getEarFacetVersion();
@@ -103,8 +109,10 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
     // FIXME Sometimes, test folders are still added to org.eclipse.wst.common.component
     removeTestFolderLinks(project, mavenProject, monitor, "/");
 
-    //String libBundleDir = config.getDefaultLibDirectory();
-    //updateLibDir(project, libBundleDir, monitor);
+    IFile applicationXml = project.getFile(contentDir+"/META-INF/application.xml");
+    if (!applicationXml.exists() && config.isGenerateApplicationXml()){
+      generateApplicationXML(project, monitor);
+    }
   }
 
   public void setModuleDependencies(IProject project, MavenProject mavenProject, IProgressMonitor monitor)
@@ -119,6 +127,8 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
     Set<EarModule> earModules = config.getEarModules();
     String libBundleDir = config.getDefaultBundleDirectory();
 
+    updateLibDir(project, libBundleDir, monitor);
+    
     // FB : I consider the delegate to be stateless - maybe I'm wrong -
     // hence we wrap all the interesting attributes of our new ear in an inner class, 
     // to stay close to AddModulestoEARPropertiesPage. 
@@ -144,36 +154,51 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
 
     removeComponentsFromEAR(earComponentWrp, monitor);
     addComponentsToEAR(earComponentWrp, monitor);
-
-    // XXX how do we set security roles using wtp api?
-    // XXX how do we set alt-dds using wtp api?
-    // XXX generating Deployment Descriptor ? operation exists in WTP 3.0.0 
+    
+    DeploymentDescriptorManagement.INSTANCE.updateConfiguration(project, mavenProject, config, monitor);
   }
 
-//  FB : maven-ear-plugin doesn't support configuration of <library-directory> so the following is useless ... so far.
-//  
-//  private void updateLibDir(IProject project, final String newLibDir, IProgressMonitor monitor) {
-//    //Update lib dir only applies to Java EE 5 ear projects
-//    if(!J2EEProjectUtilities.isJEEProject(project)){ 
-//      return;
-//    }
-//    
-//    //if the ear project Java EE level was < 5.0, the following would throw a ClassCastException  
-//    final Application app = (Application)ModelProviderManager.getModelProvider(project).getModelObject();
-//    if (app != null) {
-//      if (newLibDir == null || "/".equals(newLibDir)) {
-//        newLibDir = J2EEConstants.EAR_DEFAULT_LIB_DIR;
-//      }
-//      String oldLibDir = app.getLibraryDirectory();
-//      if (newLibDir.equals(oldLibDir)) return;
-//      
-//      final IEARModelProvider earModel = (IEARModelProvider)ModelProviderManager.getModelProvider(project);
-//      earModel.modify(new Runnable() {
-//        public void run() {     
-//        app.setLibraryDirectory(newLibDir);
-//      }}, null);
-//    }
-//  }
+
+
+  private void updateLibDir(IProject project, String newLibDir, IProgressMonitor monitor) {
+    //Update lib dir only applies to Java EE 5 ear projects
+    if(!J2EEProjectUtilities.isJEEProject(project)){ 
+      return;
+    }
+    
+    //if the ear project Java EE level was < 5.0, the following would throw a ClassCastException  
+    final Application app = (Application)ModelProviderManager.getModelProvider(project).getModelObject();
+    if (app != null) {
+      if (newLibDir == null || "/".equals(newLibDir)) {
+        newLibDir = J2EEConstants.EAR_DEFAULT_LIB_DIR;
+      }
+      String oldLibDir = app.getLibraryDirectory();
+      if (newLibDir.equals(oldLibDir)) return;
+      final String libDir = newLibDir;
+      final IEARModelProvider earModel = (IEARModelProvider)ModelProviderManager.getModelProvider(project);
+      earModel.modify(new Runnable() {
+        public void run() {     
+        app.setLibraryDirectory(libDir);
+      }}, null);
+    }
+  }
+  
+  
+  private void generateApplicationXML(IProject project, IProgressMonitor monitor ) throws CoreException
+  {
+    IDataModel model = DataModelFactory.createDataModel(new EarCreateDeploymentFilesDataModelProvider());
+    IVirtualComponent earComponent = ComponentCore.createComponent(project);
+    model.setProperty(ICreateDeploymentFilesDataModelProperties.GENERATE_DD,    earComponent);                              
+    model.setProperty(ICreateDeploymentFilesDataModelProperties.TARGET_PROJECT,  project);       
+    IDataModelOperation op = model.getDefaultOperation();
+    try {
+     op.execute(monitor, null);
+    }
+    catch (ExecutionException e) {
+      throw new CoreException(new Status(IStatus.ERROR, IMavenConstants.PLUGIN_ID, "Unable to generate application.xml", e));
+    }
+  }
+  
 
   
   private void configureDependencyProject(IMavenProjectFacade mavenProjectFacade, IProgressMonitor monitor, EarModule earModule)
@@ -384,8 +409,7 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
 
     void addReference(EarModule earModule) {
       //Create dependency component, referenced from the local Repo.
-      String artifactPath = M2_REPO_PREFIX
-          + ArtifactHelper.getLocalRepoRelativePath(earModule.getArtifact()).toPortableString();
+      String artifactPath = ArtifactHelper.getM2REPOVarPath(earModule.getArtifact());
       IVirtualComponent depComponent = ComponentCore.createArchiveComponent(earComponent.getProject(), artifactPath);
 
       addToAllComponentsMap(depComponent, earModule.getBundleDir());
@@ -513,12 +537,4 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
       IProgressMonitor monitor) throws CoreException {
     // do nothing
   }
-
-//  TODO implement context root mgt  
-//  private void handleWebProject(IProject earProject, IProject webProject, String contextRoot)
-//  {
-//    IEARModelProvider iearModelProvider = (IEARModelProvider)ModelProviderManager.getModelProvider(earProject);;
-//    iearModelProvider.setWebContextRoot(webProject, contextRoot);
-//  }
-  
 }

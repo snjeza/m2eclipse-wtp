@@ -12,7 +12,9 @@ import org.apache.maven.artifact.Artifact;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.wst.common.componentcore.internal.resources.VirtualArchiveComponent;
 import org.maven.ide.eclipse.MavenPlugin;
+import org.maven.ide.eclipse.jdt.BuildPathManager;
 import org.maven.ide.eclipse.project.IMavenProjectFacade;
 
 /**
@@ -22,7 +24,11 @@ import org.maven.ide.eclipse.project.IMavenProjectFacade;
  * @author Fred Bricon
  */
 //XXX Should probably be refactored to another Maven helper class.
+@SuppressWarnings("restriction")
 public class ArtifactHelper {
+
+  private static String M2_REPO_PREFIX = VirtualArchiveComponent.VARARCHIVETYPE + IPath.SEPARATOR
+  + BuildPathManager.M2_REPO + IPath.SEPARATOR;
 
   /**
    * Returns an artifact's path relative to the local repository
@@ -46,7 +52,7 @@ public class ArtifactHelper {
   }
   
   /**
-   * Return  an IProject from a maven artifact
+   * Returns an IProject from a maven artifact
    * @param artifact
    * @return the project artifact or null
    */
@@ -60,4 +66,19 @@ public class ArtifactHelper {
     return null;
   }
 
+  /**
+   * Returns the M2_REPO variable path for an artifact. ex : var/M2_REPO/groupid/artifactid/version/filename
+   * @param artifact
+   * @return the M2_REPO variable path for the artifact, null if the artifact is a workspace project
+   */
+  public static String getM2REPOVarPath(Artifact artifact)
+  {
+    if (getWorkspaceProject(artifact) != null)
+    {
+     return null; 
+    }
+    return M2_REPO_PREFIX + ArtifactHelper.getLocalRepoRelativePath(artifact).toPortableString();
+  }
+
+  
 }

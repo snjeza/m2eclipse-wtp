@@ -26,6 +26,7 @@ import org.maven.ide.eclipse.wtp.earmodules.ArtifactTypeMappingService;
 import org.maven.ide.eclipse.wtp.earmodules.EarModule;
 import org.maven.ide.eclipse.wtp.earmodules.EarModuleFactory;
 import org.maven.ide.eclipse.wtp.earmodules.EarPluginException;
+import org.maven.ide.eclipse.wtp.earmodules.SecurityRoleKey;
 import org.maven.ide.eclipse.wtp.earmodules.output.FileNameMapping;
 import org.maven.ide.eclipse.wtp.earmodules.output.FileNameMappingFactory;
 
@@ -275,6 +276,49 @@ class EarPluginConfiguration {
       }
     }
     return false;
+  }
+
+  public boolean isGenerateApplicationXml()  {
+    Xpp3Dom configuration = getConfiguration();
+    if(configuration == null) {
+      return true;
+    }
+    Xpp3Dom generateApplicationXmlNode = configuration.getChild("generateApplicationXml");
+    return (generateApplicationXmlNode == null) || Boolean.parseBoolean(generateApplicationXmlNode.getValue());
+  }
+  
+  public Set<SecurityRoleKey>  getSecurityRoleKeys() {
+    Set<SecurityRoleKey> securityRoles = new HashSet<SecurityRoleKey>();
+    Xpp3Dom configuration = getConfiguration();
+    if(configuration == null) {
+      return securityRoles;
+    }
+    Xpp3Dom securityNode = configuration.getChild("security");
+
+    if(securityNode == null) {
+      return securityRoles;
+    }
+
+    Xpp3Dom[] secRoles = securityNode.getChildren("security-role");
+    if(secRoles == null || secRoles.length == 0) {
+      return securityRoles;
+    }
+    
+    for(Xpp3Dom domSecRole : secRoles) {
+      String id = domSecRole.getAttribute("id");
+      String description = DomUtils.getChildValue(domSecRole, "description");
+      String roleName = DomUtils.getChildValue(domSecRole, "role-name");
+      if (roleName != null)
+      {
+        SecurityRoleKey srk = new SecurityRoleKey();
+        srk.setId(id);
+        srk.setRoleName(roleName);
+        srk.setDescription(description);
+        securityRoles.add(srk);
+      }
+    }
+    
+    return securityRoles;
   }
 
 }

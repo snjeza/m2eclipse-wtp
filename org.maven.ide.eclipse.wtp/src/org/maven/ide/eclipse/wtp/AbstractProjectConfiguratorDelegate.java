@@ -27,6 +27,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jst.common.project.facet.JavaFacetUtils;
+import org.eclipse.jst.j2ee.project.JavaEEProjectUtilities;
 import org.eclipse.wst.common.componentcore.ComponentCore;
 import org.eclipse.wst.common.componentcore.resources.IVirtualComponent;
 import org.eclipse.wst.common.componentcore.resources.IVirtualFolder;
@@ -90,7 +91,7 @@ abstract class AbstractProjectConfiguratorDelegate implements IProjectConfigurat
 
   protected void configureWtpUtil(IProject project, MavenProject mavenProject, IProgressMonitor monitor) throws CoreException {
     // Adding utility facet on JEE projects is not allowed
-    if(WTPProjectsUtil.isJavaEEProject(project)) {
+    if(WTPProjectsUtil.isJavaEEProject(project) && !JavaEEProjectUtilities.isUtilityProject(project)) {
       return;
     }
 
@@ -127,12 +128,14 @@ abstract class AbstractProjectConfiguratorDelegate implements IProjectConfigurat
   protected void removeTestFolderLinks(IProject project, MavenProject mavenProject, IProgressMonitor monitor,
       String folder) throws CoreException {
     IVirtualComponent component = ComponentCore.createComponent(project);
-    IVirtualFolder jsrc = component.getRootFolder().getFolder(folder);
-    for(IPath location : MavenProjectUtils.getSourceLocations(project, mavenProject.getTestCompileSourceRoots())) {
-      jsrc.removeLink(location, 0, monitor);
-    }
-    for(IPath location : MavenProjectUtils.getResourceLocations(project, mavenProject.getTestResources())) {
-      jsrc.removeLink(location, 0, monitor);
+    if (component != null){
+      IVirtualFolder jsrc = component.getRootFolder().getFolder(folder);
+      for(IPath location : MavenProjectUtils.getSourceLocations(project, mavenProject.getTestCompileSourceRoots())) {
+        jsrc.removeLink(location, 0, monitor);
+      }
+      for(IPath location : MavenProjectUtils.getResourceLocations(project, mavenProject.getTestResources())) {
+        jsrc.removeLink(location, 0, monitor);
+      }
     }
   }
 

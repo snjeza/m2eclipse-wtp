@@ -86,7 +86,7 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
     }
 
     // make sure to update the main deployment folder
-    WarPluginConfiguration config = new WarPluginConfiguration(mavenProject);
+    WarPluginConfiguration config = new WarPluginConfiguration(mavenProject, project);
     String warSourceDirectory = config.getWarSourceDirectory();
     
     IVirtualComponent component = ComponentCore.createComponent(project);
@@ -130,7 +130,7 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
       return;
     }
 
-    WarPluginConfiguration config = new WarPluginConfiguration(mavenProject);
+    WarPluginConfiguration config = new WarPluginConfiguration(mavenProject, project);
     WarPackagingOptions opts = new WarPackagingOptions(config);
 
     List<AbstractDependencyConfigurator> depConfigurators = ExtensionReader.readDependencyConfiguratorExtensions(projectManager, 
@@ -190,7 +190,7 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
     //Improve skinny war support by generating the manifest classpath
     //similar to mvn eclipse:eclipse 
     //http://maven.apache.org/plugins/maven-war-plugin/examples/skinny-wars.html
-    WarPluginConfiguration config = new WarPluginConfiguration(mavenProject);
+    WarPluginConfiguration config = new WarPluginConfiguration(mavenProject, project);
     WarPackagingOptions opts = new WarPackagingOptions(config);
 
     StringBuilder manifestCp = new StringBuilder();

@@ -140,6 +140,24 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     assertEquals(project.getFolder("/webapp"), underlyingResources[0]);
   }
 
+
+  public void testMNGECLIPSE1600_absoluteDirectories() throws Exception {
+    IProject[] projects = importProjects("projects/MNGECLIPSE-1600/", new String[] {"test/pom.xml", "testEAR/pom.xml"}, new ResolverConfiguration());
+    
+    IVirtualComponent warComponent = ComponentCore.createComponent(projects[0]);
+    IVirtualFolder rootwar = warComponent.getRootFolder();
+    IResource[] warResources = rootwar.getUnderlyingResources();
+    assertEquals(1, warResources.length);
+    assertEquals(projects[0].getFolder("/WebContent"), warResources[0]);
+
+    IVirtualComponent earComponent = ComponentCore.createComponent(projects[1]);
+    IVirtualFolder rootEar = earComponent.getRootFolder();
+    IResource[] earResources = rootEar.getUnderlyingResources();
+    assertEquals(1, earResources.length);
+    assertEquals(projects[1].getFolder("/EarContent"), earResources[0]);
+  }
+
+  
   public void testSameArtifactId() throws Exception {
     IProject project = importProject("projects/MNGECLIPSE-679/pom.xml", new ResolverConfiguration());
     

@@ -19,6 +19,7 @@ import org.apache.maven.model.Plugin;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jst.j2ee.project.facet.IJ2EEFacetConstants;
 import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
 import org.maven.ide.eclipse.core.MavenLogger;
@@ -127,9 +128,20 @@ class EarPluginConfiguration {
     Xpp3Dom config = getConfiguration();
     if(config != null) {
       Xpp3Dom contentDirDom = config.getChild("earSourceDirectory");
-      if(contentDirDom != null) {
+      if(contentDirDom != null && contentDirDom.getValue() != null) {
         String contentDir = contentDirDom.getValue().trim();
-        contentDir = (contentDir == null || contentDir.length() == 0) ? EAR_DEFAULT_CONTENT_DIR : contentDir;
+        
+        //MNGECLIPSE-1600 fixed absolute earSourceDirectory
+        if(project != null) {
+          IPath projectLocationPath = project.getLocation();
+          if(projectLocationPath != null) {
+            String projectLocation = projectLocationPath.toOSString();
+            if(contentDir.startsWith(projectLocation)) {
+              return contentDir.substring(projectLocation.length());
+            }
+          }
+        }
+        contentDir = (contentDir.length() == 0) ? EAR_DEFAULT_CONTENT_DIR : contentDir;
         return contentDir;
       }
     }

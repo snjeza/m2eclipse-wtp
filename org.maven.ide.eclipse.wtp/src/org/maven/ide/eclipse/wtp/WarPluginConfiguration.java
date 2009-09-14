@@ -17,6 +17,7 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jst.j2ee.internal.J2EEVersionConstants;
 import org.eclipse.jst.j2ee.web.project.facet.WebFacetUtils;
 import org.eclipse.jst.jee.util.internal.JavaEEQuickPeek;
@@ -39,8 +40,11 @@ class WarPluginConfiguration {
 
   final Plugin plugin;
 
-  public WarPluginConfiguration(MavenProject mavenProject) {
+  private IProject project;
+
+  public WarPluginConfiguration(MavenProject mavenProject, IProject project) {
     this.plugin = findWarPlugin(mavenProject);
+    this.project = project;
   }
 
   private Plugin findWarPlugin(MavenProject mavenProject) {
@@ -98,7 +102,18 @@ class WarPluginConfiguration {
     Xpp3Dom[] warSourceDirectory = dom.getChildren("warSourceDirectory");
     if(warSourceDirectory != null && warSourceDirectory.length > 0) {
       // first one wins
-      return warSourceDirectory[0].getValue();
+      String dir = warSourceDirectory[0].getValue();
+      //MNGECLIPSE-1600 fixed absolute warSourceDirectory thanks to Snjezana Peco's patch
+      if(project != null) {
+        IPath projectLocationPath = project.getLocation();
+        if(projectLocationPath != null && dir != null) {
+          String projectLocation = projectLocationPath.toOSString();
+          if(dir.startsWith(projectLocation)) {
+            return dir.substring(projectLocation.length());
+          }
+        }
+      }
+      return dir;
     }
 
     return WAR_SOURCE_FOLDER;

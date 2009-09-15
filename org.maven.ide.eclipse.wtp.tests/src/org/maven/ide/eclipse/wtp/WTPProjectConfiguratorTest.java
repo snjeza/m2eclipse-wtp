@@ -817,12 +817,10 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     assertMarkers(war, 0);
     
     //check the context root is the same as the one defined as a property in the parent pom
-    EARArtifactEdit edit = EARArtifactEdit.getEARArtifactEditForRead(ear);
-    assertNotNull(edit);
-    String contextRoot = edit.getWebContextRoot(war);
-    edit.dispose();
-    
-    assertEquals("/customContextRoot", contextRoot);
+    Application app = (Application)ModelProviderManager.getModelProvider(ear).getModelObject();
+    Module webModule = (Module)app.getModules().get(0);
+    assertEquals("specialUri.war", webModule.getUri());
+    assertEquals("/customContextRoot", webModule.getWeb().getContextRoot());
  }
   
   private String toString(IVirtualReference[] references) {

@@ -42,7 +42,7 @@
 					<groupId>foo.bar</groupId>
 					<artifactId>war</artifactId>
 					<contextRoot>${contextRoot}</contextRoot>
-					<bundleFileName>test.war</bundleFileName>
+					<uri>${webUri}</uri>
 				</webModule>
 		   </modules>
         </configuration>

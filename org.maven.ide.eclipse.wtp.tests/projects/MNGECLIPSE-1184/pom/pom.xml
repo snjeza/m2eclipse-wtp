@@ -12,5 +12,6 @@
   </modules>
 <properties>
 	<contextRoot>/customContextRoot</contextRoot>
+	<webUri>specialUri.war</webUri>
 </properties>  
 </project>

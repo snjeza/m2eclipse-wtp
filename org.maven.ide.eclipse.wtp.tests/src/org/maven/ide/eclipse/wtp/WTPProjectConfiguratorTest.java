@@ -798,6 +798,32 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
      assertEquals("/MNGECLIPSE-1644-war2", war2ContextRoot);
   }
 
+  public void testMNGECLIPSE1184_contextRootProperty() throws Exception {
+    
+    IProject[] projects = importProjects(
+        "projects/MNGECLIPSE-1184/", //
+        new String[] {"pom/ear/pom.xml", "pom/pom.xml", "pom/war/pom.xml", },
+        new ResolverConfiguration());
+
+    waitForJobsToComplete();
+    
+    assertEquals(3, projects.length);
+    IProject ear = projects[0];
+    IProject pom = projects[1];
+    IProject war = projects[2];
+    
+    assertMarkers(pom, 0);
+    assertMarkers(ear, 0);
+    assertMarkers(war, 0);
+    
+    //check the context root is the same as the one defined as a property in the parent pom
+    EARArtifactEdit edit = EARArtifactEdit.getEARArtifactEditForRead(ear);
+    assertNotNull(edit);
+    String contextRoot = edit.getWebContextRoot(war);
+    edit.dispose();
+    
+    assertEquals("/customContextRoot", contextRoot);
+ }
   
   private String toString(IVirtualReference[] references) {
     StringBuilder sb = new StringBuilder("[");

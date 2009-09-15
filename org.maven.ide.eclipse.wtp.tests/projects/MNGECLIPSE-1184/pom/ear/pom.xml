@@ -1,0 +1,52 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>foo.bar</groupId>
+  <artifactId>ear</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>ear</packaging>
+  <name>MNGECLIPSE-1184 EAR</name>
+  
+  <parent>
+    <groupId>foo.bar</groupId>
+    <artifactId>pom</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+
+  <dependencies>
+		<dependency>
+			<groupId>foo.bar</groupId>
+			<artifactId>war</artifactId>
+			<version>${project.version}</version>
+			<type>war</type>
+		</dependency>
+  </dependencies>
+  <build>
+    <sourceDirectory>EarContent</sourceDirectory>
+    <resources>
+      <resource>
+        <directory>EarContent</directory>
+        <excludes>
+          <exclude>**/*.java</exclude>
+        </excludes>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <artifactId>maven-ear-plugin</artifactId>
+        <configuration>
+          <version>5</version>
+          <defaultLibBundleDir>lib</defaultLibBundleDir>
+          <earSourceDirectory>${basedir}/EarContent</earSourceDirectory>
+          <modules>
+				<webModule>
+					<groupId>foo.bar</groupId>
+					<artifactId>war</artifactId>
+					<contextRoot>${contextRoot}</contextRoot>
+					<bundleFileName>test.war</bundleFileName>
+				</webModule>
+		   </modules>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

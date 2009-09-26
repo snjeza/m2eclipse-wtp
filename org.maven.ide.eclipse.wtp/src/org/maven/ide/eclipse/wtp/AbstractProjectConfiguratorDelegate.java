@@ -80,7 +80,8 @@ abstract class AbstractProjectConfiguratorDelegate implements IProjectConfigurat
     for(Artifact artifact : artifacts) {
       IMavenProjectFacade dependency = projectManager.getMavenProject(artifact.getGroupId(), artifact.getArtifactId(),
           artifact.getVersion());
-      if(Artifact.SCOPE_COMPILE.equals(artifact.getScope()) && dependency != null
+      //MNGECLIPSE-1578 Runtime dependencies should be deployed
+      if((Artifact.SCOPE_COMPILE.equals(artifact.getScope()) || Artifact.SCOPE_RUNTIME.equals(artifact.getScope())) && dependency != null
           && !dependency.getProject().equals(project) && dependency.getFullPath(artifact.getFile()) != null
           && projects.add(dependency.getProject())) {
         dependencies.add(dependency);

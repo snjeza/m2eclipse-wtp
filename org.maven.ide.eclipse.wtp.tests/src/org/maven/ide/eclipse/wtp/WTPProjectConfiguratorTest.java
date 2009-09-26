@@ -118,6 +118,19 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     assertEquals(projects[0].getFullPath(), cp[0].getPath());
   }
 
+
+  public void testMNGECLIPSE1578_testRuntimeScopeDependency() throws Exception {
+    IProject[] projects = importProjects("projects/MNGECLIPSE-1578", //
+        new String[] {"war/pom.xml", "runtime-jar/pom.xml"}, new ResolverConfiguration());
+
+    IProject war = projects[0];
+    IProject runtimeJar = projects[1];
+    assertMarkers(war, 0);
+    assertMarkers(runtimeJar, 0);
+    IVirtualComponent warComponent = ComponentCore.createComponent(projects[0]);
+    assertEquals(3, warComponent.getReferences().length);
+  }
+
   public void testSimple05_sourceFolders() throws Exception {
     IProject project = importProject("projects/simple/p05/pom.xml", new ResolverConfiguration());
     
@@ -844,7 +857,7 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
         return ;
       }
     }
-    fail("Markers doesn't contain " + message);
+    fail(message+ " is not a marker");
   }
 
   private void  assertNotDeployable(IClasspathEntry entry){

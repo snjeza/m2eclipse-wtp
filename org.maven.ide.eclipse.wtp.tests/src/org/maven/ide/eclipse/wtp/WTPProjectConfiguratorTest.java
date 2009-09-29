@@ -246,12 +246,18 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
   }
 */
   public void testMNGECLIPSE688_NonDeployedDependencies () throws Exception {
-    IProject project = importProject("projects/MNGECLIPSE-688/war-optional/pom.xml", new ResolverConfiguration());
-
-    IClasspathEntry[] classpathEntries = getClassPathEntries(project);
+    IProject[] projects = importProjects("projects/MNGECLIPSE-688", new String[]{"war-optional/pom.xml","core/pom.xml"}, new ResolverConfiguration());
+    IProject war = projects[0]; 
+    //IProject optionalJar = projects[1]; 
+    assertMarkers(war, 0);
+    //assertMarkers(optionalJar, 0);//MNGECLIPSE-1119 : optional projects shouldn't be deployed
+    IClasspathEntry[] classpathEntries = getClassPathEntries(war);
     IClasspathEntry junit = classpathEntries[0];
     assertEquals("junit-3.8.1.jar", junit.getPath().lastSegment());
     assertNotDeployable(junit); //Junit is marked as <optional>true<optional>
+    
+    IVirtualComponent warComponent = ComponentCore.createComponent(war);
+    assertEquals(4, warComponent.getReferences().length);
   }
 
   public void testMNGECLIPSE688_CustomEarContent () throws Exception {
@@ -835,6 +841,56 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     assertEquals("specialUri.war", webModule.getUri());
     assertEquals("/customContextRoot", webModule.getWeb().getContextRoot());
  }
+
+  public void testMNGECLIPSE1121_pluginManagementSettings() throws Exception {
+    //We check the pluginManagement settings are correctly interpreted from the different WTPProjectConfigurator delegates
+    IProject[] projects = importProjects(
+        "projects/MNGECLIPSE-1121/", //
+        new String[] {"pom/pom.xml", "pom/ear/pom.xml", "pom/core/pom.xml", "pom/ejb/pom.xml", "pom/war/pom.xml"},
+        new ResolverConfiguration());
+
+    waitForJobsToComplete();
+    
+    assertEquals(5, projects.length);
+    IProject ear = projects[1];
+    IProject core = projects[2];
+    IProject ejb = projects[3];
+    IProject war = projects[4];
+    
+    assertMarkers(core, 0);
+    assertMarkers(ejb, 0);
+    assertMarkers(war, 0);
+    assertMarkers(ear, 0);
+   
+    IFacetedProject fpWar = ProjectFacetsManager.create(war);
+    assertNotNull(fpWar);
+    assertTrue(fpWar.hasProjectFacet(JavaFacetUtils.JAVA_FACET));
+    assertEquals(WebFacetUtils.WEB_25, fpWar.getInstalledVersion(WebFacetUtils.WEB_FACET));
+
+    IFacetedProject fpCore = ProjectFacetsManager.create(core, false, monitor);
+    assertNotNull(ProjectFacetsManager.getFacetedProjects().toString(), fpCore);  
+    assertTrue(fpCore.hasProjectFacet(JavaFacetUtils.JAVA_FACET));
+    assertEquals(UTILITY_10, fpCore.getInstalledVersion(UTILITY_FACET));
+
+    IFacetedProject fpEjb = ProjectFacetsManager.create(ejb);
+    assertNotNull(fpEjb);
+    assertTrue(fpEjb.hasProjectFacet(JavaFacetUtils.JAVA_FACET));
+    assertEquals(IJ2EEFacetConstants.EJB_30, fpEjb.getInstalledVersion(EJB_FACET));
+
+    IFacetedProject fpEar = ProjectFacetsManager.create(ear);
+    assertNotNull(fpEar);
+    assertFalse(fpEar.hasProjectFacet(JavaFacetUtils.JAVA_FACET)); //Ears don't have java facet
+    assertEquals(IJ2EEFacetConstants.ENTERPRISE_APPLICATION_50, fpEar.getInstalledVersion(EAR_FACET));
+    IResource[] underlyingResources = getUnderlyingResources(ear);
+    assertEquals(1, underlyingResources.length);
+    assertEquals(ear.getFolder("/EarContent"), underlyingResources[0]);
+
+    IFile applicationXml = ear.getFile("EarContent/META-INF/application.xml"); 
+    assertTrue(applicationXml.exists());
+
+  
+  }
+
   
   private String toString(IVirtualReference[] references) {
     StringBuilder sb = new StringBuilder("[");

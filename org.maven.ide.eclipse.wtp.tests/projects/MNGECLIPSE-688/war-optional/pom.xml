@@ -24,5 +24,11 @@
   		<scope>compile</scope>
   	</dependency>
   	
+  	<dependency>
+  		<groupId>test.project</groupId>
+  		<artifactId>core</artifactId>
+  		<version>0.0.1-SNAPSHOT</version>
+  		<optional>true</optional>
+  	</dependency>
   </dependencies>
 </project>

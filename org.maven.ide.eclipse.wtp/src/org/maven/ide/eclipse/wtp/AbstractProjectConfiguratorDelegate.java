@@ -27,7 +27,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jst.common.project.facet.JavaFacetUtils;
-import org.eclipse.jst.j2ee.project.JavaEEProjectUtilities;
+import org.eclipse.jst.j2ee.classpathdep.IClasspathDependencyConstants;
 import org.eclipse.wst.common.componentcore.ComponentCore;
 import org.eclipse.wst.common.componentcore.resources.IVirtualComponent;
 import org.eclipse.wst.common.componentcore.resources.IVirtualFolder;
@@ -50,6 +50,10 @@ import org.maven.ide.eclipse.project.MavenProjectUtils;
  * @author Fred Bricon
  */
 abstract class AbstractProjectConfiguratorDelegate implements IProjectConfiguratorDelegate {
+
+  static final IClasspathAttribute NONDEPENDENCY_ATTRIBUTE = JavaCore.newClasspathAttribute(
+      IClasspathDependencyConstants.CLASSPATH_COMPONENT_NON_DEPENDENCY, "");
+
 
   protected final MavenProjectManager projectManager;
 
@@ -80,9 +84,11 @@ abstract class AbstractProjectConfiguratorDelegate implements IProjectConfigurat
     for(Artifact artifact : artifacts) {
       IMavenProjectFacade dependency = projectManager.getMavenProject(artifact.getGroupId(), artifact.getArtifactId(),
           artifact.getVersion());
-      //MNGECLIPSE-1578 Runtime dependencies should be deployed
-      if((Artifact.SCOPE_COMPILE.equals(artifact.getScope()) || Artifact.SCOPE_RUNTIME.equals(artifact.getScope())) && dependency != null
-          && !dependency.getProject().equals(project) && dependency.getFullPath(artifact.getFile()) != null
+      
+      if((Artifact.SCOPE_COMPILE.equals(artifact.getScope()) 
+          || Artifact.SCOPE_RUNTIME.equals(artifact.getScope())) //MNGECLIPSE-1578 Runtime dependencies should be deployed 
+          //TODO breaks classpath && !artifact.isOptional() //MNGECLIPSE-1119 optional projects shouldn't be deployed 
+          && dependency != null && !dependency.getProject().equals(project) && dependency.getFullPath(artifact.getFile()) != null
           && projects.add(dependency.getProject())) {
         dependencies.add(dependency);
       }
@@ -92,7 +98,7 @@ abstract class AbstractProjectConfiguratorDelegate implements IProjectConfigurat
 
   protected void configureWtpUtil(IProject project, MavenProject mavenProject, IProgressMonitor monitor) throws CoreException {
     // Adding utility facet on JEE projects is not allowed
-    if(WTPProjectsUtil.isJavaEEProject(project) && !JavaEEProjectUtilities.isUtilityProject(project)) {
+    if(WTPProjectsUtil.isJavaEEProject(project)) {
       return;
     }
 
@@ -114,7 +120,7 @@ abstract class AbstractProjectConfiguratorDelegate implements IProjectConfigurat
     removeTestFolderLinks(project, mavenProject, monitor, "/");
     
     //Remove "library unavailable at runtime" warning.
-    //addContainerAttribute(project, WTPClasspathConfigurator.NONDEPENDENCY_ATTRIBUTE, monitor);
+    addContainerAttribute(project, NONDEPENDENCY_ATTRIBUTE, monitor);
   }
 
   protected void installJavaFacet(Set<Action> actions, IProject project, IFacetedProject facetedProject) {
@@ -144,6 +150,7 @@ abstract class AbstractProjectConfiguratorDelegate implements IProjectConfigurat
   protected void addContainerAttribute(IProject project, IClasspathAttribute attribute, IProgressMonitor monitor)
       throws JavaModelException {
     IJavaProject javaProject = JavaCore.create(project);
+	if (javaProject == null) return;
     IClasspathEntry[] cp = javaProject.getRawClasspath();
     for(int i = 0; i < cp.length; i++ ) {
       if(IClasspathEntry.CPE_CONTAINER == cp[i].getEntryKind()

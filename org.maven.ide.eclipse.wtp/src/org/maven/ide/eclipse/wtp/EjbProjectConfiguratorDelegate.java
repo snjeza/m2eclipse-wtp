@@ -73,7 +73,7 @@ class EjbProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
     removeTestFolderLinks(project, mavenProject, monitor, "/"); //XXX Doesn't work in certain -unidentified yet- circumstances!!!
 
     //Remove "library unavailable at runtime" warning.
-    //addContainerAttribute(project, WTPClasspathConfigurator.NONDEPENDENCY_ATTRIBUTE, monitor);
+    addContainerAttribute(project, NONDEPENDENCY_ATTRIBUTE, monitor);
 }
 
   public void setModuleDependencies(IProject project, MavenProject mavenProject, IProgressMonitor monitor)

@@ -66,9 +66,6 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
   /**
    * See http://wiki.eclipse.org/ClasspathEntriesPublishExportSupport
    */
-  static final IClasspathAttribute NONDEPENDENCY_ATTRIBUTE = JavaCore.newClasspathAttribute(
-      IClasspathDependencyConstants.CLASSPATH_COMPONENT_NON_DEPENDENCY, "");
-
   static final IClasspathAttribute DEPENDENCY_ATTRIBUTE = JavaCore.newClasspathAttribute(
       IClasspathDependencyConstants.CLASSPATH_COMPONENT_DEPENDENCY, "/WEB-INF/lib");
 
@@ -140,6 +137,8 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
     Set<IVirtualReference> references = new LinkedHashSet<IVirtualReference>();
     for(IMavenProjectFacade dependency : getWorkspaceDependencies(project, mavenProject)) {
       String depPackaging = dependency.getPackaging();
+      if ("pom".equals(depPackaging)) continue;//MNGECLIPSE-744 pom dependencies shouldn't be deployed
+      
       MavenProject depMavenProject =  dependency.getMavenProject(monitor);
       //jee dependency has not been configured yet - i.e. has not JEE facet-
       if(JEEPackaging.isJEEPackaging(depPackaging) && !WTPProjectsUtil.isJavaEEProject(dependency.getProject())) {

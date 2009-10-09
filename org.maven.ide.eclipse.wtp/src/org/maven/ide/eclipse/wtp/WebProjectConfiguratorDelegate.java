@@ -23,6 +23,7 @@ import org.codehaus.plexus.util.FileUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathAttribute;
@@ -79,11 +80,13 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
     String warSourceDirectory = config.getWarSourceDirectory();
     
     IVirtualComponent component = ComponentCore.createComponent(project);
-    if(component != null) {
+    if(component != null && warSourceDirectory != null) {
+      IPath warPath = new Path(warSourceDirectory);
       component.create(IVirtualResource.NONE, monitor);
       //remove the old link (if there is one) before adding the new one.
-      component.getRootFolder().removeLink(new Path("/" + warSourceDirectory),IVirtualResource.NONE, monitor);
-      component.getRootFolder().createLink(new Path("/" + warSourceDirectory), IVirtualResource.NONE, monitor);
+      component.getRootFolder().removeLink(warPath,IVirtualResource.NONE, monitor);
+      component.getRootFolder().createLink(warPath, IVirtualResource.NONE, monitor);
+      
     }
     
     Set<Action> actions = new LinkedHashSet<Action>();

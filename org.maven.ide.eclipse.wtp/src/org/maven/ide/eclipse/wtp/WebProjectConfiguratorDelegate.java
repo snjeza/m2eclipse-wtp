@@ -10,7 +10,6 @@ package org.maven.ide.eclipse.wtp;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -21,8 +20,10 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathAttribute;
@@ -73,30 +74,25 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
       throws CoreException {
     IFacetedProject facetedProject = ProjectFacetsManager.create(project, true, monitor);
 
-    if(facetedProject.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
-      try {
-        facetedProject.modify(Collections.singleton(new IFacetedProject.Action(IFacetedProject.Action.Type.UNINSTALL,
-            facetedProject.getInstalledVersion(WebFacetUtils.WEB_FACET), null)), monitor);
-      } catch(Exception ex) {
-        MavenLogger.log("Error removing WEB facet", ex);
-      }
-    }
-
     // make sure to update the main deployment folder
     WarPluginConfiguration config = new WarPluginConfiguration(mavenProject, project);
     String warSourceDirectory = config.getWarSourceDirectory();
+    IVirtualComponent component = ComponentCore.createComponent(project, true);
     
-    IVirtualComponent component = ComponentCore.createComponent(project);
     if(component != null) {
+      IPath warPath = new Path(warSourceDirectory);
       component.create(IVirtualResource.NONE, monitor);
-      component.getRootFolder().createLink(new Path("/" + warSourceDirectory), IVirtualResource.NONE, monitor);
+      //remove the old link (if there is one) before adding the new one.
+      component.getRootFolder().removeLink(warPath,IVirtualResource.NONE, monitor);
+      component.getRootFolder().createLink(warPath, IVirtualResource.NONE, monitor);
     }
     
     Set<Action> actions = new LinkedHashSet<Action>();
 
     installJavaFacet(actions, project, facetedProject);
-
-    if(!facetedProject.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
+    //this will blow away the old web facet and all wb-resources, so this should
+    //only happen if there is no web facet to start with
+    if(!facetedProject.hasProjectFacet(WebFacetUtils.WEB_FACET)){
       IDataModel webModelCfg = DataModelFactory.createDataModel(new WebFacetInstallDataModelProvider());
 
       webModelCfg.setProperty(IJ2EEModuleFacetInstallDataModelProperties.CONFIG_FOLDER, warSourceDirectory);

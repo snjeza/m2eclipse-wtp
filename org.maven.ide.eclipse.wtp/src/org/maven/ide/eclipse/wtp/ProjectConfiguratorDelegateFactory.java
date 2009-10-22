@@ -38,7 +38,8 @@ class ProjectConfiguratorDelegateFactory {
       case EAR:
         return new EarProjectConfiguratorDelegate();
       default :
-        return null;
+        //Potentially a utility project
+        return "pom".equals(packaging)?null:new UtilityProjectConfiguratorDelegate();
     }
   
   }

@@ -9,6 +9,8 @@
 package org.maven.ide.eclipse.wtp;
 
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.jar.Attributes;
@@ -537,8 +539,8 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     
     //check for all expected dependencies in the manifest
     IFile war1ManifestFile = ComponentUtilities.findFile(warComp1, new Path(J2EEConstants.MANIFEST_URI));
-    Manifest mf1 = new Manifest(war1ManifestFile.getContents());
-    
+    Manifest mf1 = loadManifest(war1ManifestFile);
+
     //check that manifest classpath contains all dependencies
     String classpath = mf1.getMainAttributes().getValue(Attributes.Name.CLASS_PATH);
     assertTrue(classpath.contains(utilityRef1.getArchiveName()));
@@ -577,7 +579,7 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
 
     //check for all expected dependencies in the manifest
     IFile war2ManifestFile = ComponentUtilities.findFile(warComp2, new Path(J2EEConstants.MANIFEST_URI));
-    Manifest mf2 = new Manifest(war2ManifestFile.getContents());
+    Manifest mf2 = loadManifest(war2ManifestFile);
     
     //check that manifest classpath only contain utility1 and commons-lang
     classpath = mf2.getMainAttributes().getValue(Attributes.Name.CLASS_PATH);
@@ -593,7 +595,18 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     assertEquals(2, mavenContainerEntries.length);
     assertEquals("commons-collections-3.2.1.jar", mavenContainerEntries[0].getPath().lastSegment());
     assertEquals("junit-3.8.1.jar", mavenContainerEntries[1].getPath().lastSegment());
-}
+  }
+
+  private Manifest loadManifest(IFile war1ManifestFile) throws CoreException, IOException {
+    Manifest mf1;
+    InputStream is = war1ManifestFile.getContents();
+    try {
+      mf1 = new Manifest(is);
+    } finally {
+      is.close();
+    }
+    return mf1;
+  }
 
   //FIXME Test crashes on ear project update when WTPProjectConfiguratorTest tests are run as a whole. Works fine when run standalone.  
   public void XXXtestDeploymentDescriptorsJavaEE() throws Exception {
@@ -787,7 +800,7 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     
 }
 
-  //Lars Ködderitzsch test case from https://issues.sonatype.org/browse/MNGECLIPSE-1644
+  //Lars Kï¿½dderitzsch test case from https://issues.sonatype.org/browse/MNGECLIPSE-1644
   public void testMNGECLIPSE1644_contextRoot() throws Exception {
      
      IProject[] projects = importProjects(

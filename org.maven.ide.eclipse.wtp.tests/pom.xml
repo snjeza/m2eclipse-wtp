@@ -21,6 +21,13 @@
 
   <name>Maven Integration for Eclipse WTP tests</name>
 
+  <properties>
+    <!--<org.maven.ide.eclipse.wtp.tests.skip>${maven.test.skip}</org.maven.ide.eclipse.wtp.tests.skip>-->
+
+    <!-- disabled WTP UTs due to https://issues.sonatype.org/browse/MNGECLIPSE-1810 -->
+    <org.maven.ide.eclipse.wtp.tests.skip>true</org.maven.ide.eclipse.wtp.tests.skip>
+  </properties>
+
   <build>
     <sourceDirectory>src</sourceDirectory>
     <resources>
@@ -31,6 +38,17 @@
         </excludes>
       </resource>
     </resources>
+
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.tycho</groupId>
+        <artifactId>maven-osgi-test-plugin</artifactId>
+        <version>${tycho-version}</version>
+        <configuration>
+          <skip>${org.maven.ide.eclipse.wtp.tests.skip}</skip>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 
 </project>

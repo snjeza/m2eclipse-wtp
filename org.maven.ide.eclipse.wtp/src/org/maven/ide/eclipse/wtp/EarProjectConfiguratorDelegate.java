@@ -391,9 +391,15 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
 
     void addProject(IProject project, EarModule earModule) {
       IVirtualComponent projectComponent = ComponentCore.createComponent(project);
-      addToAllComponentsMap(projectComponent, earModule.getBundleDir());
+      String bundleDir = earModule.getBundleDir();
+      addToAllComponentsMap(projectComponent, bundleDir);
       if(!inEARAlready(projectComponent)) {
-        addToComponentUriMap(projectComponent, earModule.getUri(), earModule.getBundleDir());
+        String uri = earModule.getUri();
+        //Avoid adding an extra /lib prefix to the existing uri for workspace utility projects
+        if (bundleDir != null && !"/".equals(bundleDir) && uri.startsWith(bundleDir)){
+          uri = uri.substring(bundleDir.length());
+        }
+        addToComponentUriMap(projectComponent, uri, bundleDir);
       }
     }
 

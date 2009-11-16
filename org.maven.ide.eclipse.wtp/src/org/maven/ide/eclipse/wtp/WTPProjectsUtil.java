@@ -3,6 +3,7 @@ package org.maven.ide.eclipse.wtp;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jst.j2ee.internal.project.J2EEProjectUtilities;
+import org.eclipse.jst.j2ee.project.JavaEEProjectUtilities;
 import org.eclipse.jst.j2ee.project.facet.IJ2EEFacetConstants;
 import org.eclipse.wst.common.project.facet.core.IProjectFacet;
 import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
@@ -38,10 +39,10 @@ public class WTPProjectsUtil {
   /**
    * Checks if the project is one of Dynamic Web, EJB, Application client, EAR or JCA project.
    * @param project - the project to be checked.
-   * @return true if the project is a JEE - or legacy J2EE - project
+   * @return true if the project is a JEE - or legacy J2EE - project (but not a utility project). 
    */
   public static boolean isJavaEEProject(IProject project) {
-    return J2EEProjectUtilities.isLegacyJ2EEProject(project) || J2EEProjectUtilities.isJEEProject(project); 
+    return (J2EEProjectUtilities.isLegacyJ2EEProject(project) || J2EEProjectUtilities.isJEEProject(project)) && !JavaEEProjectUtilities.isUtilityProject(project); 
   }
   
 }

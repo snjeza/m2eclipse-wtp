@@ -86,22 +86,20 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
       //remove the old link (if there is one) before adding the new one.
       component.getRootFolder().removeLink(warPath,IVirtualResource.NONE, monitor);
       component.getRootFolder().createLink(warPath, IVirtualResource.NONE, monitor);
-      
     }
     
     Set<Action> actions = new LinkedHashSet<Action>();
 
     installJavaFacet(actions, project, facetedProject);
+    IProjectFacetVersion webFv = config.getWebFacetVersion(project);
     if(!facetedProject.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
       IDataModel webModelCfg = DataModelFactory.createDataModel(new WebFacetInstallDataModelProvider());
       webModelCfg.setProperty(IJ2EEModuleFacetInstallDataModelProperties.CONFIG_FOLDER, warSourceDirectory);
-      IProjectFacetVersion webFv = config.getWebFacetVersion(project);
       actions.add(new IFacetedProject.Action(IFacetedProject.Action.Type.INSTALL, webFv, webModelCfg));
     } else {
-      IProjectFacetVersion webFV = config.getWebFacetVersion(project);
       IProjectFacetVersion projectFacetVersion = facetedProject.getProjectFacetVersion(WebFacetUtils.WEB_FACET);
       
-      if(webFV.getVersionString() != null && !webFV.getVersionString().equals(projectFacetVersion.getVersionString())){
+      if(webFv.getVersionString() != null && !webFv.getVersionString().equals(projectFacetVersion.getVersionString())){
         try {
           facetedProject.modify(Collections.singleton(new IFacetedProject.Action(IFacetedProject.Action.Type.UNINSTALL,
               facetedProject.getInstalledVersion(WebFacetUtils.WEB_FACET), null)), monitor);
@@ -110,7 +108,6 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
         }
         IDataModel webModelCfg = DataModelFactory.createDataModel(new WebFacetInstallDataModelProvider());
         webModelCfg.setProperty(IJ2EEModuleFacetInstallDataModelProperties.CONFIG_FOLDER, warSourceDirectory);
-        IProjectFacetVersion webFv = config.getWebFacetVersion(project);
         actions.add(new IFacetedProject.Action(IFacetedProject.Action.Type.INSTALL, webFv, webModelCfg));
       }
     }

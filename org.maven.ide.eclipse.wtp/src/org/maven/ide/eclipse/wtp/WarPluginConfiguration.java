@@ -43,18 +43,8 @@ class WarPluginConfiguration {
   private IProject project;
 
   public WarPluginConfiguration(MavenProject mavenProject, IProject project) {
-    this.plugin = findWarPlugin(mavenProject);
+    this.plugin = mavenProject.getPlugin("org.apache.maven.plugins:maven-war-plugin");
     this.project = project;
-  }
-
-  private Plugin findWarPlugin(MavenProject mavenProject) {
-    for(Plugin plugin : mavenProject.getBuildPlugins()) {
-      if("org.apache.maven.plugins".equals(plugin.getGroupId()) //
-          && "maven-war-plugin".equals(plugin.getArtifactId())) {
-        return plugin;
-      }
-    }
-    return null;
   }
 
   static boolean isWarProject(MavenProject mavenProject) {
@@ -211,7 +201,11 @@ class WarPluginConfiguration {
         // expected
       }
     }
-    //MNGECLIPSE-984 web.xml is optional for 2.5 Web Projects 
+   
+    //MNGECLIPSE-984 web.xml is optional for 2.5 Web Projects
     return WTPProjectsUtil.DEFAULT_WEB_FACET;
+    //We don't want to prevent the project creation when the java compiler level is < 5, we coud try that instead :
+    //IProjectFacetVersion javaFv = JavaFacetUtils.compilerLevelToFacet(JavaFacetUtils.getCompilerLevel(project));
+    //return (JavaFacetUtils.JAVA_50.compareTo(javaFv) > 0)?WebFacetUtils.WEB_24:WebFacetUtils.WEB_25; 
   }
 }

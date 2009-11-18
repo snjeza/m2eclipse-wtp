@@ -39,15 +39,7 @@ class EjbPluginConfiguration {
       throw new IllegalArgumentException("Maven project must have ejb packaging");
     
     this.ejbProject = mavenProject;
-    
-    Plugin ejbPlugin = null;
-    for (Plugin plugin : mavenProject.getBuildPlugins()) {
-      if ("org.apache.maven.plugins".equals(plugin.getGroupId()) && "maven-ejb-plugin".equals(plugin.getArtifactId())) {
-        ejbPlugin = plugin;
-        break;
-      }
-    }
-    this.plugin = ejbPlugin;
+    this.plugin = mavenProject.getPlugin("org.apache.maven.plugins:maven-ejb-plugin");
   }
 
   /**

@@ -92,7 +92,11 @@ public abstract class AbstractEarModule implements EarModule {
       if(getBundleDir() == null) {
         uri = getBundleFileName();
       } else {
-        uri = getBundleDir() + getBundleFileName();
+        String bd = getBundleDir();
+        if(!bd.endsWith("/")) {
+          bd = bd + "/";
+        }
+        uri =  bd + getBundleFileName();
       }
     }
     return uri;
@@ -200,6 +204,7 @@ public abstract class AbstractEarModule implements EarModule {
     bundleDir = bundleDir.replace('\\', '/');
 
     // Remove '/' prefix if any so that directory is a relative path
+    /*
     if(bundleDir.startsWith("/")) {
       bundleDir = bundleDir.substring(1, bundleDir.length());
     }
@@ -207,6 +212,11 @@ public abstract class AbstractEarModule implements EarModule {
     if(bundleDir.length() > 0 && !bundleDir.endsWith("/")) {
       // Adding '/' suffix to specify a directory structure if it is not empty
       bundleDir = bundleDir + "/";
+    }
+    */
+    //WTP needs the exact opposite configuration 
+    if(!bundleDir.startsWith("/")) {
+      bundleDir = "/" + bundleDir ;
     }
 
     return bundleDir;

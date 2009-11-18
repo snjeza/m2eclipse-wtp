@@ -301,7 +301,8 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     assertEquals(1, references.length);
     IVirtualReference junit = references[0];
     assertEquals("junit-3.8.1.jar", junit.getArchiveName());
-    assertEquals("lib/", junit.getRuntimePath().toPortableString());
+    //MNGECLIPSE-1872 : check "/lib" is used as deployment directory
+    assertEquals("/lib", junit.getRuntimePath().toPortableString());
   
   }
 
@@ -321,7 +322,13 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     IProject ear = projects[4];
     
     assertMarkers(core, 0);
+    List<IMarker> warnings = findMarkers(core, IMarker.SEVERITY_WARNING);
+    assertTrue(toString(warnings), warnings.isEmpty());
+    
     assertMarkers(ejb, 0);
+    warnings = findMarkers(ejb, IMarker.SEVERITY_WARNING);
+    assertTrue(toString(warnings), warnings.isEmpty());
+
     assertMarkers(war, 0);
     assertMarkers(ear, 0);
     
@@ -329,7 +336,7 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     assertNotNull(ProjectFacetsManager.getFacetedProjects().toString(), fpCore);  
     assertTrue(fpCore.hasProjectFacet(JavaFacetUtils.JAVA_FACET));
     assertEquals(UTILITY_10, fpCore.getInstalledVersion(UTILITY_FACET));
-
+    
     IFacetedProject fpEjb = ProjectFacetsManager.create(ejb);
     assertNotNull(fpEjb);
     assertTrue(fpEjb.hasProjectFacet(JavaFacetUtils.JAVA_FACET));
@@ -800,7 +807,7 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     
 }
 
-  //Lars Kï¿½dderitzsch test case from https://issues.sonatype.org/browse/MNGECLIPSE-1644
+  //Lars Ködderitzsch test case from https://issues.sonatype.org/browse/MNGECLIPSE-1644
   public void testMNGECLIPSE1644_contextRoot() throws Exception {
      
      IProject[] projects = importProjects(
@@ -900,8 +907,6 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
 
     IFile applicationXml = ear.getFile("EarContent/META-INF/application.xml"); 
     assertTrue(applicationXml.exists());
-
-  
   }
 
   

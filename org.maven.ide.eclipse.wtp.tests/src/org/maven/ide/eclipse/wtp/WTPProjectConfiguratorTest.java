@@ -22,12 +22,14 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jst.common.project.facet.JavaFacetUtils;
 import org.eclipse.jst.j2ee.application.WebModule;
 import org.eclipse.jst.j2ee.classpathdep.IClasspathDependencyConstants;
@@ -391,7 +393,6 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
     }
   }
 
-  
   public void testMNGECLIPSE597() throws Exception {
     IProject[] projects = importProjects("projects/MNGECLIPSE-597", 
         new String[] {"DWPMain/pom.xml", "DWPDependency/pom.xml", }, 
@@ -907,6 +908,99 @@ public class WTPProjectConfiguratorTest extends AsbtractMavenProjectTestCase {
 
     IFile applicationXml = ear.getFile("EarContent/META-INF/application.xml"); 
     assertTrue(applicationXml.exists());
+  }
+
+  // MNGECLIPSE-1878
+  public void testPreserveClassPathContainersOnUpdate() throws Exception {
+    deleteProject("MNGECLIPSE-1878-core");
+    deleteProject("MNGECLIPSE-1878-ejb");
+    deleteProject("MNGECLIPSE-1878-web");
+    deleteProject("MNGECLIPSE-1878-ear");
+    deleteProject("MNGECLIPSE-1878");
+
+    ResolverConfiguration configuration = new ResolverConfiguration();
+    IProject[] projects = importProjects("projects/MNGECLIPSE-1878", new String[] {"pom.xml", "MNGECLIPSE-1878-core/pom.xml", 
+        "MNGECLIPSE-1878-web/pom.xml", "MNGECLIPSE-1878-ejb/pom.xml", "MNGECLIPSE-1878-ear/pom.xml",}, configuration);
+
+    waitForJobsToComplete();
+
+    IProject web = projects[2];
+    IProject ejb = projects[3];
+    IProject ear = projects[4];
+    //Building project as tests crashes, complaining about /MNGECLIPSE-1878/MNGECLIPSE-1878-ejb/target/classes later, on project update 
+    ejb.build(IncrementalProjectBuilder.FULL_BUILD, new NullProgressMonitor());
+
+    waitForJobsToComplete();
+
+    
+    {
+      IJavaProject webProject  = JavaCore.create(web); 
+      IClasspathEntry[] rawClasspath = webProject.getRawClasspath();
+      assertEquals(Arrays.toString(rawClasspath), 4, rawClasspath.length);
+      assertEquals("org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5", rawClasspath[0].getPath().toString());
+      assertEquals("org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER", rawClasspath[1].getPath().toString());
+      assertEquals("org.eclipse.jst.j2ee.internal.web.container", rawClasspath[2].getPath().toString());
+      assertEquals("org.eclipse.jst.j2ee.internal.module.container", rawClasspath[3].getPath().toString());
+    }
+    {
+      IJavaProject ejbProject  = JavaCore.create(ejb); 
+      IClasspathEntry[] rawClasspath = ejbProject.getRawClasspath();
+      assertEquals(Arrays.toString(rawClasspath), 4, rawClasspath.length);
+      assertEquals("/MNGECLIPSE-1878-ejb/src/main/java", rawClasspath[0].getPath().toString());
+      assertEquals("org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5", rawClasspath[1].getPath().toString());
+      assertEquals("org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER", rawClasspath[2].getPath().toString());
+      assertEquals("org.eclipse.jst.j2ee.internal.module.container", rawClasspath[3].getPath().toString());
+    }
+    {
+      IFacetedProject fpEar = ProjectFacetsManager.create(ear);
+      assertNotNull(fpEar);
+      assertFalse(fpEar.hasProjectFacet(JavaFacetUtils.JAVA_FACET));
+    }
+    IProjectConfigurationManager configurationManager = MavenPlugin.getDefault().getProjectConfigurationManager();
+    // update configuration
+    configurationManager.updateProjectConfiguration(web, configuration, "", monitor);
+    waitForJobsToComplete();
+
+    {
+      IJavaProject webProject  = JavaCore.create(web); 
+      IClasspathEntry[] rawClasspath = webProject.getRawClasspath();
+      assertEquals(Arrays.toString(rawClasspath), 4, rawClasspath.length);
+      assertEquals("org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5", rawClasspath[0].getPath().toString());
+      assertEquals("org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER", rawClasspath[1].getPath().toString());
+      assertEquals("org.eclipse.jst.j2ee.internal.web.container", rawClasspath[2].getPath().toString());
+      assertEquals("org.eclipse.jst.j2ee.internal.module.container", rawClasspath[3].getPath().toString());
+
+      IClasspathEntry[] entries = getWebLibClasspathContainer(webProject).getClasspathEntries();
+      assertEquals(Arrays.toString(entries), 1, entries.length);
+      assertEquals(IClasspathEntry.CPE_PROJECT, entries[0].getEntryKind());
+      assertEquals("MNGECLIPSE-1878-core", entries[0].getPath().lastSegment());
+    }
+
+    configurationManager.updateProjectConfiguration(ejb, configuration, "", monitor);
+    waitForJobsToComplete();
+
+    {
+      IJavaProject ejbProject  = JavaCore.create(ejb); 
+      IClasspathEntry[] rawClasspath = ejbProject.getRawClasspath();
+      assertEquals(Arrays.toString(rawClasspath), 5, rawClasspath.length);
+      assertEquals("/MNGECLIPSE-1878-ejb/src/main/java", rawClasspath[0].getPath().toString());
+      assertEquals("/MNGECLIPSE-1878-ejb/src/main/resources", rawClasspath[1].getPath().toString());//TODO Resources folder appear after config update (WTP added MANIFEST.MF)
+      assertEquals("org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5", rawClasspath[2].getPath().toString());
+      assertEquals("org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER", rawClasspath[3].getPath().toString());
+      assertEquals("org.eclipse.jst.j2ee.internal.module.container", rawClasspath[4].getPath().toString());
+    }
+    
+  }
+
+  private static IClasspathContainer getWebLibClasspathContainer(IJavaProject project) throws JavaModelException {
+    IClasspathEntry[] entries = project.getRawClasspath();
+    for(int i = 0; i < entries.length; i++ ) {
+      IClasspathEntry entry = entries[i];
+      if(entry.getEntryKind() == IClasspathEntry.CPE_CONTAINER && "org.eclipse.jst.j2ee.internal.web.container".equals(entry.getPath().segment(0))) {
+        return JavaCore.getClasspathContainer(entry.getPath(), project);
+      }
+    }
+    return null;
   }
 
   

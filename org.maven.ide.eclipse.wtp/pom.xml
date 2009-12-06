@@ -17,7 +17,6 @@
   </parent>
 
   <artifactId>org.maven.ide.eclipse.wtp</artifactId>
-  <version>${m2eclipse.version}</version>
   <packaging>eclipse-plugin</packaging>
 
   <name>Maven Integration for Eclipse WTP</name>
@@ -26,24 +25,14 @@
     <sourceDirectory>src</sourceDirectory>
 
     <resources>
-    <resource>
-      <directory>${basedir}/src</directory>
-      <includes>
-        <include>**/*.properties</include>
-      </includes>
-    </resource>
-  </resources>
+      <resource>
+        <directory>${basedir}/src</directory>
+        <includes>
+          <include>**/*.properties</include>
+        </includes>
+      </resource>
+    </resources>
 
-    <plugins>
-      <plugin>
-        <groupId>org.codehaus.tycho</groupId>
-        <artifactId>maven-osgi-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
-        </configuration>
-      </plugin>
-    </plugins>
   </build>
 
 </project>

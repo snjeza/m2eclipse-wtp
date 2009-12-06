@@ -17,23 +17,8 @@
   </parent>
 
   <artifactId>org.maven.ide.eclipse.wtp.feature</artifactId>
-  <version>${m2eclipse.version}</version>
   <packaging>eclipse-feature</packaging>
 
   <name>Maven Integration for WTP (Optional)</name>
-
-  <build>
-    <sourceDirectory>src</sourceDirectory>
-
-    <plugins>
-      <plugin>
-        <groupId>org.codehaus.tycho</groupId>
-        <artifactId>maven-osgi-packaging-plugin</artifactId>
-        <configuration>
-          <featureOnly>true</featureOnly>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 
 </project>

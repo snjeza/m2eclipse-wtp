@@ -62,17 +62,7 @@ public abstract class FileNameMapping {
     }
     StringBuilder name = new StringBuilder(artifact.getArtifactId()); //ArtifactIds contain no spaces, no need to .replace(' ', '_')
     name.append("-").append(artifact.getVersion());//MNGECLIPSE-967 add versions to project filenames
-    JEEPackaging packaging = JEEPackaging.getValue(artifact.getType());
-    switch(packaging) {
-      case WAR:
-        name.append(IModuleExtensions.DOT_WAR);
-        break;
-      case RAR:
-        name.append(IModuleExtensions.DOT_RAR);
-        break;
-      default:
-        name.append(IModuleExtensions.DOT_JAR);
-    }
+    name.append(".").append(artifact.getType());
     return name.toString();
   }
 }

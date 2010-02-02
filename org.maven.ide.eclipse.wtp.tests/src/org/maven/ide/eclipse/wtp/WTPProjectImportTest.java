@@ -25,10 +25,10 @@ import org.eclipse.wst.common.project.facet.core.IFacetedProject;
 import org.eclipse.wst.common.project.facet.core.ProjectFacetsManager;
 import org.maven.ide.eclipse.jdt.BuildPathManager;
 import org.maven.ide.eclipse.project.ResolverConfiguration;
-import org.maven.ide.eclipse.tests.AsbtractMavenProjectTestCase;
+import org.maven.ide.eclipse.tests.common.AbstractMavenProjectTestCase;
 
 
-public class WTPProjectImportTest extends AsbtractMavenProjectTestCase {
+public class WTPProjectImportTest extends AbstractMavenProjectTestCase {
 
   public void testProjectImportDefault() throws Exception {
     deleteProject("MNGECLIPSE-20");

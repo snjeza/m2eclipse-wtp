@@ -62,7 +62,7 @@ public abstract class FileNameMapping {
     }
     StringBuilder name = new StringBuilder(artifact.getArtifactId()); //ArtifactIds contain no spaces, no need to .replace(' ', '_')
     name.append("-").append(artifact.getVersion());//MNGECLIPSE-967 add versions to project filenames
-    name.append(".").append(artifact.getType());
+    name.append(".").append(artifact.getArtifactHandler().getExtension());//MNGECLIPSE-2155 : fixed incorrect project file extension
     return name.toString();
   }
 }

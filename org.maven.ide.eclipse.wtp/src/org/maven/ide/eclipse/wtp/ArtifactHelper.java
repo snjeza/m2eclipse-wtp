@@ -54,14 +54,24 @@ public class ArtifactHelper {
   /**
    * Returns an IProject from a maven artifact
    * @param artifact
-   * @return the project artifact or null
+   * @return an IProject if the artifact is a workspace project or null
    */
   public static IProject getWorkspaceProject(Artifact artifact) {
+    IMavenProjectFacade facade = getWorkspaceProjectMavenFacade(artifact);
+    return (facade == null)?null:facade.getProject();
+  }
+
+  /**
+   * Returns an IMavenProjectFacade from a maven artifact
+   * @param artifact
+   * @return an IMavenProjectFacade if the artifact is a workspace project or null
+   */
+  public static IMavenProjectFacade getWorkspaceProjectMavenFacade(Artifact artifact) {
     IMavenProjectFacade workspaceProject = MavenPlugin.getDefault().getMavenProjectManager()
     .getMavenProject(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion());
 
     if(workspaceProject != null && workspaceProject.getFullPath(artifact.getFile()) != null) {
-      return workspaceProject.getProject();
+      return workspaceProject;
     }
     return null;
   }

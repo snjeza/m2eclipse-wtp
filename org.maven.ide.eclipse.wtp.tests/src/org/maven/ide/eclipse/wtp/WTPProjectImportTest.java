@@ -187,7 +187,7 @@ public class WTPProjectImportTest extends AbstractMavenProjectTestCase {
 
       // IMarker[] markers = projects[1].findMarkers(null, true, IResource.DEPTH_INFINITE);
       List<IMarker> markers = findErrorMarkers(projects[1]);
-      assertEquals(markers.toString(), 0, markers.size());
+      assertEquals(toString(markers), 0, markers.size());
     }
 
     {
@@ -208,7 +208,7 @@ public class WTPProjectImportTest extends AbstractMavenProjectTestCase {
 
       // IMarker[] markers = projects[2].findMarkers(null, true, IResource.DEPTH_INFINITE);
       List<IMarker> markers = findErrorMarkers(projects[2]);
-      assertEquals(markers.toString(), 3, markers.size());
+      assertEquals(toString(markers), 3, markers.size());
     }
 
     {
@@ -231,7 +231,7 @@ public class WTPProjectImportTest extends AbstractMavenProjectTestCase {
 
       // IMarker[] markers = projects[3].findMarkers(null, true, IResource.DEPTH_INFINITE);
       List<IMarker> markers = findErrorMarkers(projects[3]);
-      assertEquals(markers.toString(), 4, markers.size());
+      assertEquals(toString(markers), 4, markers.size());
     }
 
     {
@@ -254,7 +254,7 @@ public class WTPProjectImportTest extends AbstractMavenProjectTestCase {
 
       // IMarker[] markers = projects[4].findMarkers(null, true, IResource.DEPTH_INFINITE);
       List<IMarker> markers = findErrorMarkers(projects[4]);
-      assertEquals(markers.toString(), 4, markers.size());
+      assertEquals(toString(markers), 4, markers.size());
     }
 
     {
@@ -272,7 +272,7 @@ public class WTPProjectImportTest extends AbstractMavenProjectTestCase {
 
       // IMarker[] markers = projects[5].findMarkers(null, true, IResource.DEPTH_INFINITE);
       List<IMarker> markers = findErrorMarkers(projects[4]);
-      assertEquals(markers.toString(), 4, markers.size());
+      assertEquals(toString(markers), 4, markers.size());
     }
   }
 
@@ -430,8 +430,5 @@ public class WTPProjectImportTest extends AbstractMavenProjectTestCase {
     assertTrue(jarUtilityProject.hasProjectFacet(ProjectFacetsManager.getProjectFacet(IJ2EEFacetConstants.UTILITY)));
     assertEquals(JavaFacetUtils.JAVA_13, jarUtilityProject.getInstalledVersion(JavaFacetUtils.JAVA_FACET));
   }
-  
-  
-  
 }
 

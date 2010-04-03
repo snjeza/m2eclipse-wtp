@@ -542,7 +542,7 @@ public class WTPProjectConfiguratorTest extends AbstractMavenProjectTestCase {
     assertEquals("/", fromWarRefs1[1].getRuntimePath().toString());    
     assertTrue(fromWarRefs1[2].getReferencedComponent().getDeployedName().endsWith("commons-lang-2.4.jar"));  
     assertEquals("/", fromWarRefs1[2].getRuntimePath().toString());  
-    assertTrue(fromWarRefs1[3].getReferencedComponent().getDeployedName().endsWith("commons-collections-3.2.1.jar"));  
+    assertTrue(fromWarRefs1[3].getReferencedComponent().getDeployedName().endsWith("commons-collections-2.0.jar"));  
     assertEquals("/", fromWarRefs1[3].getRuntimePath().toString());  
     
     //check for all expected dependencies in the manifest
@@ -554,7 +554,7 @@ public class WTPProjectConfiguratorTest extends AbstractMavenProjectTestCase {
     assertTrue(classpath.contains(utilityRef1.getArchiveName()));
     assertTrue(classpath.contains(utilityRef2.getArchiveName()));
     assertTrue(classpath.contains("commons-lang-2.4.jar"));
-    assertTrue(classpath.contains("commons-collections-3.2.1.jar"));
+    assertTrue(classpath.contains("commons-collections-2.0.jar"));
     //...but not junit, which is a test dependency
     assertFalse(classpath.contains("junit-3.8.1.jar"));
     
@@ -578,7 +578,7 @@ public class WTPProjectConfiguratorTest extends AbstractMavenProjectTestCase {
     //TODO the WEB-INF/lib located refs seem to come first
     assertEquals(utility2, fromWarRefs2[0].getReferencedComponent().getProject());
     assertEquals("/WEB-INF/lib", fromWarRefs2[0].getRuntimePath().toString());    
-    assertTrue(fromWarRefs2[1].getReferencedComponent().getDeployedName().endsWith("commons-collections-3.2.1.jar"));  
+    assertTrue(fromWarRefs2[1].getReferencedComponent().getDeployedName().endsWith("commons-collections-2.0.jar"));  
     assertEquals("/WEB-INF/lib", fromWarRefs2[1].getRuntimePath().toString());  
     assertEquals(utility1, fromWarRefs2[2].getReferencedComponent().getProject());
     assertEquals("/", fromWarRefs2[2].getRuntimePath().toString());
@@ -594,14 +594,14 @@ public class WTPProjectConfiguratorTest extends AbstractMavenProjectTestCase {
     assertTrue(classpath.contains(utilityRef1.getArchiveName()));
     assertFalse(classpath.contains(utilityRef2.getArchiveName()));
     assertTrue(classpath.contains("commons-lang-2.4.jar"));
-    assertFalse(classpath.contains("commons-collections-3.2.1.jar"));
+    assertFalse(classpath.contains("commons-collections-2.0.jar"));
     //...but not junit, which is a test dependency
     assertFalse(classpath.contains("junit-3.8.1.jar"));
     
     //check that junit and commons-collections is in the maven classpath container instead
     mavenContainerEntries = getMavenContainerEntries(mixedskinnywar);
     assertEquals(2, mavenContainerEntries.length);
-    assertEquals("commons-collections-3.2.1.jar", mavenContainerEntries[0].getPath().lastSegment());
+    assertEquals("commons-collections-2.0.jar", mavenContainerEntries[0].getPath().lastSegment());
     assertEquals("junit-3.8.1.jar", mavenContainerEntries[1].getPath().lastSegment());
   }
 
@@ -798,7 +798,7 @@ public class WTPProjectConfiguratorTest extends AbstractMavenProjectTestCase {
     Application app1 = (Application)ModelProviderManager.getModelProvider(ear1).getModelObject();
     assertEquals(2,app1.getModules().size());
     assertNotNull("missing jarmodule for C",app1.getFirstModule("A-0.0.1-SNAPSHOT.jar"));
-    assertNotNull("missing webmodule for C",app1.getFirstModule("B-0.0.1-SNAPSHOT.war"));
+    assertNotNull("missing webmodule for C",app1.getFirstModule("website.war"));//MNGECLIPSE-2145 EAR should use finalName 
 
     Application app2 = (Application)ModelProviderManager.getModelProvider(ear2).getModelObject();
     assertEquals(2,app2.getModules().size());
@@ -838,6 +838,44 @@ public class WTPProjectConfiguratorTest extends AbstractMavenProjectTestCase {
      assertEquals("/MNGECLIPSE-1644-war2", war2ContextRoot);
   }
 
+  public void testMNGECLIPSE2145_finalNames() throws Exception {
+    
+    IProject[] projects = importProjects(
+        "projects/MNGECLIPSE-2145/testcase", //
+        new String[] {"pom.xml", "ear/pom.xml", "war/pom.xml", "jar/pom.xml", },
+        new ResolverConfiguration());
+
+    waitForJobsToComplete();
+    
+    assertEquals(4, projects.length);
+    IProject pom = projects[0];
+    IProject ear = projects[1];
+    IProject war = projects[2];
+    IProject jar = projects[3];
+    
+    assertMarkers(pom, 0);
+    assertMarkers(ear, 0);
+    assertMarkers(war, 0);
+    assertMarkers(jar, 0);
+    
+    //check the context roots of the wars in the ear
+    EARArtifactEdit edit = EARArtifactEdit.getEARArtifactEditForRead(ear);
+    assertNotNull(edit);
+    
+    IVirtualComponent earComp = ComponentCore.createComponent(ear);
+    
+    IVirtualReference jarRef = earComp.getReference("jar");
+    assertNotNull(jarRef);
+    assertEquals("testcase-jar.jar",jarRef.getArchiveName());
+
+    IVirtualReference warRef = earComp.getReference("war");
+    assertNotNull(warRef);
+    String uri = edit.getModuleURI(warRef.getReferencedComponent());
+    assertEquals("testcase-war.war", uri);
+    
+ }
+
+  
   public void testMNGECLIPSE1184_contextRootProperty() throws Exception {
     
     IProject[] projects = importProjects(

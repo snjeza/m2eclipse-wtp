@@ -28,9 +28,9 @@ package org.maven.ide.eclipse.wtp.earmodules.output;
  */
 
 import org.apache.maven.artifact.Artifact;
-import org.eclipse.jst.j2ee.application.internal.operations.IModuleExtensions;
+import org.codehaus.plexus.util.StringUtils;
+import org.maven.ide.eclipse.project.IMavenProjectFacade;
 import org.maven.ide.eclipse.wtp.ArtifactHelper;
-import org.maven.ide.eclipse.wtp.JEEPackaging;
 
 
 /**
@@ -57,11 +57,18 @@ public abstract class FileNameMapping {
    * null if the artifact is not a workspace project. 
    */
   protected String getProjectName(final Artifact artifact) {
-    if(ArtifactHelper.getWorkspaceProject(artifact) == null) {
+    IMavenProjectFacade facade = ArtifactHelper.getWorkspaceProjectMavenFacade(artifact);
+    if(facade == null){
       return null;
     }
-    StringBuilder name = new StringBuilder(artifact.getArtifactId()); //ArtifactIds contain no spaces, no need to .replace(' ', '_')
-    name.append("-").append(artifact.getVersion());//MNGECLIPSE-967 add versions to project filenames
+    String finalName = facade.getMavenProject().getBuild().getFinalName();
+    StringBuilder name;
+    if (StringUtils.isBlank(finalName)) {
+      name = new StringBuilder(artifact.getArtifactId()); //ArtifactIds contain no spaces, no need to .replace(' ', '_')
+      name.append("-").append(artifact.getVersion());//MNGECLIPSE-967 add versions to project filenames
+    } else {
+      name = new StringBuilder(finalName);//Since maven doesn't do any sanity check on the final name (spaces, dots ...) nor do we
+    }
     name.append(".").append(artifact.getArtifactHandler().getExtension());//MNGECLIPSE-2155 : fixed incorrect project file extension
     return name.toString();
   }

@@ -53,7 +53,7 @@ public abstract class FileNameMapping {
   /**
    * Construct the exported project filename if the artifact is a workspace project. 
    * @param artifact
-   * @return the project's exported filename using the pattern [artifactId]-[version].[extension] or 
+   * @return the project's exported filename using [finalName].[extension] if &lt;build&gt;&lt;finalName&gt; was set or the pattern [artifactId]-[version].[extension] by default. 
    * null if the artifact is not a workspace project. 
    */
   protected String getProjectName(final Artifact artifact) {

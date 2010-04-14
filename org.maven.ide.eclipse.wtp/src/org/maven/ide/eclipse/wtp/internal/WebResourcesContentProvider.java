@@ -63,8 +63,8 @@ public class WebResourcesContentProvider extends BaseWorkbenchContentProvider im
       IProject project = (IProject) parent;
       if(project.isAccessible()) {
         try {
-          IFacetedProject facetedProject = ProjectFacetsManager.create(project, true, null);
-          if(facetedProject.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
+          IFacetedProject facetedProject = ProjectFacetsManager.create(project);//MNGECLIPSE-1992 there's no reason to actually create a ProjectFacet at this point
+          if(facetedProject != null && facetedProject.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
             List newChildren = new ArrayList<Object>();
             newChildren.add(new WebResourcesNode(project));
             newChildren.addAll(currentChildren);

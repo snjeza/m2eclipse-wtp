@@ -10,29 +10,14 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.maven.ide.eclipse</groupId>
-    <artifactId>parent</artifactId>
-    <version>0.10.2-SNAPSHOT</version>
-    <relativePath>../org.maven.ide.eclipse.parent</relativePath>
+    <groupId>org.maven.ide.eclipse.wtp</groupId>
+    <artifactId>org.maven.ide.eclipse.wtp.parent</artifactId>
+    <version>0.10.3-SNAPSHOT</version>
   </parent>
 
   <artifactId>org.maven.ide.eclipse.wtp</artifactId>
   <packaging>eclipse-plugin</packaging>
 
-  <name>Maven Integration for Eclipse WTP</name>
-
-  <build>
-    <sourceDirectory>src</sourceDirectory>
-
-    <resources>
-      <resource>
-        <directory>${basedir}/src</directory>
-        <includes>
-          <include>**/*.properties</include>
-        </includes>
-      </resource>
-    </resources>
-
-  </build>
+  <name>Maven Integration for Eclipse WTP plugin</name>
 
 </project>

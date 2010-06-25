@@ -38,7 +38,6 @@ import org.maven.ide.eclipse.wtp.ArtifactHelper;
  * 
  * @author <a href="snicoll@apache.org">Stephane Nicoll</a>
  */
-@SuppressWarnings("restriction")
 public abstract class FileNameMapping {
 
   /**

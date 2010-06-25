@@ -53,7 +53,7 @@ public class WebResourcesContentProvider extends BaseWorkbenchContentProvider im
 
   // IPipelinedTreeContentProvider
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
   public void getPipelinedElements(Object element, Set currentElements) {
   }
   

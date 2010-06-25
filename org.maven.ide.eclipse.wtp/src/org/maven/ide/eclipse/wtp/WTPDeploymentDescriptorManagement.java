@@ -48,7 +48,6 @@ public class WTPDeploymentDescriptorManagement implements DeploymentDescriptorMa
       try {
         se = StructureEdit.getStructureEditForWrite(project);
         earModel.modify(new Runnable() {
-          @SuppressWarnings("unchecked")
           public void run() {
             Object modelObject = ModelProviderManager.getModelProvider(project).getModelObject();
             if (modelObject instanceof Application){

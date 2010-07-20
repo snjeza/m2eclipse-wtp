@@ -56,9 +56,16 @@ class EjbPluginConfiguration {
       return DEFAULT_EJB_FACET_VERSION; 
     }
     
-    Xpp3Dom domVersion = dom.getChild("ejbVersion");
-    if (domVersion != null) {
-      return WTPProjectsUtil.EJB_FACET.getVersion(domVersion.getValue());
+    String ejbVersion = DomUtils.getChildValue(dom, "ejbVersion");
+    if (ejbVersion != null) {
+      try {
+        return WTPProjectsUtil.EJB_FACET.getVersion(ejbVersion);
+      } catch (Throwable t) {
+        //If ejbVersion > 3.0 and WTP < 3.2, then downgrade to ejb facet 3.0
+        if (ejbVersion.startsWith("3.")){
+          return IJ2EEFacetConstants.EJB_30;
+        }
+      }
     }
     return DEFAULT_EJB_FACET_VERSION; 
   }

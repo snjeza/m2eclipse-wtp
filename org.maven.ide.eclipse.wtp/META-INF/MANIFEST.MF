@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Maven Integration for Eclipse WTP
 Bundle-SymbolicName: org.maven.ide.eclipse.wtp;singleton:=true
-Bundle-Version: 0.10.3.qualifier
+Bundle-Version: 0.11.0.qualifier
 Bundle-RequiredExecutionEnvironment: J2SE-1.5,
  JavaSE-1.6
 Require-Bundle: org.eclipse.core.runtime,
@@ -21,9 +21,9 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.wst.common.frameworks,
  org.eclipse.wst.common.modulecore;visibility:=reexport,
  org.eclipse.wst.common.project.facet.core,
- org.maven.ide.eclipse.maven_embedder;bundle-version="[0.10.0,0.11.0)",
- org.maven.ide.eclipse;bundle-version="[0.10.0,0.11.0)",
- org.maven.ide.eclipse.jdt;bundle-version="[0.10.0,0.11.0)",
+ org.maven.ide.eclipse.maven_embedder;bundle-version="[0.10.0,0.12.0)",
+ org.maven.ide.eclipse;bundle-version="[0.10.0,0.12.0)",
+ org.maven.ide.eclipse.jdt;bundle-version="[0.10.0,0.12.0)",
  org.eclipse.ui.console,
  org.eclipse.emf.ecore,
  org.eclipse.jem.util,

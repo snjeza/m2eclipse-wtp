@@ -146,7 +146,6 @@ public class WTPProjectImportTest extends AbstractMavenProjectTestCase {
     deleteProject("MNGECLIPSE-20-web");
 
     ResolverConfiguration configuration = new ResolverConfiguration();
-    configuration.setIncludeModules(false);
     configuration.setResolveWorkspaceProjects(false);
     configuration.setActiveProfiles("");
 
@@ -285,7 +284,6 @@ public class WTPProjectImportTest extends AbstractMavenProjectTestCase {
     deleteProject("MNGECLIPSE-20-web");
 
     ResolverConfiguration configuration = new ResolverConfiguration();
-    configuration.setIncludeModules(true);
     configuration.setResolveWorkspaceProjects(true);
     configuration.setActiveProfiles("");
 
@@ -327,7 +325,6 @@ public class WTPProjectImportTest extends AbstractMavenProjectTestCase {
     deleteProject("MNGECLIPSE-20-web");
 
     ResolverConfiguration configuration = new ResolverConfiguration();
-    configuration.setIncludeModules(true);
     configuration.setResolveWorkspaceProjects(false);
     configuration.setActiveProfiles("");
 
@@ -365,7 +362,6 @@ public class WTPProjectImportTest extends AbstractMavenProjectTestCase {
     deleteProject("MNGECLIPSE-20-web");
 
     ResolverConfiguration configuration = new ResolverConfiguration();
-    configuration.setIncludeModules(true);
     configuration.setResolveWorkspaceProjects(false);
     configuration.setActiveProfiles("");
 

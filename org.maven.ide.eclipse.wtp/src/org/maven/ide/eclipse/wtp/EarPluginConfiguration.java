@@ -70,17 +70,7 @@ class EarPluginConfiguration {
     }
 
     this.mavenProject = mavenProject;
-    this.plugin = findEarPlugin(mavenProject);
-  }
-
-  private Plugin findEarPlugin(MavenProject mavenProject) {
-    for(Plugin plugin : mavenProject.getBuildPlugins()) {
-      if("org.apache.maven.plugins".equals(plugin.getGroupId()) //
-          && "maven-ear-plugin".equals(plugin.getArtifactId())) {
-        return plugin;
-      }
-    }
-    return null;
+    this.plugin = mavenProject.getPlugin("org.apache.maven.plugins:maven-ear-plugin");
   }
 
   /**
@@ -110,8 +100,17 @@ class EarPluginConfiguration {
       try {
         double version = Double.parseDouble(sVersion); // hack to transform version 5 to 5.0
         // IJ2EEFacetConstants.ENTERPRISE_APPLICATION_FACET.getVersion(String version) is available in WTP 3.x
-        return WTPProjectsUtil.EAR_FACET.getVersion(Double.toString(version));
-      } catch(NumberFormatException nfe) {
+        sVersion = Double.toString(version);
+        try {
+          return WTPProjectsUtil.EAR_FACET.getVersion(sVersion);
+        } catch (Throwable t) {
+          //If Ear Version > 5.0 and WTP < 3.2, downgrade to Ear facet 5.0
+          MavenLogger.log(t.getMessage());
+          if (version > 5.0){
+            return WTPProjectsUtil.EAR_FACET.getVersion("5.0");
+          }
+        }
+        } catch(NumberFormatException nfe) {
         MavenLogger.log("unable to read ear version : " + sVersion, nfe);
         return DEFAULT_EAR_FACET;
       }

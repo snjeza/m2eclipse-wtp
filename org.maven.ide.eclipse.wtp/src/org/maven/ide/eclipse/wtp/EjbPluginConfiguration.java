@@ -15,6 +15,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jst.j2ee.project.facet.IJ2EEFacetConstants;
 import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
+import org.maven.ide.eclipse.core.MavenLogger;
 import org.maven.ide.eclipse.project.MavenProjectUtils;
 
 /**
@@ -61,6 +62,7 @@ class EjbPluginConfiguration {
       try {
         return WTPProjectsUtil.EJB_FACET.getVersion(ejbVersion);
       } catch (Throwable t) {
+        MavenLogger.log(t.getMessage());
         //If ejbVersion > 3.0 and WTP < 3.2, then downgrade to ejb facet 3.0
         if (ejbVersion.startsWith("3.")){
           return IJ2EEFacetConstants.EJB_30;

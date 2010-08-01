@@ -18,15 +18,19 @@
 
   <groupId>org.maven.ide.eclipse.wtp</groupId>
   <artifactId>org.maven.ide.eclipse.wtp.parent</artifactId>
-  <version>0.10.3-SNAPSHOT</version>
+  <version>0.11.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Maven Integration for Eclipse WTP (Parent)</name>
 
   <properties>
     <tycho-version>0.9.0</tycho-version>
-    <m2eclipse-core.version>0.10.2.20100623-1649</m2eclipse-core.version>
+    <!-- 
+	<m2eclipse-core.version>0.10.2.20100623-1649</m2eclipse-core.version>
     <m2eclipse-core.site>0.10.2/S/${m2eclipse-core.version}</m2eclipse-core.site>
+	-->
+    <m2eclipse-core.version>0.11.0.201007291006</m2eclipse-core.version>
+    <m2eclipse-core.site>0.11.0/N/${m2eclipse-core.version}</m2eclipse-core.site>
     <target.platform>m2e-e35</target.platform>        
     <m2e.site-compressed>http://repository.sonatype.org/service/local/repositories/forge-sites/content-compressed/</m2e.site-compressed>
   </properties>
@@ -131,6 +135,29 @@
         <tycho.test.jvmArgs>-Xmx800m -XX:MaxPermSize=256m -Dosgi.ws=cocoa -XstartOnFirstThread</tycho.test.jvmArgs>
         <osgi.ws>cocoa</osgi.ws>
       </properties>
+    </profile>
+    <profile>
+      <id>sign</id>
+      <activation>
+        <property><name>jarsigner.alias</name></property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jarsigner-plugin</artifactId>
+            <version>1.2</version>
+            <executions>
+              <execution>
+                <id>sign</id>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>

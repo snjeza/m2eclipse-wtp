@@ -38,6 +38,8 @@ class WarPluginConfiguration {
 
   private static final String WEB_XML = "WEB-INF/web.xml";
 
+  private static final int WEB_3_0_ID = 30;//Same Value as J2EEVersionConstants.WEB_3_0_ID from WTP 3.2 (org.eclipse.jst.j2ee.core_1.2.0.vX.jar)
+
   final Plugin plugin;
 
   private IProject project;
@@ -191,6 +193,9 @@ class WarPluginConfiguration {
               return WebFacetUtils.WEB_24;
             case J2EEVersionConstants.WEB_2_5_ID:
               return WebFacetUtils.WEB_FACET.getVersion("2.5");
+            //MNGECLIPSE-1978  
+            case WEB_3_0_ID://JavaEEQuickPeek will return this value only if WTP version >= 3.2
+              return WebFacetUtils.WEB_FACET.getVersion("3.0");//only exists in WTP version >= 3.2
           }
         } finally {
           is.close();
@@ -202,6 +207,11 @@ class WarPluginConfiguration {
       }
     }
    
+    //MNGECLIPSE-1978 If no web.xml found and the project depends on some java EE 6 jar and WTP >= 3.2, then set web facet to 3.0
+    if (WTPProjectsUtil.isJavaEE6Available() && WTPProjectsUtil.hasInClassPath(project, "javax.servlet.annotation.WebServlet")) {
+      return WebFacetUtils.WEB_FACET.getVersion("3.0");
+    }
+    
     //MNGECLIPSE-984 web.xml is optional for 2.5 Web Projects
     return WTPProjectsUtil.DEFAULT_WEB_FACET;
     //We don't want to prevent the project creation when the java compiler level is < 5, we coud try that instead :

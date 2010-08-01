@@ -31,6 +31,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jst.common.project.facet.JavaFacetUtils;
+import org.eclipse.jst.common.project.facet.WtpUtils;
 import org.eclipse.jst.j2ee.application.WebModule;
 import org.eclipse.jst.j2ee.classpathdep.IClasspathDependencyConstants;
 import org.eclipse.jst.j2ee.componentcore.util.EARArtifactEdit;
@@ -1030,6 +1031,61 @@ public class WTPProjectConfiguratorTest extends AbstractMavenProjectTestCase {
     
   }
 
+
+  
+  public void testMNGECLIPSE1978_Javaee6Support() throws Exception {
+    IProject[] projects = importProjects("projects/MNGECLIPSE-1978/", 
+        new String[] {"javaee6-parent/pom.xml", 
+                      "javaee6-parent/javaee6-ejb/pom.xml", 
+                      "javaee6-parent/javaee6-web/pom.xml", 
+                      "javaee6-parent/javaee6-ear/pom.xml"},
+        new ResolverConfiguration());
+
+    waitForJobsToComplete();
+    
+    assertEquals(4, projects.length);
+    IProject ejb = projects[1];
+    IProject war = projects[2];
+    IProject ear = projects[3];
+    
+    assertMarkers(ejb, 0);
+    assertMarkers(war, 0);
+    assertMarkers(ear, 0);
+    
+    IFacetedProject fpEjb = ProjectFacetsManager.create(ejb);
+    assertNotNull(fpEjb);
+    assertTrue(fpEjb.hasProjectFacet(JavaFacetUtils.JAVA_FACET));
+
+    IFacetedProject fpWar = ProjectFacetsManager.create(war);
+    assertNotNull(fpWar);
+    assertTrue(fpWar.hasProjectFacet(JavaFacetUtils.JAVA_FACET));
+
+    IFacetedProject fpEar = ProjectFacetsManager.create(ear);
+    assertNotNull(fpEar);
+    assertFalse(fpEar.hasProjectFacet(JavaFacetUtils.JAVA_FACET)); //Ears don't have java facet
+
+    IProjectFacetVersion expectedWebFacet = null;
+    IProjectFacetVersion expectedEjbFacet = null;
+    IProjectFacetVersion expectedEarFacet = null;
+    
+    if (WTPProjectsUtil.isJavaEE6Available()) {
+      //check we assigned the correct, JavaEE 6, facet versions, for WTP >= 3.2
+      expectedEjbFacet = EJB_FACET.getVersion("3.1");
+      expectedWebFacet = WebFacetUtils.WEB_FACET.getVersion("3.0");
+      expectedEarFacet = EAR_FACET.getVersion("6.0");      
+    } else {
+      //check we downgraded WTP Facets versions to a compatible level
+      expectedEjbFacet = IJ2EEFacetConstants.EJB_30;
+      expectedWebFacet = WebFacetUtils.WEB_25;
+      expectedEarFacet = IJ2EEFacetConstants.ENTERPRISE_APPLICATION_50;
+    }
+    assertEquals(expectedEjbFacet, fpEjb.getInstalledVersion(EJB_FACET));
+    assertEquals(expectedWebFacet, fpWar.getInstalledVersion(WebFacetUtils.WEB_FACET));
+    assertEquals(expectedEarFacet, fpEar.getInstalledVersion(EAR_FACET));
+
+}
+
+  
   private static IClasspathContainer getWebLibClasspathContainer(IJavaProject project) throws JavaModelException {
     IClasspathEntry[] entries = project.getRawClasspath();
     for(int i = 0; i < entries.length; i++ ) {

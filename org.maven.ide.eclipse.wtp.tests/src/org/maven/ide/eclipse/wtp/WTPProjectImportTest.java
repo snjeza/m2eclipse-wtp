@@ -275,6 +275,7 @@ public class WTPProjectImportTest extends AbstractMavenProjectTestCase {
     }
   }
 
+  /* include module feature has been removed
   public void testProjectImportWithModules() throws Exception {
     deleteProject("MNGECLIPSE-20");
     deleteProject("MNGECLIPSE-20-app");
@@ -382,7 +383,7 @@ public class WTPProjectImportTest extends AbstractMavenProjectTestCase {
     IMarker[] markers = project.findMarkers(null, true, IResource.DEPTH_INFINITE);
     assertEquals(toString(markers), 0, markers.length);
   }
-
+*/
   public void testMNGECLIPSE1028() throws Exception {
     deleteProject("import-order-matters");
     deleteProject("project1");

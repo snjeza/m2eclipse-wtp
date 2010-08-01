@@ -491,7 +491,7 @@ public class WTPProjectConfiguratorTest extends AbstractMavenProjectTestCase {
     IVirtualReference[] references = comp.getReferences();
     assertEquals(1, references.length);
     IVirtualReference snapshot = references[0];
-    assertEquals("MNGECLIPSE-1045-DEP-0.0.1-SNAPSHOT.jar", snapshot.getArchiveName());
+    assertEquals("/MNGECLIPSE-1045-DEP-0.0.1-SNAPSHOT.jar", snapshot.getArchiveName());
   }
   
   public void testMNGECLIPSE1627_SkinnyWars() throws Exception {

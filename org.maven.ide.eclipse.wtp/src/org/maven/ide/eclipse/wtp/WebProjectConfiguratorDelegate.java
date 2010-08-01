@@ -74,7 +74,6 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
       throws CoreException {
     IFacetedProject facetedProject = ProjectFacetsManager.create(project, true, monitor);
 
-
     // make sure to update the main deployment folder
     WarPluginConfiguration config = new WarPluginConfiguration(mavenProject, project);
     String warSourceDirectory = config.getWarSourceDirectory();

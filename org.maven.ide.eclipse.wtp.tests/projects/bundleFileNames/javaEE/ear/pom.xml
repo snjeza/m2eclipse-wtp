@@ -15,33 +15,34 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-ear-plugin</artifactId>
-				<version>2.3.1</version>
+				<version>2.3.2</version>
 				<configuration>
 					<!-- http://maven.apache.org/plugins/maven-ear-plugin/ -->
 					<version>5</version>
 					<modules>
-					<ejbModule>
-							<groupId>test.project</groupId>
-							<artifactId>ejb</artifactId>
-							<altDeploymentDescriptor>altdd-ejb.jar</altDeploymentDescriptor>
-					</ejbModule>
 						<webModule>
 							<groupId>test.project</groupId>
 							<artifactId>war</artifactId>
-							<contextRoot>/war-root</contextRoot>
+							<contextRoot>/dummy</contextRoot>
 						</webModule>
+						<ejbModule>
+							<groupId>test.project</groupId>
+							<artifactId>ejb</artifactId>
+							<bundleFileName>ejb.jar</bundleFileName>
+							<uri>specialejb.jar</uri>
+						</ejbModule>
+						<jarModule>
+							<groupId>test.project</groupId>
+							<artifactId>core</artifactId>
+							<includeInApplicationXml>true</includeInApplicationXml>
+							<uri>special/coreproject.zip</uri>
+						</jarModule>
+						<jarModule>
+							<groupId>junit</groupId>
+							<artifactId>junit</artifactId>
+							<uri>/bleh.jar</uri>
+						</jarModule>
 					</modules>
-					<security>
-						<security-role id="SecurityRole_0000">
-							<role-name>dummy</role-name>
-						</security-role>
-						<security-role id="SecurityRole_0000">
-							<role-name>supervisor</role-name>
-						</security-role>
-						<security-role id="SecurityRole_5555">
-							<role-name>manager</role-name>
-						</security-role>
-					</security>
 				</configuration>
 			</plugin>
 		</plugins>

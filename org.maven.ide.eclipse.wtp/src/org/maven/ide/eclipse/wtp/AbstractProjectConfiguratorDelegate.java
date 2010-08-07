@@ -70,6 +70,7 @@ abstract class AbstractProjectConfiguratorDelegate implements IProjectConfigurat
       configure(project, mavenProject, monitor);
     } catch (CoreException cex) {
       //TODO Filter out constraint violations
+      cex.printStackTrace();
       mavenMarkerManager.addErrorMarkers(project, cex);
       throw new MarkedException("Unable to configure "+project.getName(), cex);
     }

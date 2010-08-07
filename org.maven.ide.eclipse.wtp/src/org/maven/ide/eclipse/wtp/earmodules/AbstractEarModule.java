@@ -28,6 +28,7 @@ package org.maven.ide.eclipse.wtp.earmodules;
  */
 
 import org.apache.maven.artifact.Artifact;
+import org.codehaus.plexus.util.StringUtils;
 
 
 /**
@@ -138,6 +139,7 @@ public abstract class AbstractEarModule implements EarModule {
     if(bundleDir != null) {
       bundleDir = cleanBundleDir(bundleDir);
     }
+    System.err.println("bundleDir :"+bundleDir );
     return bundleDir;
   }
 
@@ -147,6 +149,7 @@ public abstract class AbstractEarModule implements EarModule {
    * @return the bundle file name
    */
   public String getBundleFileName() {
+    System.err.println("bundleFileName : "+bundleFileName);
     return bundleFileName;
   }
 
@@ -203,18 +206,7 @@ public abstract class AbstractEarModule implements EarModule {
     // Using slashes
     bundleDir = bundleDir.replace('\\', '/');
 
-    // Remove '/' prefix if any so that directory is a relative path
-    /*
-    if(bundleDir.startsWith("/")) {
-      bundleDir = bundleDir.substring(1, bundleDir.length());
-    }
-
-    if(bundleDir.length() > 0 && !bundleDir.endsWith("/")) {
-      // Adding '/' suffix to specify a directory structure if it is not empty
-      bundleDir = bundleDir + "/";
-    }
-    */
-    //WTP needs the exact opposite configuration 
+    //WTP needs the bundle dir to start with a '/'
     if(!bundleDir.startsWith("/")) {
       bundleDir = "/" + bundleDir ;
     }
@@ -223,15 +215,50 @@ public abstract class AbstractEarModule implements EarModule {
   }
 
   void setBundleDir(String bundleDir) {
-    this.bundleDir = bundleDir;
+    //Ignore bundleDir if uri has already been set
+    if (StringUtils.isBlank(uri)){
+      this.bundleDir = bundleDir;
+    } 
   }
 
   void setBundleFileName(String fileName) {
-    this.bundleFileName = fileName;
+    //Ignore bundleFileName if uri has already been set
+    if (StringUtils.isBlank(uri)){
+      this.bundleFileName = fileName;
+    } 
   }
 
+  /**
+   * Setting an URI overrides any bundleDir or bundleFileName set on a module.
+   * @param uri 
+   */
   void setUri(String uri) {
     this.uri = uri;
+    resolveDeploymentInfo();
+  }
+
+
+  /**
+   * Parses the module's uri to compute the bundleDir and bundleFileName.
+   */
+  private void resolveDeploymentInfo() {
+    if (StringUtils.isNotBlank(uri)) {
+      int lastSlash = uri.lastIndexOf('/');
+      if (lastSlash == uri.length()-1){
+        throw new IllegalArgumentException("module uri ("+uri+") : can not end with a / ");
+      }
+      if (lastSlash>0) {
+        bundleDir = uri.substring(0,lastSlash);
+        bundleFileName = uri.substring(lastSlash+1);
+      } else {
+        bundleFileName = uri.replace("/","");
+      }
+      bundleDir = cleanBundleDir(bundleDir);
+
+      if (StringUtils.isBlank(bundleFileName)){
+        throw new IllegalArgumentException("module uri must contain a file name ");
+      }
+    }
   }
 
   void setExcluded(boolean excluded) {

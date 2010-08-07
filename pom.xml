@@ -29,13 +29,15 @@
 	<m2eclipse-core.version>0.10.2.20100623-1649</m2eclipse-core.version>
     <m2eclipse-core.site>0.10.2/S/${m2eclipse-core.version}</m2eclipse-core.site>
 	-->
-    <m2eclipse-core.version>0.11.0.201007291006</m2eclipse-core.version>
+    <m2eclipse-core.version>0.11.0.201008030706</m2eclipse-core.version>
     <m2eclipse-core.site>0.11.0/N/${m2eclipse-core.version}</m2eclipse-core.site>
-    <target.platform>m2e-e35</target.platform>        
+    <target.platform>m2e-wtp-e35</target.platform>        
+    <!-- <target.platform>m2e-wtp-e36</target.platform> -->       
     <m2e.site-compressed>http://repository.sonatype.org/service/local/repositories/forge-sites/content-compressed/</m2e.site-compressed>
   </properties>
 
   <modules>
+    <module>org.maven.ide.eclipse.wtp.target-platform</module>
     <module>org.maven.ide.eclipse.wtp.tests</module>
     <module>org.maven.ide.eclipse.wtp</module>
     <module>org.maven.ide.eclipse.wtp.feature</module>
@@ -59,8 +61,8 @@
       <layout>p2</layout>
       <url>http://repository.sonatype.org/content/sites/forge-sites/m2e/${m2eclipse-core.site}</url>
     </repository>
+	
   </repositories>
-
   <build>
     <plugins>
       <plugin>
@@ -78,8 +80,8 @@
           <resolver>p2</resolver>
 		  <target>
             <artifact>
-              <groupId>org.maven.ide.eclipse</groupId>
-              <artifactId>target-platform</artifactId>
+			  <groupId>org.maven.ide.eclipse.wtp</groupId>
+			  <artifactId>org.maven.ide.eclipse.wtp.target-platform</artifactId>
               <version>${project.version}</version>
               <classifier>${target.platform}</classifier>
             </artifact>
@@ -103,7 +105,7 @@
             <argLine>${tycho.test.jvmArgs}</argLine>
             <!-- kill test JVM it tests take more than 10 minutes (600 seconds) 
               to finish -->
-            <forkedProcessTimeoutInSeconds>7200</forkedProcessTimeoutInSeconds>
+            <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
           </configuration>
         </plugin>
       </plugins>
@@ -120,7 +122,7 @@
         </property>
       </activation>
       <properties>
-        <tycho.test.jvmArgs>-Xmx800m -XX:MaxPermSize=256m</tycho.test.jvmArgs>
+        <tycho.test.jvmArgs>-Xmx512m -XX:MaxPermSize=256m</tycho.test.jvmArgs>
       </properties>
     </profile>
     <profile>
@@ -132,7 +134,7 @@
         </property>
       </activation>
       <properties>
-        <tycho.test.jvmArgs>-Xmx800m -XX:MaxPermSize=256m -Dosgi.ws=cocoa -XstartOnFirstThread</tycho.test.jvmArgs>
+        <tycho.test.jvmArgs>-Xmx512m -XX:MaxPermSize=256m -Dosgi.ws=cocoa -XstartOnFirstThread</tycho.test.jvmArgs>
         <osgi.ws>cocoa</osgi.ws>
       </properties>
     </profile>

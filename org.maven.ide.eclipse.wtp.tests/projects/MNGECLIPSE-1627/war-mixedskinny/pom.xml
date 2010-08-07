@@ -47,7 +47,7 @@
 				<configuration>
 					<version>2.4</version>
 					<!-- utility2 and common-collections should be in WEB-INF/lib -->
-					<packagingIncludes>WEB-INF/lib/MNGECLIPSE-1627-utility2-0.0.1-SNAPSHOT.jar,WEB-INF/lib/commons-collections-3.2.1.jar,**/*.xml,**/*.properties,**/*.class,**/*.png,**/*.css,**/*.js,**/*.jsp</packagingIncludes>
+					<packagingIncludes>WEB-INF/lib/MNGECLIPSE-1627-utility2-0.0.1-SNAPSHOT.jar,WEB-INF/lib/commons-collections-2.0.jar,**/*.xml,**/*.properties,**/*.class,**/*.png,**/*.css,**/*.js,**/*.jsp</packagingIncludes>
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>

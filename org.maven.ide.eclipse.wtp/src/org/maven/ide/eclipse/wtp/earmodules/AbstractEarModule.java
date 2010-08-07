@@ -139,7 +139,6 @@ public abstract class AbstractEarModule implements EarModule {
     if(bundleDir != null) {
       bundleDir = cleanBundleDir(bundleDir);
     }
-    System.err.println("bundleDir :"+bundleDir );
     return bundleDir;
   }
 
@@ -149,7 +148,6 @@ public abstract class AbstractEarModule implements EarModule {
    * @return the bundle file name
    */
   public String getBundleFileName() {
-    System.err.println("bundleFileName : "+bundleFileName);
     return bundleFileName;
   }
 

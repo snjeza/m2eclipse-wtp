@@ -1090,7 +1090,7 @@ public class WTPProjectConfiguratorTest extends AbstractMavenProjectTestCase {
 }
 
 
-  public void __testUriInEarModules() throws Exception {
+  public void testUriInEarModules() throws Exception {
     
     deleteProject("pom");
     deleteProject("ear");

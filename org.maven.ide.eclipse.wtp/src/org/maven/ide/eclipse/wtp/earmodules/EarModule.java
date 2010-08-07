@@ -91,5 +91,4 @@ public interface EarModule {
    * @return the module fileName in the bundle directory 
    */
   public String getBundleFileName();
-
 }

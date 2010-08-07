@@ -52,9 +52,9 @@ import org.eclipse.wst.common.frameworks.datamodel.IDataModel;
 import org.eclipse.wst.common.frameworks.datamodel.IDataModelOperation;
 import org.eclipse.wst.common.frameworks.datamodel.IDataModelProvider;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject;
+import org.eclipse.wst.common.project.facet.core.IFacetedProject.Action;
 import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
 import org.eclipse.wst.common.project.facet.core.ProjectFacetsManager;
-import org.eclipse.wst.common.project.facet.core.IFacetedProject.Action;
 import org.maven.ide.eclipse.core.IMavenConstants;
 import org.maven.ide.eclipse.core.MavenLogger;
 import org.maven.ide.eclipse.jdt.IClasspathDescriptor;
@@ -394,11 +394,11 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
       String bundleDir = earModule.getBundleDir();
       addToAllComponentsMap(projectComponent, bundleDir);
       if(!inEARAlready(projectComponent)) {
-        String uri = earModule.getUri();
+        String uri = earModule.getBundleFileName();
         //Avoid adding an extra /lib prefix to the existing uri for workspace utility projects
-        if (bundleDir != null && !"/".equals(bundleDir) && uri.startsWith(bundleDir)){
-          uri = uri.substring(bundleDir.length());
-        }
+//        if (bundleDir != null && !"/".equals(bundleDir) && uri.startsWith(bundleDir)){
+//          uri = uri.substring(bundleDir.length());
+//        }
         addToComponentUriMap(projectComponent, uri, bundleDir);
       }
     }
@@ -460,7 +460,7 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
       //newRef.setRuntimePath(new Path(earModule.getBundleDir()));
       //earComponent.addReferences(new IVirtualReference[] {newRef });
       if(!dupeArchiveName) {
-        addToComponentUriMap(depComponent, earModule.getUri(), earModule.getBundleDir());
+        addToComponentUriMap(depComponent, earModule.getBundleFileName(), earModule.getBundleDir());
       }
     }
 

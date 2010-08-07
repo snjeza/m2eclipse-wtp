@@ -21,8 +21,7 @@
   <name>Maven Integration for Eclipse WTP tests</name>
 
   <properties>
-    <!-- disabled WTP UTs due to https://issues.sonatype.org/browse/MNGECLIPSE-1810 -->
-    <org.maven.ide.eclipse.wtp.tests.skip>true</org.maven.ide.eclipse.wtp.tests.skip>
+    <org.maven.ide.eclipse.wtp.tests.skip>false</org.maven.ide.eclipse.wtp.tests.skip>
   </properties>
 
   <build>

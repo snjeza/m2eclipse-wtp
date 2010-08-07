@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -31,7 +32,6 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jst.common.project.facet.JavaFacetUtils;
-import org.eclipse.jst.common.project.facet.WtpUtils;
 import org.eclipse.jst.j2ee.application.WebModule;
 import org.eclipse.jst.j2ee.classpathdep.IClasspathDependencyConstants;
 import org.eclipse.jst.j2ee.componentcore.util.EARArtifactEdit;
@@ -303,7 +303,11 @@ public class WTPProjectConfiguratorTest extends AbstractMavenProjectTestCase {
     IVirtualReference[] references = comp.getReferences();
     assertEquals(1, references.length);
     IVirtualReference junit = references[0];
-    assertEquals("junit-3.8.1.jar", junit.getArchiveName());
+    //FIXME Test fail on WTP Galileo, as WTP adds an extra /lib prefix on the archivename.  
+    //assertEquals("junit-3.8.1.jar", junit.getArchiveName());//Helios WTP works fine here
+    assertTrue("junit-3.8.1.jar expected", junit.getArchiveName().endsWith("junit-3.8.1.jar"));
+    
+    
     //MNGECLIPSE-1872 : check "/lib" is used as deployment directory
     assertEquals("/lib", junit.getRuntimePath().toPortableString());
   
@@ -361,7 +365,7 @@ public class WTPProjectConfiguratorTest extends AbstractMavenProjectTestCase {
     assertEquals("war-0.0.1-SNAPSHOT.war",warRef.getArchiveName());    
 }
 
-  public void XXXtestMNGECLIPSE688_Pom14_1() throws Exception {
+  public void testMNGECLIPSE688_Pom14_1() throws Exception {
     // these projects can actually be deployed to JBoss
     // importing projects in unsorted order
     IProject[] projects = importProjects(
@@ -468,7 +472,7 @@ public class WTPProjectConfiguratorTest extends AbstractMavenProjectTestCase {
     List<IMarker> markers = findErrorMarkers(project);
     assertEquals(2, markers.size());
     assertHasMarker("One or more constraints have not been satisfied.", markers);
-    assertHasMarker("Dynamic Web Module 2.5 requires Java 5.0 or newer.", markers);
+    assertHasMarker("Dynamic Web Module 2.5 requires Java (1.5|5.0) or newer.", markers);//WTP < 3.2 says Java 5.0, WTP 3.2 : Java 1.5
 
     //Markers disappear when the compiler level is set to 1.5
     updateProject(project, "good_pom.xml");    
@@ -491,7 +495,7 @@ public class WTPProjectConfiguratorTest extends AbstractMavenProjectTestCase {
     IVirtualReference[] references = comp.getReferences();
     assertEquals(1, references.length);
     IVirtualReference snapshot = references[0];
-    assertEquals("/MNGECLIPSE-1045-DEP-0.0.1-SNAPSHOT.jar", snapshot.getArchiveName());
+    assertEquals("MNGECLIPSE-1045-DEP-0.0.1-SNAPSHOT.jar", snapshot.getArchiveName());
   }
   
   public void testMNGECLIPSE1627_SkinnyWars() throws Exception {
@@ -526,28 +530,28 @@ public class WTPProjectConfiguratorTest extends AbstractMavenProjectTestCase {
     ////////////
     //check the fullskinny war project
     ////////////
-    IVirtualReference warRef1 = comp.getReference("MNGECLIPSE-1627-war-fullskinny");
-    assertNotNull(warRef1);
-    assertEquals("MNGECLIPSE-1627-war-fullskinny-0.0.1-SNAPSHOT.war",warRef1.getArchiveName());    
+    IVirtualReference fullSkinnyRef = comp.getReference("MNGECLIPSE-1627-war-fullskinny");
+    assertNotNull(fullSkinnyRef);
+    assertEquals("MNGECLIPSE-1627-war-fullskinny-0.0.1-SNAPSHOT.war",fullSkinnyRef.getArchiveName());    
     
     //the fully skinny war contains to project refs whatsoever
-    IVirtualComponent warComp1 = warRef1.getReferencedComponent();
-    IVirtualReference[] fromWarRefs1 = warComp1.getReferences();
-    assertEquals(4, fromWarRefs1.length);
+    IVirtualComponent fullSkinnyComp = fullSkinnyRef.getReferencedComponent();
+    IVirtualReference[] fullSkinnyReferences = fullSkinnyComp.getReferences();
+    assertEquals(4, fullSkinnyReferences.length);
     
     //check the component refs and their runtime path
     //TODO the reference ordering seems stable, but someone experienced should have a look
-    assertEquals(utility1, fromWarRefs1[0].getReferencedComponent().getProject());
-    assertEquals("/", fromWarRefs1[0].getRuntimePath().toString());
-    assertEquals(utility2, fromWarRefs1[1].getReferencedComponent().getProject());
-    assertEquals("/", fromWarRefs1[1].getRuntimePath().toString());    
-    assertTrue(fromWarRefs1[2].getReferencedComponent().getDeployedName().endsWith("commons-lang-2.4.jar"));  
-    assertEquals("/", fromWarRefs1[2].getRuntimePath().toString());  
-    assertTrue(fromWarRefs1[3].getReferencedComponent().getDeployedName().endsWith("commons-collections-2.0.jar"));  
-    assertEquals("/", fromWarRefs1[3].getRuntimePath().toString());  
+    assertEquals(utility1, fullSkinnyReferences[0].getReferencedComponent().getProject());
+    assertEquals("/", fullSkinnyReferences[0].getRuntimePath().toString());
+    assertEquals(utility2, fullSkinnyReferences[1].getReferencedComponent().getProject());
+    assertEquals("/", fullSkinnyReferences[1].getRuntimePath().toString());    
+    assertTrue(fullSkinnyReferences[2].getReferencedComponent().getDeployedName().endsWith("commons-lang-2.4.jar"));  
+    assertEquals("/", fullSkinnyReferences[2].getRuntimePath().toString());  
+    assertTrue(fullSkinnyReferences[3].getReferencedComponent().getDeployedName().endsWith("commons-collections-2.0.jar"));  
+    assertEquals("/", fullSkinnyReferences[3].getRuntimePath().toString());  
     
     //check for all expected dependencies in the manifest
-    IFile war1ManifestFile = ComponentUtilities.findFile(warComp1, new Path(J2EEConstants.MANIFEST_URI));
+    IFile war1ManifestFile = ComponentUtilities.findFile(fullSkinnyComp, new Path(J2EEConstants.MANIFEST_URI));
     Manifest mf1 = loadManifest(war1ManifestFile);
 
     //check that manifest classpath contains all dependencies
@@ -567,27 +571,27 @@ public class WTPProjectConfiguratorTest extends AbstractMavenProjectTestCase {
     ////////////
     //check the mixedskinny war project
     ////////////
-    IVirtualReference warRef2 = comp.getReference("MNGECLIPSE-1627-war-mixedskinny");
-    assertNotNull(warRef2);
-    assertEquals("MNGECLIPSE-1627-war-mixedskinny-0.0.1-SNAPSHOT.war",warRef2.getArchiveName());    
+    IVirtualReference mixedSkinnyRef = comp.getReference("MNGECLIPSE-1627-war-mixedskinny");
+    assertNotNull(mixedSkinnyRef);
+    assertEquals("MNGECLIPSE-1627-war-mixedskinny-0.0.1-SNAPSHOT.war",mixedSkinnyRef.getArchiveName());    
     
-    IVirtualComponent warComp2 = warRef2.getReferencedComponent();
-    IVirtualReference[] fromWarRefs2 = warComp2.getReferences();
+    IVirtualComponent mixedSkinnyComp = mixedSkinnyRef.getReferencedComponent();
+    IVirtualReference[] mixedSkinnyReferences = mixedSkinnyComp.getReferences();
     
     //check the component refs and their runtime path
     //TODO the reference ordering seems stable, but someone experienced should have a look
     //TODO the WEB-INF/lib located refs seem to come first
-    assertEquals(utility2, fromWarRefs2[0].getReferencedComponent().getProject());
-    assertEquals("/WEB-INF/lib", fromWarRefs2[0].getRuntimePath().toString());    
-    assertTrue(fromWarRefs2[1].getReferencedComponent().getDeployedName().endsWith("commons-collections-2.0.jar"));  
-    assertEquals("/WEB-INF/lib", fromWarRefs2[1].getRuntimePath().toString());  
-    assertEquals(utility1, fromWarRefs2[2].getReferencedComponent().getProject());
-    assertEquals("/", fromWarRefs2[2].getRuntimePath().toString());
-    assertTrue(fromWarRefs2[3].getReferencedComponent().getDeployedName().endsWith("commons-lang-2.4.jar"));  
-    assertEquals("/", fromWarRefs2[3].getRuntimePath().toString());  
+    assertEquals(utility2, mixedSkinnyReferences[0].getReferencedComponent().getProject());
+    assertEquals("/WEB-INF/lib", mixedSkinnyReferences[0].getRuntimePath().toString());    
+    assertTrue(mixedSkinnyReferences[1].getReferencedComponent().getDeployedName().endsWith("commons-collections-2.0.jar"));  
+    assertEquals("/WEB-INF/lib", mixedSkinnyReferences[1].getRuntimePath().toString());  
+    assertEquals(utility1, mixedSkinnyReferences[2].getReferencedComponent().getProject());
+    assertEquals("/", mixedSkinnyReferences[2].getRuntimePath().toString());
+    assertTrue(mixedSkinnyReferences[3].getReferencedComponent().getDeployedName().endsWith("commons-lang-2.4.jar"));  
+    assertEquals("/", mixedSkinnyReferences[3].getRuntimePath().toString());  
 
     //check for all expected dependencies in the manifest
-    IFile war2ManifestFile = ComponentUtilities.findFile(warComp2, new Path(J2EEConstants.MANIFEST_URI));
+    IFile war2ManifestFile = ComponentUtilities.findFile(mixedSkinnyComp, new Path(J2EEConstants.MANIFEST_URI));
     Manifest mf2 = loadManifest(war2ManifestFile);
     
     //check that manifest classpath only contain utility1 and commons-lang
@@ -1085,6 +1089,65 @@ public class WTPProjectConfiguratorTest extends AbstractMavenProjectTestCase {
 
 }
 
+
+  public void testUriInEarModules() throws Exception {
+    
+    deleteProject("pom");
+    deleteProject("ear");
+    deleteProject("ejb");
+    deleteProject("war");
+    deleteProject("core");
+    
+    IProject[] projects = importProjects(
+        "projects/bundleFileNames/", //
+        new String[] {"javaEE/pom.xml", "javaEE/ear/pom.xml", "javaEE/core/pom.xml", "javaEE/ejb/pom.xml", "javaEE/war/pom.xml"},
+        new ResolverConfiguration());
+
+    waitForJobsToComplete();
+    
+    assertEquals(5, projects.length);
+    IProject ear = projects[1];
+    IProject core = projects[2];
+    IProject ejb = projects[3];
+    IProject war = projects[4];
+    
+    assertMarkers(core, 0);
+    assertMarkers(ejb, 0);
+    assertMarkers(war, 0);
+    assertMarkers(ear, 0);
+   
+    IFacetedProject fpWar = ProjectFacetsManager.create(war);
+    assertNotNull(fpWar);
+    assertTrue(fpWar.hasProjectFacet(JavaFacetUtils.JAVA_FACET));
+    assertEquals(WebFacetUtils.WEB_24, fpWar.getInstalledVersion(WebFacetUtils.WEB_FACET));
+
+    IVirtualComponent comp = ComponentCore.createComponent(ear);
+    IVirtualReference warRef = comp.getReference("war");
+    assertNotNull(warRef);
+    assertEquals("war-0.0.1-SNAPSHOT.war",warRef.getArchiveName());
+    IVirtualReference coreRef = comp.getReference("core");
+    assertNotNull(coreRef);
+    assertEquals("coreproject.zip",coreRef.getArchiveName());
+    IVirtualReference ejbRef = comp.getReference("ejb");
+    assertNotNull(ejbRef);
+    assertEquals("specialejb.jar",ejbRef.getArchiveName());
+    
+    Application app = (Application)ModelProviderManager.getModelProvider(ear).getModelObject();
+    assertEquals(3,app.getModules().size());
+    Module webModule = app.getFirstModule(warRef.getArchiveName());
+    assertNotNull("missing webmodule "+warRef.getArchiveName(),webModule);
+    assertEquals("/dummy",webModule.getWeb().getContextRoot());
+
+    Module coreModule = app.getFirstModule("special/coreproject.zip");
+    assertNotNull("missing javaModule "+coreRef.getArchiveName(),coreModule);
+    assertEquals("special/coreproject.zip", coreModule.getUri());
+    assertEquals("/special",coreRef.getRuntimePath().toPortableString());
+    
+    Module ejbModule = app.getFirstModule(ejbRef.getArchiveName());
+    assertNotNull("missing ejbModule "+ejbRef.getArchiveName(),ejbModule);
+    assertNull(ejbModule.getAltDd());
+ }
+
   
   private static IClasspathContainer getWebLibClasspathContainer(IJavaProject project) throws JavaModelException {
     IClasspathEntry[] entries = project.getRawClasspath();
@@ -1113,13 +1176,15 @@ public class WTPProjectConfiguratorTest extends AbstractMavenProjectTestCase {
     return sb.append(']').toString();
   }
 
-  private void assertHasMarker(String message, List<IMarker> markers) throws CoreException {
+  private void assertHasMarker(String expectedMessage, List<IMarker> markers) throws CoreException {
+    Pattern p = Pattern.compile(expectedMessage);
     for (IMarker marker : markers) {
-      if (marker.getAttribute(IMarker.MESSAGE).equals(message)) {
+      String markerMsg = marker.getAttribute(IMarker.MESSAGE).toString(); 
+      if (p.matcher(markerMsg).find()) {
         return ;
       }
     }
-    fail(message+ " is not a marker");
+    fail(expectedMessage + " is not a marker");
   }
 
   private void  assertNotDeployable(IClasspathEntry entry){

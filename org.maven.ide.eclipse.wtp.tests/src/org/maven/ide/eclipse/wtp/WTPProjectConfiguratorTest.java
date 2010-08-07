@@ -36,6 +36,7 @@ import org.eclipse.jst.j2ee.application.WebModule;
 import org.eclipse.jst.j2ee.classpathdep.IClasspathDependencyConstants;
 import org.eclipse.jst.j2ee.componentcore.util.EARArtifactEdit;
 import org.eclipse.jst.j2ee.internal.J2EEConstants;
+import org.eclipse.jst.j2ee.internal.project.J2EEProjectUtilities;
 import org.eclipse.jst.j2ee.model.ModelProviderManager;
 import org.eclipse.jst.j2ee.project.facet.IJ2EEFacetConstants;
 import org.eclipse.jst.j2ee.web.project.facet.WebFacetUtils;
@@ -1147,6 +1148,28 @@ public class WTPProjectConfiguratorTest extends AbstractMavenProjectTestCase {
     assertNotNull("missing ejbModule "+ejbRef.getArchiveName(),ejbModule);
     assertNull(ejbModule.getAltDd());
  }
+
+
+  public void testMNGECLIPSE2279_finalNameAsContextRoot() throws Exception {
+    IProject project = importProject("projects/MNGECLIPSE-2279/pom.xml", new ResolverConfiguration());
+    IFacetedProject facetedProject = ProjectFacetsManager.create(project);
+    assertNotNull(facetedProject);
+    assertEquals(WebFacetUtils.WEB_23, facetedProject.getInstalledVersion(WebFacetUtils.WEB_FACET));
+    assertTrue(facetedProject.hasProjectFacet(JavaFacetUtils.JAVA_FACET));
+    //Test blank finalName
+    assertEquals("MNGECLIPSE-2279",J2EEProjectUtilities.getServerContextRoot(project));
+    assertMarkers(project, 0);
+    
+    //Test custom finalName
+    updateProject(project, "pom.step2.xml");     
+    assertEquals("webapp",J2EEProjectUtilities.getServerContextRoot(project));
+    assertMarkers(project, 0);
+    
+    //Test finalName with dots and spaces
+    updateProject(project, "pom.step3.xml");     
+    assertEquals("web_appli.cation",J2EEProjectUtilities.getServerContextRoot(project));
+    assertMarkers(project, 0);
+  }
 
   
   private static IClasspathContainer getWebLibClasspathContainer(IJavaProject project) throws JavaModelException {

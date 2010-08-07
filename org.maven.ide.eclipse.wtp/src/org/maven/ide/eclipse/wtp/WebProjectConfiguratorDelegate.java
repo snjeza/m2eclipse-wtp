@@ -20,6 +20,7 @@ import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -34,6 +35,7 @@ import org.eclipse.jst.j2ee.commonarchivecore.internal.helpers.ArchiveManifest;
 import org.eclipse.jst.j2ee.commonarchivecore.internal.helpers.ArchiveManifestImpl;
 import org.eclipse.jst.j2ee.internal.project.J2EEProjectUtilities;
 import org.eclipse.jst.j2ee.project.facet.IJ2EEModuleFacetInstallDataModelProperties;
+import org.eclipse.jst.j2ee.web.project.facet.IWebFacetInstallDataModelProperties;
 import org.eclipse.jst.j2ee.web.project.facet.WebFacetInstallDataModelProvider;
 import org.eclipse.jst.j2ee.web.project.facet.WebFacetUtils;
 import org.eclipse.wst.common.componentcore.ComponentCore;
@@ -43,9 +45,9 @@ import org.eclipse.wst.common.componentcore.resources.IVirtualResource;
 import org.eclipse.wst.common.frameworks.datamodel.DataModelFactory;
 import org.eclipse.wst.common.frameworks.datamodel.IDataModel;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject;
+import org.eclipse.wst.common.project.facet.core.IFacetedProject.Action;
 import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
 import org.eclipse.wst.common.project.facet.core.ProjectFacetsManager;
-import org.eclipse.wst.common.project.facet.core.IFacetedProject.Action;
 import org.maven.ide.eclipse.MavenPlugin;
 import org.maven.ide.eclipse.core.MavenLogger;
 import org.maven.ide.eclipse.jdt.IClasspathDescriptor;
@@ -82,7 +84,7 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
     if(component != null && warSourceDirectory != null) {
       IPath warPath = new Path(warSourceDirectory);
       component.create(IVirtualResource.NONE, monitor);
-      //remove the old link (if there is one) before adding the new one.
+      //remove the old links (if there is one) before adding the new one.
       component.getRootFolder().removeLink(warPath,IVirtualResource.NONE, monitor);
       component.getRootFolder().createLink(warPath, IVirtualResource.NONE, monitor);
     }
@@ -90,24 +92,25 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
     Set<Action> actions = new LinkedHashSet<Action>();
 
     installJavaFacet(actions, project, facetedProject);
+    
+    //MNGECLIPSE-2279 get the context root from the final name of the project, or artifactId by default.
+    String contextRoot = getContextRoot(mavenProject);
+    
     IProjectFacetVersion webFv = config.getWebFacetVersion(project);
     if(!facetedProject.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
-      IDataModel webModelCfg = DataModelFactory.createDataModel(new WebFacetInstallDataModelProvider());
-      webModelCfg.setProperty(IJ2EEModuleFacetInstallDataModelProperties.CONFIG_FOLDER, warSourceDirectory);
-      actions.add(new IFacetedProject.Action(IFacetedProject.Action.Type.INSTALL, webFv, webModelCfg));
+      installWebFacet(mavenProject, warSourceDirectory, contextRoot, actions, webFv);
     } else {
-      IProjectFacetVersion projectFacetVersion = facetedProject.getProjectFacetVersion(WebFacetUtils.WEB_FACET);
-      
+      IProjectFacetVersion projectFacetVersion = facetedProject.getProjectFacetVersion(WebFacetUtils.WEB_FACET);     
       if(webFv.getVersionString() != null && !webFv.getVersionString().equals(projectFacetVersion.getVersionString())){
         try {
-          facetedProject.modify(Collections.singleton(new IFacetedProject.Action(IFacetedProject.Action.Type.UNINSTALL,
-              facetedProject.getInstalledVersion(WebFacetUtils.WEB_FACET), null)), monitor);
+          Action uninstallAction = new IFacetedProject.Action(IFacetedProject.Action.Type.UNINSTALL,
+                                       facetedProject.getInstalledVersion(WebFacetUtils.WEB_FACET), 
+                                       null);
+          facetedProject.modify(Collections.singleton(uninstallAction), monitor);
         } catch(Exception ex) {
           MavenLogger.log("Error removing WEB facet", ex);
         }
-        IDataModel webModelCfg = DataModelFactory.createDataModel(new WebFacetInstallDataModelProvider());
-        webModelCfg.setProperty(IJ2EEModuleFacetInstallDataModelProperties.CONFIG_FOLDER, warSourceDirectory);
-        actions.add(new IFacetedProject.Action(IFacetedProject.Action.Type.INSTALL, webFv, webModelCfg));
+        installWebFacet(mavenProject, warSourceDirectory, contextRoot, actions, webFv);
       }
     }
 
@@ -117,6 +120,28 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
     removeTestFolderLinks(project, mavenProject, monitor, "/WEB-INF/classes");
 
     addContainerAttribute(project, DEPENDENCY_ATTRIBUTE, monitor);
+
+    //MNGECLIPSE-2279 change the context root if needed
+    if (!contextRoot.equals(J2EEProjectUtilities.getServerContextRoot(project))) {
+      J2EEProjectUtilities.setServerContextRoot(project, contextRoot);
+    }
+    
+  }
+
+
+  /**
+   * Install a Web Facet version
+   * @param mavenProject
+   * @param warSourceDirectory
+   * @param actions
+   * @param webFv
+   */
+  private void installWebFacet(MavenProject mavenProject, String warSourceDirectory, String contextRoot, Set<Action> actions,
+      IProjectFacetVersion webFv) {
+    IDataModel webModelCfg = DataModelFactory.createDataModel(new WebFacetInstallDataModelProvider());
+    webModelCfg.setProperty(IJ2EEModuleFacetInstallDataModelProperties.CONFIG_FOLDER, warSourceDirectory);
+    webModelCfg.setProperty(IWebFacetInstallDataModelProperties.CONTEXT_ROOT, contextRoot);
+    actions.add(new IFacetedProject.Action(IFacetedProject.Action.Type.INSTALL, webFv, webModelCfg));
   }
 
   public void setModuleDependencies(IProject project, MavenProject mavenProject, IProgressMonitor monitor)
@@ -183,6 +208,21 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
       }
     }
   }
+  
+  /**
+   * Get the context root from a maven web project
+   * @param mavenProject
+   * @return the final name of the project if it exists, or the project's artifactId.
+   */
+  protected String getContextRoot(MavenProject mavenProject) {
+    String contextRoot = mavenProject.getBuild().getFinalName();
+    if (StringUtils.isBlank(contextRoot)) {
+      contextRoot = mavenProject.getArtifactId();
+    }
+    return contextRoot.trim().replace(" ", "_");
+  }
+
+  
 
   public void configureClasspath(IProject project, MavenProject mavenProject, IClasspathDescriptor classpath,
       IProgressMonitor monitor) throws CoreException {

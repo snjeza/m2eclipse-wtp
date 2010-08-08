@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>MNGECLIPSE-1119</artifactId>
+		<groupId>foo.bar</groupId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+    <name>MNGECLIPSE-1119 utility module</name>
+	<groupId>foo.bar</groupId>
+	<artifactId>MNGECLIPSE-1119-util</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+	</build>
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<type>jar</type>
+		</dependency>
+	</dependencies>
+</project>

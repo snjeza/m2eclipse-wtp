@@ -254,16 +254,17 @@ public class WTPProjectConfiguratorTest extends AbstractMavenProjectTestCase {
   public void testMNGECLIPSE688_NonDeployedDependencies () throws Exception {
     IProject[] projects = importProjects("projects/MNGECLIPSE-688", new String[]{"war-optional/pom.xml","core/pom.xml"}, new ResolverConfiguration());
     IProject war = projects[0]; 
-    //IProject optionalJar = projects[1]; 
+    IProject optionalJar = projects[1]; 
     assertMarkers(war, 0);
-    //assertMarkers(optionalJar, 0);//MNGECLIPSE-1119 : optional projects shouldn't be deployed
+    assertMarkers(optionalJar, 0);//MNGECLIPSE-1119 : optional projects shouldn't be deployed
     IClasspathEntry[] classpathEntries = getClassPathEntries(war);
     IClasspathEntry junit = classpathEntries[0];
     assertEquals("junit-3.8.1.jar", junit.getPath().lastSegment());
     assertNotDeployable(junit); //Junit is marked as <optional>true<optional>
     
     IVirtualComponent warComponent = ComponentCore.createComponent(war);
-    assertEquals(4, warComponent.getReferences().length);
+    //Even though core is optional and is not deployed, its dependencies are. Weird maven behavior
+    assertEquals(3, warComponent.getReferences().length);
   }
 
 
@@ -412,6 +413,34 @@ public class WTPProjectConfiguratorTest extends AbstractMavenProjectTestCase {
     }
   }
 
+
+  public void testMNGECLIPSE1119_OptionalProjectDependencies() throws Exception {
+    IProject[] projects = importProjects(
+        "projects/MNGECLIPSE-1119/", //
+        new String[] {"pom.xml", "MNGECLIPSE-1119-ear/pom.xml", "MNGECLIPSE-1119-web/pom.xml", "MNGECLIPSE-1119-util/pom.xml", "MNGECLIPSE-1119-ejb/pom.xml"},
+        new ResolverConfiguration());
+
+    waitForJobsToComplete();
+    
+    assertEquals(5, projects.length);
+    IProject web = projects[2];
+    
+    IVirtualComponent comp = ComponentCore.createComponent(web);
+    IVirtualReference[] references = comp.getReferences();
+    assertEquals(toString(references), 1, references.length);//Only commons-lang should be referenced
+    IClasspathEntry[] webCP = getClassPathEntries(web);
+    assertEquals(Arrays.asList(webCP).toString(), 5, webCP.length);
+    int i =0;
+    for (IClasspathEntry entry : webCP){
+      boolean deployable = i == 1; //only commons-lang is deployable
+      assertDeployable(entry, deployable);
+      i++;
+    }
+  }
+
+  
+  
+  
   public void testMNGECLIPSE597() throws Exception {
     IProject[] projects = importProjects("projects/MNGECLIPSE-597", 
         new String[] {"DWPMain/pom.xml", "DWPDependency/pom.xml", }, 
@@ -1228,7 +1257,8 @@ public class WTPProjectConfiguratorTest extends AbstractMavenProjectTestCase {
   }
   
   private void  assertDeployable(IClasspathEntry entry, boolean expectedDeploymentStatus){
-    assertEquals(entry.toString() + " " + IClasspathDependencyConstants.CLASSPATH_COMPONENT_DEPENDENCY, expectedDeploymentStatus,      hasExtraAttribute(entry, IClasspathDependencyConstants.CLASSPATH_COMPONENT_DEPENDENCY));
+    //Useless : IClasspathDependencyConstants.CLASSPATH_COMPONENT_DEPENDENCY doesn't seem to be used in WTP 3.2.0. Has it ever worked???
+    //assertEquals(entry.toString() + " " + IClasspathDependencyConstants.CLASSPATH_COMPONENT_DEPENDENCY, expectedDeploymentStatus,      hasExtraAttribute(entry, IClasspathDependencyConstants.CLASSPATH_COMPONENT_DEPENDENCY));
     assertEquals(entry.toString() + " " + IClasspathDependencyConstants.CLASSPATH_COMPONENT_NON_DEPENDENCY, !expectedDeploymentStatus, hasExtraAttribute(entry, IClasspathDependencyConstants.CLASSPATH_COMPONENT_NON_DEPENDENCY));
   }
 

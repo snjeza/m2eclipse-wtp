@@ -32,9 +32,9 @@ import org.eclipse.wst.common.componentcore.ComponentCore;
 import org.eclipse.wst.common.componentcore.resources.IVirtualComponent;
 import org.eclipse.wst.common.componentcore.resources.IVirtualFolder;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject;
+import org.eclipse.wst.common.project.facet.core.IFacetedProject.Action;
 import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
 import org.eclipse.wst.common.project.facet.core.ProjectFacetsManager;
-import org.eclipse.wst.common.project.facet.core.IFacetedProject.Action;
 import org.maven.ide.eclipse.MavenPlugin;
 import org.maven.ide.eclipse.jdt.BuildPathManager;
 import org.maven.ide.eclipse.project.IMavenMarkerManager;
@@ -88,7 +88,6 @@ abstract class AbstractProjectConfiguratorDelegate implements IProjectConfigurat
       
       if((Artifact.SCOPE_COMPILE.equals(artifact.getScope()) 
           || Artifact.SCOPE_RUNTIME.equals(artifact.getScope())) //MNGECLIPSE-1578 Runtime dependencies should be deployed 
-          //TODO breaks classpath && !artifact.isOptional() //MNGECLIPSE-1119 optional projects shouldn't be deployed 
           && dependency != null && !dependency.getProject().equals(project) && dependency.getFullPath(artifact.getFile()) != null
           && projects.add(dependency.getProject())) {
         dependencies.add(dependency);

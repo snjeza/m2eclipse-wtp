@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
@@ -190,9 +191,13 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
         continue;
       }
 
-      IVirtualReference reference = ComponentCore.createReference(component, depComponent);
-      reference.setRuntimePath(new Path("/WEB-INF/lib"));
-      references.add(reference);
+      //an artifact in mavenProject.getArtifacts() doesn't have the "optional" value as depMavenProject.getArtifact();  
+      String artifactKey = ArtifactUtils.versionlessKey(depMavenProject.getArtifact());
+      if (!mavenProject.getArtifactMap().get(artifactKey).isOptional()) {
+        IVirtualReference reference = ComponentCore.createReference(component, depComponent);
+        reference.setRuntimePath(new Path("/WEB-INF/lib"));
+        references.add(reference);
+      }
     }
 
     component.setReferences(references.toArray(new IVirtualReference[references.size()]));
@@ -263,16 +268,19 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
         IProject p = (IProject) ResourcesPlugin.getWorkspace().getRoot().findMember(entry.getPath());
         IVirtualComponent component = ComponentCore.createComponent(p);
 
-        if(opts.isSkinnyWar() && opts.isReferenceFromEar(component)) {
+        boolean usedInEar = opts.isReferenceFromEar(component);
+        if(opts.isSkinnyWar() && usedInEar) {
           if(manifestCp.length() > 0) {
             manifestCp.append(" ");
           }
           manifestCp.append(component.getDeployedName()).append(".jar");
         }
 
-        // remove project dependencies in any case
-        iter.remove();
-        continue;
+        if (!descriptor.isOptionalDependency() || usedInEar) {
+          // remove mandatory project dependency from classpath
+          iter.remove();
+          continue;
+        }//else : optional dependency not used in ear -> need to trick ClasspathAttribute with NONDEPENDENCY_ATTRIBUTE 
       }
 
       if(opts.isSkinnyWar() && opts.isReferenceFromEar(descriptor)) {

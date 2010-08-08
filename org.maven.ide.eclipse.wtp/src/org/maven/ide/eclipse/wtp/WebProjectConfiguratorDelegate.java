@@ -161,7 +161,8 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
         MavenPlugin.getDefault().getConsole());
     
     Set<IVirtualReference> references = new LinkedHashSet<IVirtualReference>();
-    for(IMavenProjectFacade dependency : getWorkspaceDependencies(project, mavenProject)) {
+    List<IMavenProjectFacade> exportedDependencies = getWorkspaceDependencies(project, mavenProject);
+    for(IMavenProjectFacade dependency : exportedDependencies) {
       String depPackaging = dependency.getPackaging();
       if ("pom".equals(depPackaging)) continue;//MNGECLIPSE-744 pom dependencies shouldn't be deployed
       
@@ -196,7 +197,8 @@ class WebProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
 
     component.setReferences(references.toArray(new IVirtualReference[references.size()]));
 
-    for(IMavenProjectFacade dependency : getWorkspaceDependencies(project, mavenProject)) {
+    //TODO why a 2nd loop???
+    for(IMavenProjectFacade dependency : exportedDependencies) {
       MavenProject depMavenProject =  dependency.getMavenProject(monitor);
       Iterator<AbstractDependencyConfigurator> configurators = depConfigurators.iterator();
       while (configurators.hasNext()) {

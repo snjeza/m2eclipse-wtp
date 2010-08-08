@@ -266,6 +266,19 @@ public class WTPProjectConfiguratorTest extends AbstractMavenProjectTestCase {
     assertEquals(4, warComponent.getReferences().length);
   }
 
+
+  public void testMNGECLIPSE744_NonDeployablePoms () throws Exception {
+    IProject[] projects = importProjects("projects/MNGECLIPSE-744", new String[]{"pom.xml", "MNGECLIPSE-744-web/pom.xml","pomDependency/pom.xml"}, new ResolverConfiguration());
+    IProject war = projects[1]; 
+    IProject pom = projects[2]; 
+    assertMarkers(war, 0);
+    assertMarkers(pom, 0);
+    IVirtualComponent warComponent = ComponentCore.createComponent(war);
+    assertEquals(1, warComponent.getReferences().length);
+    //Check the only reference is not the dependent pom
+    assertTrue("junit-3.8.1.jar expected", warComponent.getReferences()[0].getArchiveName().endsWith("junit-3.8.1.jar"));
+  }
+
   public void testMNGECLIPSE688_CustomEarContent () throws Exception {
     IProject ear = importProject("projects/MNGECLIPSE-688/ear21-1/pom.xml", new ResolverConfiguration());
 

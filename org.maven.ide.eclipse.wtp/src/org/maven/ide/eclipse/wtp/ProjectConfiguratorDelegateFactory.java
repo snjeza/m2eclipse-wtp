@@ -37,6 +37,8 @@ class ProjectConfiguratorDelegateFactory {
         return new EjbProjectConfiguratorDelegate();
       case EAR:
         return new EarProjectConfiguratorDelegate();
+      case RAR:
+        return new ConnectorProjectConfiguratorDelegate();
       default :
         return null;
     }

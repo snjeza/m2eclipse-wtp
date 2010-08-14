@@ -18,6 +18,7 @@ import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -232,7 +233,7 @@ public class WTPProjectConfiguratorTest extends AbstractMavenProjectTestCase {
     assertTrue(ejbJar.exists());
     //TODO check DTD
   }
-/*
+
   public void testMNGECLIPSE688_Ejb_30() throws Exception {
     IProject project = importProject("projects/MNGECLIPSE-688/ejb2/pom.xml", new ResolverConfiguration());
 
@@ -250,7 +251,7 @@ public class WTPProjectConfiguratorTest extends AbstractMavenProjectTestCase {
     assertFalse(ejbJar.exists());
     //TODO check DTD
   }
-*/
+
   public void testMNGECLIPSE688_NonDeployedDependencies () throws Exception {
     IProject[] projects = importProjects("projects/MNGECLIPSE-688", new String[]{"war-optional/pom.xml","core/pom.xml"}, new ResolverConfiguration());
     IProject war = projects[0]; 

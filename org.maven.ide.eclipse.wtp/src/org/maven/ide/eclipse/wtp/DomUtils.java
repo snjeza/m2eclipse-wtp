@@ -22,7 +22,7 @@ public class DomUtils {
     String result = null;
     if (parent != null && childName != null) {
       Xpp3Dom dom = parent.getChild(childName);
-      if (dom != null) {
+      if (dom != null && dom.getValue() != null) {//MNGECLIPSE-2328 add null-safety in case of <somenode/> 
         result = dom.getValue().trim();
       }
     }

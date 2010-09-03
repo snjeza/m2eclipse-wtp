@@ -246,7 +246,7 @@ class EarProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate
     String deployedName = extSeparatorPos > -1? deployedFileName.substring(0, extSeparatorPos): deployedFileName;
     //From jerr's patch in MNGECLIPSE-965
     IVirtualComponent projectComponent = ComponentCore.createComponent(project);
-    if(!projectComponent.getDeployedName().equals(deployedName)){
+    if(!deployedName.equals(projectComponent.getDeployedName())){//MNGECLIPSE-2331 : Seems projectComponent.getDeployedName() can be null 
       StructureEdit moduleCore = null;
       try {
         moduleCore = StructureEdit.getStructureEditForWrite(project);

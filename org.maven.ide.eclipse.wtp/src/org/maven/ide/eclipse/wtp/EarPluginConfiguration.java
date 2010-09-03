@@ -62,8 +62,10 @@ class EarPluginConfiguration {
   // private String contentDirectory;
 
   // XXX see if Lazy loading / caching the different factories and services is relevant.
-  ArtifactTypeMappingService typeMappingService;
+  private ArtifactTypeMappingService typeMappingService;
 
+  private Set<EarModule>  earModules;
+  
   public EarPluginConfiguration(MavenProject mavenProject) {
     if(JEEPackaging.EAR != JEEPackaging.getValue(mavenProject.getPackaging())) {
       throw new IllegalArgumentException("Maven project must have ear packaging");
@@ -166,6 +168,7 @@ class EarPluginConfiguration {
     return libDirectory;
   }
 
+  
   /**
    * Reads maven-ear-plugin configuration to build a set of EarModule.
    * 
@@ -173,6 +176,14 @@ class EarPluginConfiguration {
    * @return an unmodifiable set of EarModule
    */
   public Set<EarModule> getEarModules() throws EarPluginException {
+    if (earModules == null) {
+      //Lazy load modules
+      earModules = collectEarModules();
+    }
+    return earModules;
+  }
+  
+  private Set<EarModule> collectEarModules() throws EarPluginException {
     Set<Artifact> artifacts = mavenProject.getArtifacts();
     if(artifacts == null || artifacts.isEmpty()) {
       return Collections.<EarModule> emptySet();

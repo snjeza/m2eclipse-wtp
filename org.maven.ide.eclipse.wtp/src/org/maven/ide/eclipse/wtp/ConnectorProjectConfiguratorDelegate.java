@@ -13,6 +13,8 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
+import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -42,6 +44,8 @@ import org.maven.ide.eclipse.project.MavenProjectUtils;
  */
 public class ConnectorProjectConfiguratorDelegate extends AbstractProjectConfiguratorDelegate{
 
+  public static final ArtifactFilter SCOPE_FILTER_RUNTIME = new ScopeArtifactFilter(Artifact.SCOPE_RUNTIME);
+
   /* (non-Javadoc)
    * @see org.maven.ide.eclipse.wtp.AbstractProjectConfiguratorDelegate#configure(org.eclipse.core.resources.IProject, org.apache.maven.project.MavenProject, org.eclipse.core.runtime.IProgressMonitor)
    */
@@ -56,7 +60,7 @@ public class ConnectorProjectConfiguratorDelegate extends AbstractProjectConfigu
         MavenLogger.log("Error removing JCA facet", ex);
       }
     }
-
+    
     Set<Action> actions = new LinkedHashSet<Action>();
     installJavaFacet(actions, project, facetedProject);
 
@@ -84,7 +88,7 @@ public class ConnectorProjectConfiguratorDelegate extends AbstractProjectConfigu
     }
     removeTestFolderLinks(project, mavenProject, monitor, "/"); 
     
-    //Remove "library unavailable at runtime" warning.
+    //Remove "library unavailable at runtime" warning. TODO is it relevant for connector projects?
     addContainerAttribute(project, NONDEPENDENCY_ATTRIBUTE, monitor);
   }
 
@@ -106,7 +110,7 @@ public class ConnectorProjectConfiguratorDelegate extends AbstractProjectConfigu
    */
   public void configureClasspath(IProject project, MavenProject mavenProject, IClasspathDescriptor classpath,
       IProgressMonitor monitor) throws CoreException {
-    // TODO Auto-generated method configureClasspath
+    // Nothing to do
     
   }
 
@@ -118,13 +122,17 @@ public class ConnectorProjectConfiguratorDelegate extends AbstractProjectConfigu
 
     IVirtualComponent rarComponent = ComponentCore.createComponent(project);
     
-    IVirtualReference[] existingRefs = rarComponent.getReferences();
     Set<IVirtualReference> newRefs = new LinkedHashSet<IVirtualReference>();
     
     Set<Artifact> artifacts =  mavenProject.getArtifacts();
     
+    //Adding artifact references in .component. See https://bugs.eclipse.org/bugs/show_bug.cgi?id=297777#c1
     for(Artifact artifact : artifacts) {
-
+      //Don't deploy pom, non runtime or optional dependencies
+      if("pom".equals(artifact.getType()) || !SCOPE_FILTER_RUNTIME.include(artifact) || artifact.isOptional()) {
+        continue;
+      }
+      
       IMavenProjectFacade workspaceDependency = projectManager.getMavenProject(artifact.getGroupId(), artifact
           .getArtifactId(), artifact.getVersion());
 
@@ -139,54 +147,44 @@ public class ConnectorProjectConfiguratorDelegate extends AbstractProjectConfigu
       }
     }
 
-    IVirtualReference[] refArray = new IVirtualReference[newRefs.size()];
-    newRefs.toArray(refArray);
+    IVirtualReference[] newRefsArray = new IVirtualReference[newRefs.size()];
+    newRefs.toArray(newRefsArray);
     
-    if (hasChanged(existingRefs, refArray)) {
-      rarComponent.setReferences(refArray);
+    //Only change the preject references if they've changed
+    if (hasChanged(rarComponent.getReferences(), newRefsArray)) {
+      rarComponent.setReferences(newRefsArray);
     }
   }
 
-  /**
-   * @param rarComponent
-   * @param depProject
-   * @return
-   */
   private IVirtualReference createReference(IVirtualComponent rarComponent, IProject depProject) {
     IVirtualComponent depComponent = ComponentCore.createComponent(depProject);
     return ComponentCore.createReference(rarComponent, depComponent);
   }
-
-  /**
-   * @param existingRefs
-   * @param refArray
-   * @return
-   */
-  private boolean hasChanged(IVirtualReference[] existingRefs, IVirtualReference[] refArray) {
-
-    if (existingRefs==refArray) {
-      return false;
-    }
-    if (existingRefs.length != refArray.length) {
-      return true;
-    }
-    for (int i=0; i<existingRefs.length;i++){
-      IVirtualReference existingRef = existingRefs[i];
-      IVirtualReference newRef = refArray[i];
-      if (!existingRef.getReferencedComponent().equals(newRef.getReferencedComponent())) {
-        return true;  
-      }
-    }
-    return false;    
-  }
-
-  /**
-   * @param artifact
-   */
   private IVirtualReference createReference(IVirtualComponent rarComponent, Artifact artifact) {
       //Create dependency component, referenced from the local Repo.
       String artifactPath = ArtifactHelper.getM2REPOVarPath(artifact);
       IVirtualComponent depComponent = ComponentCore.createArchiveComponent(rarComponent.getProject(), artifactPath);
       return ComponentCore.createReference(rarComponent, depComponent);
   }
+
+
+  private boolean hasChanged(IVirtualReference[] existingRefs, IVirtualReference[] refArray) {
+
+    if (existingRefs==refArray) {
+      return false;
+    }
+    if (existingRefs == null || existingRefs.length != refArray.length) {
+      return true;
+    }
+    for (int i=0; i<existingRefs.length;i++){
+      IVirtualReference existingRef = existingRefs[i];
+      IVirtualReference newRef = refArray[i];
+      if (!existingRef.getArchiveName().equals(newRef.getArchiveName()) ||
+          !existingRef.getReferencedComponent().equals(newRef.getReferencedComponent())) {
+        return true;  
+      }
+    }
+    return false;    
+  }
+
 }

@@ -10,6 +10,7 @@ package org.maven.ide.eclipse.wtp;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
@@ -20,6 +21,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jst.j2ee.jca.project.facet.ConnectorFacetInstallDataModelProvider;
 import org.eclipse.jst.j2ee.jca.project.facet.IConnectorFacetInstallDataModelProperties;
 import org.eclipse.wst.common.componentcore.ComponentCore;
@@ -88,8 +90,42 @@ public class ConnectorProjectConfiguratorDelegate extends AbstractProjectConfigu
     }
     removeTestFolderLinks(project, mavenProject, monitor, "/"); 
     
+    String customRaXml = config.getCustomRaXml(project);
+    removeRaXmlLink(project, monitor);
+    if (customRaXml != null) {
+      addRaXmlLink(project, monitor, customRaXml);
+    }
+    
     //Remove "library unavailable at runtime" warning. TODO is it relevant for connector projects?
     addContainerAttribute(project, NONDEPENDENCY_ATTRIBUTE, monitor);
+  }
+
+  /**
+   * Remove custom ra.xml link, if exists.
+   */
+  private void removeRaXmlLink(IProject project, IProgressMonitor monitor) {
+    //How do we remove links only knowing their runtimepath?
+  }
+
+  /**
+   * @param monitor 
+   * @param project 
+   * @param customRaXml
+   */
+  private void addRaXmlLink(IProject project, IProgressMonitor monitor, String customRaXml) {
+    IVirtualComponent component = ComponentCore.createComponent(project);
+    if (component != null){
+      IVirtualFolder root = component.getRootFolder().getFolder("/");
+      Properties props = component.getMetaProperties();
+      
+      IPath path = new Path(customRaXml);
+      try {
+        root.createLink(path, 0, monitor);
+      } catch(CoreException ex) {
+        //ignore
+        MavenLogger.log(ex);
+      }
+    }
   }
 
   private void removeSourceLinks(IProject project, MavenProject mavenProject, IProgressMonitor monitor, String folder) throws CoreException {
@@ -179,7 +215,7 @@ public class ConnectorProjectConfiguratorDelegate extends AbstractProjectConfigu
     for (int i=0; i<existingRefs.length;i++){
       IVirtualReference existingRef = existingRefs[i];
       IVirtualReference newRef = refArray[i];
-      if (!existingRef.getArchiveName().equals(newRef.getArchiveName()) ||
+      if ((existingRef.getArchiveName() != null && !existingRef.getArchiveName().equals(newRef.getArchiveName())) ||
           !existingRef.getReferencedComponent().equals(newRef.getReferencedComponent())) {
         return true;  
       }

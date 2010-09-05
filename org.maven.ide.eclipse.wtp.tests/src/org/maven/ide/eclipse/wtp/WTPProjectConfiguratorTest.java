@@ -1214,7 +1214,102 @@ public class WTPProjectConfiguratorTest extends AbstractMavenProjectTestCase {
     assertMarkers(project, 0);
   }
 
+  public void testMNGECLIPSE1949_RarSupport() throws Exception {
+    
+    IProject project = importProject("projects/MNGECLIPSE-1949/rar1/pom.xml", new ResolverConfiguration());
+    IFacetedProject connector = ProjectFacetsManager.create(project);
+    assertNotNull(connector);
+    assertEquals(IJ2EEFacetConstants.JCA_15, connector.getInstalledVersion(IJ2EEFacetConstants.JCA_FACET));
+    assertTrue(connector.hasProjectFacet(JavaFacetUtils.JAVA_FACET));
+    assertMarkers(project, 0);
+
+
+    IVirtualComponent rarComp = ComponentCore.createComponent(project);
+    IVirtualFolder rootRar = rarComp.getRootFolder();
+    IResource[] rarResources = rootRar.getUnderlyingResources();
+    assertEquals(2, rarResources.length);
+    assertEquals(project.getFolder("/src/main/rar"), rarResources[0]);
+    assertEquals(project.getFolder("/src/main/java"), rarResources[1]);
+
+    
+    if (!WTPProjectsUtil.isJavaEE6Available()) {
+      //Component export is broken for WTP < 3.2 (see https://bugs.eclipse.org/bugs/show_bug.cgi?id=298735)
+      //So we skip this last part.
+      return;
+    }
+    
+    IVirtualReference[] references = rarComp.getReferences();
+    assertEquals(1, references.length);//Provided dependency not deployed
+    IVirtualReference commonsLang = references[0];
+    assertTrue("commons-lang-2.4.jar expected but was "+commonsLang.getArchiveName(), commonsLang.getArchiveName().endsWith("commons-lang-2.4.jar"));
+
+    updateProject(project, "changeDependencies.xml");    
+    assertMarkers(project, 0);    
   
+    references = rarComp.getReferences();
+    assertEquals(2, references.length);
+    IVirtualReference commonsCollections = references[0];
+    assertTrue("commons-collections-2.0.jar expected but was "+commonsCollections.getArchiveName(), commonsCollections.getArchiveName().endsWith("commons-collections-2.0.jar"));
+    IVirtualReference javaee = references[1];
+    assertTrue("javaee-api-6.0.jar expected but was "+javaee.getArchiveName(), javaee.getArchiveName().endsWith("javaee-api-6.0.jar"));
+
+  }
+
+
+  public void testMNGECLIPSE1949_RarSourceDirectory() throws Exception {
+    IProject project = importProject("projects/MNGECLIPSE-1949/rar2/pom.xml", new ResolverConfiguration());
+    IFacetedProject connector = ProjectFacetsManager.create(project);
+    assertNotNull(connector);
+    assertMarkers(project, 0);
+
+    IVirtualComponent rarComp = ComponentCore.createComponent(project);
+    IVirtualFolder rootRar = rarComp.getRootFolder();
+    IResource[] rarResources = rootRar.getUnderlyingResources();
+    assertEquals(2, rarResources.length);
+    //Check non default rarSourceDirectory 
+    assertEquals(project.getFolder("/connector"), rarResources[0]);
+    assertEquals(project.getFolder("/src/main/java"), rarResources[1]);
+
+//TODO Update RA Dir
+//    updateProject(project, "changeRaDir.xml");    
+//    assertMarkers(project, 0);    
+//
+//    rarComp = ComponentCore.createComponent(project);
+//    rootRar = rarComp.getRootFolder();
+//    rarResources = rootRar.getUnderlyingResources();
+//    assertEquals(2, rarResources.length);
+//    assertEquals(project.getFolder("/src/main/rar"), rarResources[0]);
+   
+  }
+
+
+  public void testMNGECLIPSE1949_IncludeJar() throws Exception {
+    //Check non default rarSourceDirectory 
+    IProject project = importProject("projects/MNGECLIPSE-1949/rar3/pom.xml", new ResolverConfiguration());
+    IFacetedProject connector = ProjectFacetsManager.create(project);
+    assertNotNull(connector);
+    assertMarkers(project, 0);
+
+    IVirtualComponent rarComp = ComponentCore.createComponent(project);
+    IVirtualFolder rootRar = rarComp.getRootFolder();
+    IResource[] rarResources = rootRar.getUnderlyingResources();
+    //includeJar set to false, classes won't be included
+    assertEquals(1, rarResources.length);
+    assertEquals(project.getFolder("/src/main/rar"), rarResources[0]);
+
+    updateProject(project, "includeJar.xml");    
+    assertMarkers(project, 0);    
+
+    rarResources = rootRar.getUnderlyingResources();
+    assertEquals(3, rarResources.length);
+    //includeJar set to true, classes and resources are included 
+    assertEquals(project.getFolder("/src/main/java"), rarResources[1]);
+    assertEquals(project.getFolder("/src/main/resources"), rarResources[2]);
+
+  
+  }
+  
+
   private static IClasspathContainer getWebLibClasspathContainer(IJavaProject project) throws JavaModelException {
     IClasspathEntry[] entries = project.getRawClasspath();
     for(int i = 0; i < entries.length; i++ ) {

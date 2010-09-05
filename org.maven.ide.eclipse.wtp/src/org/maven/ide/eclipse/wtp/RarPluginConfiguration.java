@@ -17,7 +17,6 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jst.j2ee.internal.J2EEVersionConstants;
 import org.eclipse.jst.j2ee.project.facet.IJ2EEFacetConstants;
 import org.eclipse.jst.jee.util.internal.JavaEEQuickPeek;
@@ -87,17 +86,7 @@ public class RarPluginConfiguration {
       Xpp3Dom contentDirDom = config.getChild("rarSourceDirectory");
       if(contentDirDom != null && contentDirDom.getValue() != null) {
         String contentDir = contentDirDom.getValue().trim();
-        
-        //TODO refactor to a utility class static method (getRelativeLocation)
-        if(project != null) {
-          IPath projectLocationPath = project.getLocation();
-          if(projectLocationPath != null) {
-            String projectLocation = projectLocationPath.toOSString();
-            if(contentDir.startsWith(projectLocation)) {
-              return contentDir.substring(projectLocation.length());
-            }
-          }
-        }
+        contentDir = ProjectUtils.getRelativePath(project, contentDir);
         contentDir = (contentDir.length() == 0) ? RAR_DEFAULT_CONTENT_DIR : contentDir;
         return contentDir;
       }
@@ -123,7 +112,7 @@ public class RarPluginConfiguration {
               case J2EEVersionConstants.JCA_1_5_ID:
                 return IJ2EEFacetConstants.JCA_15;
               case JCA_1_6_ID:
-                //Don't create a static 1.6 facet version, it'll blow up WTP < 3.2
+                //Don't create a static 1.6 facet version, it'd blow up WTP < 3.2
                 return IJ2EEFacetConstants.JCA_FACET.getVersion("1.6");//only exists in WTP version >= 3.2
             }
           } finally {
@@ -145,5 +134,22 @@ public class RarPluginConfiguration {
      
       return IJ2EEFacetConstants.JCA_15;
     }
+
+  /**
+   * Get the custom location of ra.xml, as set in &lt;raXmlFile&gt;.
+   * @return the custom location of ra.xml or null if &lt;raXmlFile&gt; is not set
+   */
+  public String getCustomRaXml(IProject project) {
+    Xpp3Dom config = getConfiguration();
+    if(config != null) {
+      Xpp3Dom raXmlFileDom = config.getChild("raXmlFile");
+      if(raXmlFileDom != null && raXmlFileDom.getValue() != null) {
+        String raXmlFile = raXmlFileDom.getValue().trim();
+        raXmlFile = ProjectUtils.getRelativePath(project, raXmlFile);
+        return raXmlFile;
+      }
+    }
+    return null;
+  }
 
 }
